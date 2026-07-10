@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Upload } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useReviews } from "@/hooks/useReviews";
 import { supabase } from "@/lib/supabase";
@@ -12,7 +12,12 @@ import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { StarRating } from "@/components/ui/StarRating";
 
-const EMPTY_FORM = { client_name: "", stars: 5, review_text: "" };
+const EMPTY_FORM = {
+  client_name: "",
+  stars: 5,
+  review_text: "",
+  image_url: null as string | null,
+};
 
 export default function AdminReviews() {
   const { t } = useLanguage();
@@ -20,14 +25,42 @@ export default function AdminReviews() {
   const { data: reviews = [] } = useReviews({ activeOnly: false });
   const [form, setForm] = useState(EMPTY_FORM);
   const [showForm, setShowForm] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const path = `reviews/${crypto.randomUUID()}-${file.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from("product-images")
+        .upload(path, file);
+      if (uploadError) throw uploadError;
+      const { data: publicUrl } = supabase.storage.from("product-images").getPublicUrl(path);
+      setForm((f) => ({ ...f, image_url: publicUrl.publicUrl }));
+    } catch {
+      setError(t("admin_save_error"));
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  }
 
   async function handleCreate() {
-    await supabase.from("client_reviews").insert({
+    setError(null);
+    const { error: saveError } = await supabase.from("client_reviews").insert({
       client_name: form.client_name,
       stars: form.stars,
       review_text: form.review_text,
+      image_url: form.image_url,
       active: true,
     });
+    if (saveError) {
+      setError(t("admin_save_error"));
+      return;
+    }
     queryClient.invalidateQueries({ queryKey: ["reviews"] });
     setForm(EMPTY_FORM);
     setShowForm(false);
@@ -58,6 +91,24 @@ export default function AdminReviews() {
 
       {showForm && (
         <BentoPanel className="mb-6 space-y-3 p-5">
+          <div className="flex items-center gap-3">
+            <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full border border-line bg-panel-2">
+              {form.image_url && (
+                <img src={form.image_url} alt="" className="h-full w-full object-cover" />
+              )}
+            </div>
+            <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-line px-3 py-2 text-xs font-semibold text-muted hover:border-brand hover:text-brand">
+              <Upload size={14} />
+              {uploading ? "..." : t("admin_product_upload")}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleUpload}
+                disabled={uploading}
+              />
+            </label>
+          </div>
           <Input
             placeholder={t("admin_review_client_name")}
             value={form.client_name}
@@ -79,6 +130,7 @@ export default function AdminReviews() {
             value={form.review_text}
             onChange={(e) => setForm((f) => ({ ...f, review_text: e.target.value }))}
           />
+          {error && <p className="text-sm text-red-500">{error}</p>}
           <Button onClick={handleCreate} size="sm">
             {t("admin_save")}
           </Button>
@@ -93,7 +145,20 @@ export default function AdminReviews() {
           >
             <StarRating value={review.stars} />
             <p className="mt-2 text-sm text-ink">"{review.review_text}"</p>
-            <p className="mt-2 text-sm font-semibold text-muted">{review.client_name}</p>
+            <div className="mt-2 flex items-center gap-2">
+              {review.image_url ? (
+                <img
+                  src={review.image_url}
+                  alt=""
+                  className="h-7 w-7 rounded-full object-cover"
+                />
+              ) : (
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand">
+                  {review.client_name.charAt(0)}
+                </div>
+              )}
+              <p className="text-sm font-semibold text-muted">{review.client_name}</p>
+            </div>
             <div className="mt-3 flex items-center justify-between">
               <button
                 onClick={() => toggleActive(review.id, review.active)}

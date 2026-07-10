@@ -1,8 +1,10 @@
 import { Suspense, useState } from "react";
-import { Navigate, NavLink, Outlet } from "react-router-dom";
+import { Link, Navigate, NavLink, Outlet } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  ArrowLeft,
   LayoutDashboard,
+  Languages,
   ListTree,
   LogOut,
   Menu,
@@ -37,7 +39,7 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
-  const { t } = useLanguage();
+  const { t, lang, setLang } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const { signOut } = useAuth();
 
@@ -73,6 +75,21 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
 
       <div className="space-y-1 border-t border-line px-3 py-4">
+        <Link
+          to="/"
+          onClick={onNavigate}
+          className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold text-muted transition-colors hover:bg-panel-2 hover:text-ink"
+        >
+          <ArrowLeft size={17} className="rtl:rotate-180" />
+          {t("admin_back_to_site")}
+        </Link>
+        <button
+          onClick={() => setLang(lang === "fr" ? "ar" : "fr")}
+          className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold text-muted transition-colors hover:bg-panel-2 hover:text-ink"
+        >
+          <Languages size={17} />
+          {lang === "fr" ? "العربية" : "Français"}
+        </button>
         <button
           onClick={toggleTheme}
           className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold text-muted transition-colors hover:bg-panel-2 hover:text-ink"

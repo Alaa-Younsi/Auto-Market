@@ -29,7 +29,6 @@ export function Header() {
   const navLinks = [
     { to: "/", label: t("nav_home") },
     { to: "/shop", label: t("nav_shop") },
-    { to: "/track-order", label: t("nav_track_order") },
   ];
 
   function submitSearch(e: React.FormEvent) {

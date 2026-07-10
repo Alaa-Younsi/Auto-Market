@@ -8,7 +8,6 @@ export const translations = {
     nav_home: "Accueil",
     nav_shop: "Boutique",
     nav_categories: "Catégories",
-    nav_track_order: "Suivre ma commande",
     nav_cart: "Panier",
     nav_search_placeholder: "Rechercher une pièce, un accessoire...",
 
@@ -74,6 +73,7 @@ export const translations = {
     footer_faq: "Questions fréquentes",
     footer_delivery_info: "Infos livraison",
     footer_rights: "Tous droits réservés.",
+    footer_admin: "Administration",
 
     // Shop
     shop_title: "Boutique",
@@ -137,13 +137,8 @@ export const translations = {
     confirmation_number: "Numéro de commande",
     confirmation_message: "Notre équipe vous contactera bientôt pour confirmer la livraison.",
     confirmation_back_home: "Retour à l'accueil",
-    confirmation_track: "Suivre ma commande",
 
-    // Order tracking
-    track_title: "Suivre ma commande",
-    track_input_placeholder: "Numéro de commande (ex: AM-20260101-AB3XZ)",
-    track_submit: "Rechercher",
-    track_not_found: "Commande introuvable. Vérifiez le numéro.",
+    // Order status (shared with admin)
     track_status_pending: "En attente",
     track_status_confirmed: "Confirmée",
     track_status_shipped: "Expédiée",
@@ -166,6 +161,7 @@ export const translations = {
     admin_login_submit: "Se connecter",
     admin_login_error: "Email ou mot de passe incorrect",
     admin_logout: "Déconnexion",
+    admin_back_to_site: "Retour au site",
     admin_nav_dashboard: "Tableau de bord",
     admin_nav_products: "Produits",
     admin_nav_categories: "Catégories",
@@ -178,6 +174,7 @@ export const translations = {
     admin_edit: "Modifier",
     admin_add: "Ajouter",
     admin_confirm_delete: "Confirmer la suppression ?",
+    admin_save_error: "Échec de l'enregistrement. Réessayez.",
     admin_search_placeholder: "Rechercher...",
 
     // Admin - dashboard
@@ -190,10 +187,13 @@ export const translations = {
 
     // Admin - products
     admin_products_title: "Produits",
+    admin_product_name: "Nom",
     admin_product_name_fr: "Nom (Français)",
     admin_product_name_ar: "Nom (Arabe)",
     admin_product_description_fr: "Description (Français)",
     admin_product_description_ar: "Description (Arabe)",
+    admin_product_details_fr: "Détails (un par ligne, Français)",
+    admin_product_details_ar: "Détails (un par ligne, Arabe)",
     admin_product_price: "Prix",
     admin_product_compare_price: "Prix barré",
     admin_product_stock: "Stock",
@@ -211,6 +211,8 @@ export const translations = {
     admin_categories_title: "Catégories",
     admin_category_name_fr: "Nom (Français)",
     admin_category_name_ar: "Nom (Arabe)",
+    admin_category_image: "Image",
+    admin_sort_order: "Ordre d'affichage",
 
     // Admin - orders
     admin_orders_title: "Commandes",
@@ -261,7 +263,6 @@ export const translations = {
     nav_home: "الرئيسية",
     nav_shop: "المتجر",
     nav_categories: "الفئات",
-    nav_track_order: "تتبع طلبيتي",
     nav_cart: "السلة",
     nav_search_placeholder: "ابحث عن قطعة أو إكسسوار...",
 
@@ -327,6 +328,7 @@ export const translations = {
     footer_faq: "الأسئلة الشائعة",
     footer_delivery_info: "معلومات التوصيل",
     footer_rights: "جميع الحقوق محفوظة.",
+    footer_admin: "الإدارة",
 
     // Shop
     shop_title: "المتجر",
@@ -390,13 +392,8 @@ export const translations = {
     confirmation_number: "رقم الطلب",
     confirmation_message: "سيتصل بكم فريقنا قريباً لتأكيد التوصيل.",
     confirmation_back_home: "العودة إلى الرئيسية",
-    confirmation_track: "تتبع طلبيتي",
 
-    // Order tracking
-    track_title: "تتبع طلبيتي",
-    track_input_placeholder: "رقم الطلب (مثال: AM-20260101-AB3XZ)",
-    track_submit: "بحث",
-    track_not_found: "الطلب غير موجود. تحقق من الرقم.",
+    // Order status (shared with admin)
     track_status_pending: "قيد الانتظار",
     track_status_confirmed: "مؤكد",
     track_status_shipped: "تم الشحن",
@@ -419,6 +416,7 @@ export const translations = {
     admin_login_submit: "تسجيل الدخول",
     admin_login_error: "البريد الإلكتروني أو كلمة المرور غير صحيحة",
     admin_logout: "تسجيل الخروج",
+    admin_back_to_site: "العودة إلى الموقع",
     admin_nav_dashboard: "لوحة التحكم",
     admin_nav_products: "المنتجات",
     admin_nav_categories: "الفئات",
@@ -431,6 +429,7 @@ export const translations = {
     admin_edit: "تعديل",
     admin_add: "إضافة",
     admin_confirm_delete: "تأكيد الحذف؟",
+    admin_save_error: "فشل الحفظ. حاول مرة أخرى.",
     admin_search_placeholder: "بحث...",
 
     // Admin - dashboard
@@ -443,10 +442,13 @@ export const translations = {
 
     // Admin - products
     admin_products_title: "المنتجات",
+    admin_product_name: "الاسم",
     admin_product_name_fr: "الاسم (فرنسي)",
     admin_product_name_ar: "الاسم (عربي)",
     admin_product_description_fr: "الوصف (فرنسي)",
     admin_product_description_ar: "الوصف (عربي)",
+    admin_product_details_fr: "التفاصيل (سطر لكل نقطة، فرنسي)",
+    admin_product_details_ar: "التفاصيل (سطر لكل نقطة، عربي)",
     admin_product_price: "السعر",
     admin_product_compare_price: "السعر قبل التخفيض",
     admin_product_stock: "المخزون",
@@ -464,6 +466,8 @@ export const translations = {
     admin_categories_title: "الفئات",
     admin_category_name_fr: "الاسم (فرنسي)",
     admin_category_name_ar: "الاسم (عربي)",
+    admin_category_image: "الصورة",
+    admin_sort_order: "ترتيب العرض",
 
     // Admin - orders
     admin_orders_title: "الطلبات",

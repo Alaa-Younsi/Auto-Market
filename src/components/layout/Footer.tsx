@@ -59,11 +59,6 @@ export function Footer() {
                   {t("nav_shop")}
                 </Link>
               </li>
-              <li>
-                <Link to="/track-order" className="transition-colors hover:text-brand">
-                  {t("nav_track_order")}
-                </Link>
-              </li>
             </ul>
           </div>
 
@@ -99,6 +94,9 @@ export function Footer() {
           <p>
             © {new Date().getFullYear()} {t("brand_name")}. {t("footer_rights")}
           </p>
+          <Link to="/admin/login" className="transition-colors hover:text-brand">
+            {t("footer_admin")}
+          </Link>
         </div>
       </div>
     </footer>

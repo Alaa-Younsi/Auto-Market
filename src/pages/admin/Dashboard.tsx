@@ -5,6 +5,7 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import { useOrders } from "@/hooks/useOrders";
 import { supabase } from "@/lib/supabase";
 import { formatPrice } from "@/lib/format";
+import { ORDER_STATUS_LABEL_KEY } from "@/lib/orderStatus";
 import { BentoPanel } from "@/components/ui/BentoPanel";
 import { Badge } from "@/components/ui/Badge";
 
@@ -81,7 +82,7 @@ export default function AdminDashboard() {
                   <td className="px-4 py-3">{order.customer_name}</td>
                   <td className="px-4 py-3 font-semibold">{formatPrice(order.total)}</td>
                   <td className="px-4 py-3">
-                    <Badge tone="brand">{order.status}</Badge>
+                    <Badge tone="brand">{t(ORDER_STATUS_LABEL_KEY[order.status])}</Badge>
                   </td>
                 </tr>
               ))}

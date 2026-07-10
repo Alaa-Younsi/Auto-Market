@@ -9,7 +9,6 @@ import Shop from "@/pages/Shop";
 import Product from "@/pages/Product";
 import Checkout from "@/pages/Checkout";
 import OrderConfirmation from "@/pages/OrderConfirmation";
-import OrderTracking from "@/pages/OrderTracking";
 import NotFound from "@/pages/NotFound";
 
 const AdminLayout = lazy(() => import("@/pages/admin/AdminLayout"));
@@ -43,7 +42,6 @@ export default function App() {
           <Route path="product/:slug" element={<Product />} />
           <Route path="checkout" element={<Checkout />} />
           <Route path="order-confirmation/:orderNumber" element={<OrderConfirmation />} />
-          <Route path="track-order" element={<OrderTracking />} />
           <Route path="*" element={<NotFound />} />
         </Route>
 

@@ -5,6 +5,7 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import { useMediaFlags } from "@/hooks/useMediaFlags";
 import { useCartStore } from "@/store/cart";
 import { formatPrice } from "@/lib/format";
+import { trackAddToCart } from "@/lib/pixel";
 import { Badge } from "@/components/ui/Badge";
 import { TiltCard } from "@/components/ui/TiltCard";
 import type { Product } from "@/types/db";
@@ -34,6 +35,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
       imageUrl: image,
       stock: product.stock,
     });
+    trackAddToCart(product.id, product.price);
   }
 
   return (

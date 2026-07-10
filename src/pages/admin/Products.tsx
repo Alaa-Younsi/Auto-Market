@@ -52,7 +52,7 @@ export default function AdminProducts() {
           <thead>
             <tr className="border-b border-line text-start text-xs text-muted">
               <th className="px-4 py-3 text-start font-semibold"></th>
-              <th className="px-4 py-3 text-start font-semibold">Nom</th>
+              <th className="px-4 py-3 text-start font-semibold">{t("admin_product_name")}</th>
               <th className="px-4 py-3 text-start font-semibold">{t("admin_product_price")}</th>
               <th className="px-4 py-3 text-start font-semibold">{t("admin_product_stock")}</th>
               <th className="px-4 py-3 text-start font-semibold">{t("admin_product_status")}</th>

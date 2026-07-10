@@ -57,6 +57,7 @@ export default function AdminProductForm() {
   const [images, setImages] = useState<ProductImage[]>([]);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isNew) return;
@@ -91,15 +92,20 @@ export default function AdminProductForm() {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
+    setError(null);
     try {
       const path = `products/${crypto.randomUUID()}-${file.name}`;
-      const { error } = await supabase.storage.from("product-images").upload(path, file);
-      if (error) throw error;
+      const { error: uploadError } = await supabase.storage
+        .from("product-images")
+        .upload(path, file);
+      if (uploadError) throw uploadError;
       const { data: publicUrl } = supabase.storage.from("product-images").getPublicUrl(path);
       setImages((prev) => [
         ...prev,
         { id: crypto.randomUUID(), product_id: id ?? "", url: publicUrl.publicUrl, alt: null, sort_order: prev.length },
       ]);
+    } catch {
+      setError(t("admin_save_error"));
     } finally {
       setUploading(false);
       e.target.value = "";
@@ -112,6 +118,7 @@ export default function AdminProductForm() {
 
   async function handleSave() {
     setSaving(true);
+    setError(null);
     try {
       const payload = {
         name_fr: form.name_fr,
@@ -158,6 +165,8 @@ export default function AdminProductForm() {
       }
 
       navigate("/admin/products");
+    } catch {
+      setError(t("admin_save_error"));
     } finally {
       setSaving(false);
     }
@@ -202,13 +211,13 @@ export default function AdminProductForm() {
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Textarea
-                placeholder="Détails (un par ligne, FR)"
+                placeholder={t("admin_product_details_fr")}
                 rows={3}
                 value={form.details_fr}
                 onChange={(e) => setForm((f) => ({ ...f, details_fr: e.target.value }))}
               />
               <Textarea
-                placeholder="التفاصيل (سطر لكل نقطة، AR)"
+                placeholder={t("admin_product_details_ar")}
                 dir="rtl"
                 rows={3}
                 value={form.details_ar}
@@ -310,6 +319,7 @@ export default function AdminProductForm() {
               {t("admin_product_featured")}
             </label>
 
+            {error && <p className="text-sm text-red-500">{error}</p>}
             <Button onClick={handleSave} disabled={saving} className="w-full">
               {t("admin_save")}
             </Button>

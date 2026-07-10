@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useOrders } from "@/hooks/useOrders";
 import { formatPrice, formatDate } from "@/lib/format";
+import { ORDER_STATUS_LABEL_KEY } from "@/lib/orderStatus";
 import { BentoPanel } from "@/components/ui/BentoPanel";
 import { Select } from "@/components/ui/Select";
 import { Badge } from "@/components/ui/Badge";
@@ -75,7 +76,9 @@ export default function AdminOrders() {
                 <td className="px-4 py-3">{order.wilaya}</td>
                 <td className="px-4 py-3 font-semibold">{formatPrice(order.total)}</td>
                 <td className="px-4 py-3">
-                  <Badge tone={STATUS_TONE[order.status]}>{order.status}</Badge>
+                  <Badge tone={STATUS_TONE[order.status]}>
+                    {t(ORDER_STATUS_LABEL_KEY[order.status])}
+                  </Badge>
                 </td>
                 <td className="px-4 py-3 text-muted">{formatDate(order.created_at, lang)}</td>
               </tr>

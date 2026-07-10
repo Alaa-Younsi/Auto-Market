@@ -109,7 +109,7 @@ export default function OrderConfirmation() {
         <LinkButton to="/" variant="secondary">
           {t("confirmation_back_home")}
         </LinkButton>
-        <LinkButton to="/track-order">{t("confirmation_track")}</LinkButton>
+        <LinkButton to="/shop">{t("cart_empty_cta")}</LinkButton>
       </div>
     </div>
   );
