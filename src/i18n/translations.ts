@@ -1,0 +1,510 @@
+export const translations = {
+  fr: {
+    // Brand
+    brand_name: "Auto Market",
+    brand_tagline: "Pièces & accessoires auto, livrés chez vous",
+
+    // Nav
+    nav_home: "Accueil",
+    nav_shop: "Boutique",
+    nav_categories: "Catégories",
+    nav_track_order: "Suivre ma commande",
+    nav_cart: "Panier",
+    nav_search_placeholder: "Rechercher une pièce, un accessoire...",
+
+    // Hero
+    hero_badge: "Livraison COD dans les 58 wilayas",
+    hero_title_line1: "Équipez votre voiture",
+    hero_title_line2: "comme un pro",
+    hero_subtitle:
+      "Des milliers de pièces et accessoires auto vérifiés, livrés en espèces à la livraison partout en Algérie.",
+    hero_cta_shop: "Découvrir la boutique",
+    hero_cta_categories: "Voir les catégories",
+    hero_stat_products: "Produits",
+    hero_stat_wilayas: "Wilayas livrées",
+    hero_stat_clients: "Clients satisfaits",
+    hero_stat_rating: "Note moyenne",
+    hero_paint_blue: "Bleu",
+    hero_paint_green: "Vert",
+    hero_paint_graphite: "Graphite",
+
+    // Trust badges
+    trust_cod: "Paiement à la livraison",
+    trust_cod_desc: "Payez en espèces à la réception",
+    trust_delivery: "Livraison rapide",
+    trust_delivery_desc: "Partout en Algérie, 24 à 72h",
+    trust_quality: "Qualité garantie",
+    trust_quality_desc: "Pièces vérifiées et testées",
+    trust_support: "Support réactif",
+    trust_support_desc: "Une équipe à votre écoute",
+
+    // How it works
+    how_title: "Comment ça marche",
+    how_subtitle: "Commander est simple, rapide, et sans risque",
+    how_step1_title: "Choisissez vos produits",
+    how_step1_desc: "Parcourez notre catalogue et ajoutez vos articles au panier",
+    how_step2_title: "Confirmez la commande",
+    how_step2_desc: "Renseignez votre wilaya et votre adresse de livraison",
+    how_step3_title: "Payez à la livraison",
+    how_step3_desc: "Réglez en espèces uniquement à la réception du colis",
+
+    // Categories
+    categories_title: "Nos catégories",
+    categories_subtitle: "Trouvez exactement ce qu'il vous faut",
+
+    // Featured products
+    featured_title: "Produits populaires",
+    featured_subtitle: "Les articles les plus commandés cette semaine",
+    view_all: "Voir tout",
+
+    // Reviews
+    reviews_title: "Ce que disent nos clients",
+    reviews_subtitle: "Des milliers de clients satisfaits à travers l'Algérie",
+
+    // CTA banner
+    cta_banner_title: "Prêt à équiper votre véhicule ?",
+    cta_banner_subtitle: "Livraison rapide, paiement à la livraison, satisfaction garantie",
+    cta_banner_button: "Commander maintenant",
+
+    // Footer
+    footer_about: "Auto Market est votre boutique de pièces et accessoires automobiles en Algérie, avec paiement à la livraison.",
+    footer_links: "Liens rapides",
+    footer_help: "Aide",
+    footer_contact: "Contact",
+    footer_faq: "Questions fréquentes",
+    footer_delivery_info: "Infos livraison",
+    footer_rights: "Tous droits réservés.",
+
+    // Shop
+    shop_title: "Boutique",
+    shop_filter_category: "Catégorie",
+    shop_filter_all: "Toutes les catégories",
+    shop_sort: "Trier par",
+    shop_sort_newest: "Nouveautés",
+    shop_sort_price_asc: "Prix croissant",
+    shop_sort_price_desc: "Prix décroissant",
+    shop_no_results: "Aucun produit trouvé",
+    shop_results_count: "produits trouvés",
+
+    // Product
+    product_add_to_cart: "Ajouter au panier",
+    product_added: "Ajouté",
+    product_buy_now: "Commander maintenant",
+    product_color: "Couleur",
+    product_size: "Taille",
+    product_quantity: "Quantité",
+    product_in_stock: "En stock",
+    product_low_stock: "Stock limité",
+    product_out_of_stock: "Rupture de stock",
+    product_details: "Détails",
+    product_description: "Description",
+    product_related: "Produits similaires",
+    product_select_color: "Veuillez choisir une couleur",
+    product_select_size: "Veuillez choisir une taille",
+
+    // Cart
+    cart_title: "Mon panier",
+    cart_empty: "Votre panier est vide",
+    cart_empty_cta: "Continuer mes achats",
+    cart_subtotal: "Sous-total",
+    cart_shipping: "Livraison",
+    cart_total: "Total",
+    cart_checkout: "Passer la commande",
+    cart_remove: "Retirer",
+    cart_free_shipping_notice: "Livraison gratuite dès",
+
+    // Checkout
+    checkout_title: "Finaliser la commande",
+    checkout_customer_info: "Vos informations",
+    checkout_full_name: "Nom complet",
+    checkout_phone: "Téléphone",
+    checkout_wilaya: "Wilaya",
+    checkout_city: "Commune",
+    checkout_address: "Adresse complète",
+    checkout_notes: "Remarques (optionnel)",
+    checkout_delivery_type: "Type de livraison",
+    checkout_delivery_home: "À domicile",
+    checkout_delivery_office: "Point relais (bureau)",
+    checkout_summary: "Résumé de la commande",
+    checkout_submit: "Confirmer la commande",
+    checkout_submitting: "Envoi en cours...",
+    checkout_payment_notice: "Paiement en espèces à la livraison uniquement",
+    checkout_select_wilaya: "Sélectionnez votre wilaya",
+
+    // Order confirmation
+    confirmation_title: "Commande confirmée !",
+    confirmation_subtitle: "Merci pour votre confiance",
+    confirmation_number: "Numéro de commande",
+    confirmation_message: "Notre équipe vous contactera bientôt pour confirmer la livraison.",
+    confirmation_back_home: "Retour à l'accueil",
+    confirmation_track: "Suivre ma commande",
+
+    // Order tracking
+    track_title: "Suivre ma commande",
+    track_input_placeholder: "Numéro de commande (ex: AM-20260101-AB3XZ)",
+    track_submit: "Rechercher",
+    track_not_found: "Commande introuvable. Vérifiez le numéro.",
+    track_status_pending: "En attente",
+    track_status_confirmed: "Confirmée",
+    track_status_shipped: "Expédiée",
+    track_status_delivered: "Livrée",
+    track_status_cancelled: "Annulée",
+
+    // Errors
+    error_generic: "Une erreur est survenue. Veuillez réessayer.",
+    error_cart_empty: "Votre panier est vide.",
+    error_product_unavailable: "Un produit de votre panier n'est plus disponible.",
+    error_stock: "Stock insuffisant pour un des articles sélectionnés.",
+    error_wilaya_disabled: "La livraison n'est pas disponible pour cette wilaya actuellement.",
+    error_invalid_phone: "Numéro de téléphone invalide.",
+    error_required_field: "Ce champ est requis.",
+
+    // Admin - shared
+    admin_login_title: "Connexion administrateur",
+    admin_email: "Email",
+    admin_password: "Mot de passe",
+    admin_login_submit: "Se connecter",
+    admin_login_error: "Email ou mot de passe incorrect",
+    admin_logout: "Déconnexion",
+    admin_nav_dashboard: "Tableau de bord",
+    admin_nav_products: "Produits",
+    admin_nav_categories: "Catégories",
+    admin_nav_orders: "Commandes",
+    admin_nav_delivery: "Tarifs de livraison",
+    admin_nav_reviews: "Avis clients",
+    admin_save: "Enregistrer",
+    admin_cancel: "Annuler",
+    admin_delete: "Supprimer",
+    admin_edit: "Modifier",
+    admin_add: "Ajouter",
+    admin_confirm_delete: "Confirmer la suppression ?",
+    admin_search_placeholder: "Rechercher...",
+
+    // Admin - dashboard
+    admin_dashboard_title: "Tableau de bord",
+    admin_dashboard_total_orders: "Commandes totales",
+    admin_dashboard_pending_orders: "En attente",
+    admin_dashboard_revenue: "Chiffre d'affaires",
+    admin_dashboard_products: "Produits actifs",
+    admin_dashboard_recent_orders: "Commandes récentes",
+
+    // Admin - products
+    admin_products_title: "Produits",
+    admin_product_name_fr: "Nom (Français)",
+    admin_product_name_ar: "Nom (Arabe)",
+    admin_product_description_fr: "Description (Français)",
+    admin_product_description_ar: "Description (Arabe)",
+    admin_product_price: "Prix",
+    admin_product_compare_price: "Prix barré",
+    admin_product_stock: "Stock",
+    admin_product_category: "Catégorie",
+    admin_product_status: "Statut",
+    admin_product_status_active: "Actif",
+    admin_product_status_draft: "Brouillon",
+    admin_product_featured: "Mis en avant",
+    admin_product_images: "Images",
+    admin_product_colors: "Couleurs (séparées par virgule)",
+    admin_product_sizes: "Tailles (séparées par virgule)",
+    admin_product_upload: "Téléverser une image",
+
+    // Admin - categories
+    admin_categories_title: "Catégories",
+    admin_category_name_fr: "Nom (Français)",
+    admin_category_name_ar: "Nom (Arabe)",
+
+    // Admin - orders
+    admin_orders_title: "Commandes",
+    admin_order_number: "N° Commande",
+    admin_order_customer: "Client",
+    admin_order_phone: "Téléphone",
+    admin_order_wilaya: "Wilaya",
+    admin_order_total: "Total",
+    admin_order_status: "Statut",
+    admin_order_date: "Date",
+    admin_order_filter_all: "Tous les statuts",
+    admin_order_detail_title: "Détail de la commande",
+    admin_order_items: "Articles commandés",
+    admin_order_update_status: "Mettre à jour le statut",
+
+    // Admin - delivery
+    admin_delivery_title: "Tarifs de livraison",
+    admin_delivery_wilaya: "Wilaya",
+    admin_delivery_home_price: "Prix domicile",
+    admin_delivery_office_price: "Prix bureau",
+    admin_delivery_active: "Active",
+
+    // Admin - reviews
+    admin_reviews_title: "Avis clients",
+    admin_review_client_name: "Nom du client",
+    admin_review_stars: "Note (étoiles)",
+    admin_review_text: "Avis",
+    admin_review_image: "Photo (optionnel)",
+    admin_review_active: "Publié",
+
+    // Misc
+    not_found_title: "Page introuvable",
+    not_found_message: "La page que vous cherchez n'existe pas.",
+    not_found_back: "Retour à l'accueil",
+    loading: "Chargement...",
+    language_fr: "Français",
+    language_ar: "العربية",
+    theme_light: "Clair",
+    theme_dark: "Sombre",
+    currency_da: "DA",
+  },
+  ar: {
+    // Brand
+    brand_name: "أوتو ماركت",
+    brand_tagline: "قطع غيار وإكسسوارات السيارات، توصيل لباب المنزل",
+
+    // Nav
+    nav_home: "الرئيسية",
+    nav_shop: "المتجر",
+    nav_categories: "الفئات",
+    nav_track_order: "تتبع طلبيتي",
+    nav_cart: "السلة",
+    nav_search_placeholder: "ابحث عن قطعة أو إكسسوار...",
+
+    // Hero
+    hero_badge: "توصيل الدفع عند الاستلام في 58 ولاية",
+    hero_title_line1: "جهّز سيارتك",
+    hero_title_line2: "بأناقة واحترافية",
+    hero_subtitle:
+      "آلاف القطع والإكسسوارات المضمونة، مع الدفع نقداً عند الاستلام في جميع أنحاء الجزائر.",
+    hero_cta_shop: "تصفح المتجر",
+    hero_cta_categories: "عرض الفئات",
+    hero_stat_products: "منتج",
+    hero_stat_wilayas: "ولاية نوصل إليها",
+    hero_stat_clients: "عميل راضٍ",
+    hero_stat_rating: "متوسط التقييم",
+    hero_paint_blue: "أزرق",
+    hero_paint_green: "أخضر",
+    hero_paint_graphite: "رمادي غرافيت",
+
+    // Trust badges
+    trust_cod: "الدفع عند الاستلام",
+    trust_cod_desc: "ادفع نقداً عند استلام طلبك",
+    trust_delivery: "توصيل سريع",
+    trust_delivery_desc: "في كل الجزائر، من 24 إلى 72 ساعة",
+    trust_quality: "جودة مضمونة",
+    trust_quality_desc: "قطع مفحوصة ومختبرة",
+    trust_support: "دعم متجاوب",
+    trust_support_desc: "فريق في خدمتك دائماً",
+
+    // How it works
+    how_title: "كيف تطلب",
+    how_subtitle: "الطلب بسيط وسريع وبدون أي مخاطرة",
+    how_step1_title: "اختر منتجاتك",
+    how_step1_desc: "تصفح الكتالوج وأضف المنتجات إلى السلة",
+    how_step2_title: "أكّد طلبيتك",
+    how_step2_desc: "أدخل ولايتك وعنوان التوصيل",
+    how_step3_title: "ادفع عند الاستلام",
+    how_step3_desc: "ادفع نقداً فقط عند استلام الطرد",
+
+    // Categories
+    categories_title: "فئاتنا",
+    categories_subtitle: "اعثر على ما تحتاجه بالضبط",
+
+    // Featured products
+    featured_title: "المنتجات الأكثر طلباً",
+    featured_subtitle: "أكثر المنتجات طلباً هذا الأسبوع",
+    view_all: "عرض الكل",
+
+    // Reviews
+    reviews_title: "ماذا يقول عملاؤنا",
+    reviews_subtitle: "آلاف العملاء الراضين عبر الجزائر",
+
+    // CTA banner
+    cta_banner_title: "مستعد لتجهيز سيارتك؟",
+    cta_banner_subtitle: "توصيل سريع، دفع عند الاستلام، رضاكم مضمون",
+    cta_banner_button: "اطلب الآن",
+
+    // Footer
+    footer_about: "أوتو ماركت هو متجرك لقطع غيار وإكسسوارات السيارات في الجزائر، مع الدفع عند الاستلام.",
+    footer_links: "روابط سريعة",
+    footer_help: "المساعدة",
+    footer_contact: "اتصل بنا",
+    footer_faq: "الأسئلة الشائعة",
+    footer_delivery_info: "معلومات التوصيل",
+    footer_rights: "جميع الحقوق محفوظة.",
+
+    // Shop
+    shop_title: "المتجر",
+    shop_filter_category: "الفئة",
+    shop_filter_all: "كل الفئات",
+    shop_sort: "ترتيب حسب",
+    shop_sort_newest: "الأحدث",
+    shop_sort_price_asc: "السعر تصاعدي",
+    shop_sort_price_desc: "السعر تنازلي",
+    shop_no_results: "لا توجد منتجات",
+    shop_results_count: "منتج موجود",
+
+    // Product
+    product_add_to_cart: "أضف إلى السلة",
+    product_added: "تمت الإضافة",
+    product_buy_now: "اطلب الآن",
+    product_color: "اللون",
+    product_size: "المقاس",
+    product_quantity: "الكمية",
+    product_in_stock: "متوفر",
+    product_low_stock: "كمية محدودة",
+    product_out_of_stock: "غير متوفر",
+    product_details: "التفاصيل",
+    product_description: "الوصف",
+    product_related: "منتجات مشابهة",
+    product_select_color: "الرجاء اختيار لون",
+    product_select_size: "الرجاء اختيار مقاس",
+
+    // Cart
+    cart_title: "سلتي",
+    cart_empty: "سلتك فارغة",
+    cart_empty_cta: "متابعة التسوق",
+    cart_subtotal: "المجموع الفرعي",
+    cart_shipping: "التوصيل",
+    cart_total: "المجموع الكلي",
+    cart_checkout: "إتمام الطلب",
+    cart_remove: "إزالة",
+    cart_free_shipping_notice: "توصيل مجاني ابتداءً من",
+
+    // Checkout
+    checkout_title: "إتمام الطلب",
+    checkout_customer_info: "معلوماتك",
+    checkout_full_name: "الاسم الكامل",
+    checkout_phone: "رقم الهاتف",
+    checkout_wilaya: "الولاية",
+    checkout_city: "البلدية",
+    checkout_address: "العنوان الكامل",
+    checkout_notes: "ملاحظات (اختياري)",
+    checkout_delivery_type: "نوع التوصيل",
+    checkout_delivery_home: "إلى المنزل",
+    checkout_delivery_office: "نقطة استلام (مكتب)",
+    checkout_summary: "ملخص الطلب",
+    checkout_submit: "تأكيد الطلب",
+    checkout_submitting: "جاري الإرسال...",
+    checkout_payment_notice: "الدفع نقداً عند الاستلام فقط",
+    checkout_select_wilaya: "اختر ولايتك",
+
+    // Order confirmation
+    confirmation_title: "تم تأكيد طلبك!",
+    confirmation_subtitle: "شكراً لثقتكم بنا",
+    confirmation_number: "رقم الطلب",
+    confirmation_message: "سيتصل بكم فريقنا قريباً لتأكيد التوصيل.",
+    confirmation_back_home: "العودة إلى الرئيسية",
+    confirmation_track: "تتبع طلبيتي",
+
+    // Order tracking
+    track_title: "تتبع طلبيتي",
+    track_input_placeholder: "رقم الطلب (مثال: AM-20260101-AB3XZ)",
+    track_submit: "بحث",
+    track_not_found: "الطلب غير موجود. تحقق من الرقم.",
+    track_status_pending: "قيد الانتظار",
+    track_status_confirmed: "مؤكد",
+    track_status_shipped: "تم الشحن",
+    track_status_delivered: "تم التوصيل",
+    track_status_cancelled: "ملغى",
+
+    // Errors
+    error_generic: "حدث خطأ. الرجاء المحاولة مرة أخرى.",
+    error_cart_empty: "سلتك فارغة.",
+    error_product_unavailable: "أحد المنتجات في سلتك لم يعد متوفراً.",
+    error_stock: "الكمية المتوفرة غير كافية لأحد المنتجات المختارة.",
+    error_wilaya_disabled: "التوصيل غير متوفر حالياً لهذه الولاية.",
+    error_invalid_phone: "رقم الهاتف غير صحيح.",
+    error_required_field: "هذا الحقل مطلوب.",
+
+    // Admin - shared
+    admin_login_title: "تسجيل دخول المسؤول",
+    admin_email: "البريد الإلكتروني",
+    admin_password: "كلمة المرور",
+    admin_login_submit: "تسجيل الدخول",
+    admin_login_error: "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+    admin_logout: "تسجيل الخروج",
+    admin_nav_dashboard: "لوحة التحكم",
+    admin_nav_products: "المنتجات",
+    admin_nav_categories: "الفئات",
+    admin_nav_orders: "الطلبات",
+    admin_nav_delivery: "أسعار التوصيل",
+    admin_nav_reviews: "آراء العملاء",
+    admin_save: "حفظ",
+    admin_cancel: "إلغاء",
+    admin_delete: "حذف",
+    admin_edit: "تعديل",
+    admin_add: "إضافة",
+    admin_confirm_delete: "تأكيد الحذف؟",
+    admin_search_placeholder: "بحث...",
+
+    // Admin - dashboard
+    admin_dashboard_title: "لوحة التحكم",
+    admin_dashboard_total_orders: "إجمالي الطلبات",
+    admin_dashboard_pending_orders: "قيد الانتظار",
+    admin_dashboard_revenue: "الإيرادات",
+    admin_dashboard_products: "المنتجات النشطة",
+    admin_dashboard_recent_orders: "الطلبات الأخيرة",
+
+    // Admin - products
+    admin_products_title: "المنتجات",
+    admin_product_name_fr: "الاسم (فرنسي)",
+    admin_product_name_ar: "الاسم (عربي)",
+    admin_product_description_fr: "الوصف (فرنسي)",
+    admin_product_description_ar: "الوصف (عربي)",
+    admin_product_price: "السعر",
+    admin_product_compare_price: "السعر قبل التخفيض",
+    admin_product_stock: "المخزون",
+    admin_product_category: "الفئة",
+    admin_product_status: "الحالة",
+    admin_product_status_active: "نشط",
+    admin_product_status_draft: "مسودة",
+    admin_product_featured: "مميز",
+    admin_product_images: "الصور",
+    admin_product_colors: "الألوان (مفصولة بفاصلة)",
+    admin_product_sizes: "المقاسات (مفصولة بفاصلة)",
+    admin_product_upload: "رفع صورة",
+
+    // Admin - categories
+    admin_categories_title: "الفئات",
+    admin_category_name_fr: "الاسم (فرنسي)",
+    admin_category_name_ar: "الاسم (عربي)",
+
+    // Admin - orders
+    admin_orders_title: "الطلبات",
+    admin_order_number: "رقم الطلب",
+    admin_order_customer: "العميل",
+    admin_order_phone: "الهاتف",
+    admin_order_wilaya: "الولاية",
+    admin_order_total: "المجموع",
+    admin_order_status: "الحالة",
+    admin_order_date: "التاريخ",
+    admin_order_filter_all: "كل الحالات",
+    admin_order_detail_title: "تفاصيل الطلب",
+    admin_order_items: "المنتجات المطلوبة",
+    admin_order_update_status: "تحديث الحالة",
+
+    // Admin - delivery
+    admin_delivery_title: "أسعار التوصيل",
+    admin_delivery_wilaya: "الولاية",
+    admin_delivery_home_price: "سعر المنزل",
+    admin_delivery_office_price: "سعر المكتب",
+    admin_delivery_active: "مفعّل",
+
+    // Admin - reviews
+    admin_reviews_title: "آراء العملاء",
+    admin_review_client_name: "اسم العميل",
+    admin_review_stars: "التقييم (نجوم)",
+    admin_review_text: "الرأي",
+    admin_review_image: "صورة (اختياري)",
+    admin_review_active: "منشور",
+
+    // Misc
+    not_found_title: "الصفحة غير موجودة",
+    not_found_message: "الصفحة التي تبحث عنها غير موجودة.",
+    not_found_back: "العودة إلى الرئيسية",
+    loading: "جارٍ التحميل...",
+    language_fr: "Français",
+    language_ar: "العربية",
+    theme_light: "فاتح",
+    theme_dark: "داكن",
+    currency_da: "دج",
+  },
+} as const;
+
+export type TranslationKey = keyof typeof translations.fr;

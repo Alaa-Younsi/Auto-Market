@@ -1,0 +1,419 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root,
+html[data-theme="light"] {
+  color-scheme: light;
+  --c-bg: 247 249 252;
+  --c-panel: 255 255 255;
+  --c-panel-2: 240 244 250;
+  --c-line: 223 230 240;
+  --c-ink: 15 23 42;
+  --c-muted: 100 112 133;
+  --c-brand: 33 96 235;
+  --c-brand-light: 96 148 255;
+  --c-brand-dark: 22 68 176;
+  --c-green: 21 160 89;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --c-bg: 8 13 24;
+  --c-panel: 14 20 34;
+  --c-panel-2: 19 27 44;
+  --c-line: 32 42 62;
+  --c-ink: 240 244 250;
+  --c-muted: 143 156 178;
+  --c-brand: 66 133 255;
+  --c-brand-light: 120 168 255;
+  --c-brand-dark: 33 96 235;
+  --c-green: 46 197 120;
+}
+
+* {
+  border-color: rgb(var(--c-line));
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background-color: rgb(var(--c-bg));
+  color: rgb(var(--c-ink));
+  font-family: "Inter", "Cairo", sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+html[dir="rtl"] body {
+  font-family: "Cairo", "Inter", sans-serif;
+}
+
+::selection {
+  background-color: rgb(var(--c-brand) / 0.25);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: rgb(var(--c-panel-2));
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--c-brand) / 0.4);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--c-brand) / 0.65);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---- fx utility classes ---- */
+
+.fx-sweep {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.fx-sweep::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    115deg,
+    transparent 20%,
+    rgb(255 255 255 / 0.35) 45%,
+    transparent 70%
+  );
+  transform: translateX(-120%);
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+.fx-sweep:hover::before {
+  transform: translateX(120%);
+}
+
+.fx-lift {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.35s ease, border-color 0.35s ease;
+}
+.fx-lift:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 0 0 1px rgb(var(--c-brand) / 0.25),
+    0 20px 40px -16px rgb(var(--c-brand) / 0.35);
+  border-color: rgb(var(--c-brand) / 0.4);
+}
+
+.fx-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgb(var(--c-panel-2)) 25%,
+    rgb(var(--c-line)) 37%,
+    rgb(var(--c-panel-2)) 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 2.5s ease-in-out infinite;
+}
+
+.fx-pulse-dot {
+  position: relative;
+}
+.fx-pulse-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: rgb(var(--c-green));
+  animation: pulse-ring 1.8s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
+.fx-gradient-text {
+  background: linear-gradient(90deg, rgb(var(--c-brand)), rgb(var(--c-green)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---- car-themed motion ----
+   Keyframes live here rather than in tailwind.config.js because they're driven
+   by these .fx-* classes, not by `animate-*` utilities — Tailwind only emits a
+   config keyframe when its matching animation utility appears in the markup. */
+
+/* Lane markings sliding past, as seen from a moving car. */
+.fx-road-dash {
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgb(var(--c-brand) / 0.5) 0 22px,
+    transparent 22px 46px
+  );
+  animation: road-dash 1.6s linear infinite;
+}
+@keyframes road-dash {
+  to {
+    background-position-x: 46px;
+  }
+}
+html[dir="rtl"] .fx-road-dash {
+  animation-name: road-dash-rtl;
+}
+@keyframes road-dash-rtl {
+  to {
+    background-position-x: -46px;
+  }
+}
+
+/* A headlight running the length of the divider. `left` is fixed at 0/auto;
+   the travel itself is a `transform`, so this is compositor-only. */
+.fx-road-runner {
+  left: 0;
+  transform: translateX(-4rem);
+  animation: road-runner 5.5s ease-in-out infinite;
+}
+@keyframes road-runner {
+  0% {
+    transform: translateX(-4rem);
+    opacity: 0;
+  }
+  12%,
+  88% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(calc(min(100vw, 80rem) + 4rem));
+    opacity: 0;
+  }
+}
+html[dir="rtl"] .fx-road-runner {
+  left: auto;
+  right: 0;
+  transform: translateX(4rem);
+  animation-name: road-runner-rtl;
+}
+@keyframes road-runner-rtl {
+  0% {
+    transform: translateX(4rem);
+    opacity: 0;
+  }
+  12%,
+  88% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(calc(-1 * (min(100vw, 80rem) + 4rem)));
+    opacity: 0;
+  }
+}
+
+/* A small car silhouette driving the same span as the runner above. */
+.fx-mini-car {
+  position: absolute;
+  left: 0;
+  animation: fx-mini-drive 8s linear infinite;
+}
+@keyframes fx-mini-drive {
+  from {
+    transform: translateX(-64px);
+  }
+  to {
+    transform: translateX(calc(min(100vw, 80rem) + 64px));
+  }
+}
+html[dir="rtl"] .fx-mini-car {
+  left: auto;
+  right: 0;
+  animation-name: fx-mini-drive-rtl;
+}
+@keyframes fx-mini-drive-rtl {
+  from {
+    transform: translateX(64px);
+  }
+  to {
+    transform: translateX(calc(-1 * (min(100vw, 80rem) + 64px)));
+  }
+}
+
+/* Light bars raking across a surface, like a car passing under street lamps. */
+.fx-beams {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.fx-beams::before,
+.fx-beams::after {
+  content: "";
+  position: absolute;
+  top: -30%;
+  bottom: -30%;
+  width: 14%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(255 255 255 / 0.18),
+    transparent
+  );
+  filter: blur(2px);
+  animation: beam 8s linear infinite;
+}
+.fx-beams::after {
+  width: 8%;
+  animation-duration: 11s;
+  animation-delay: 2.5s;
+}
+@keyframes beam {
+  0% {
+    transform: translateX(-140%) skewX(-18deg);
+  }
+  100% {
+    transform: translateX(820%) skewX(-18deg);
+  }
+}
+
+/* Streaks rushing past the window. */
+.fx-streak {
+  left: -20%;
+  animation: streak 3.2s ease-in-out infinite;
+}
+@keyframes streak {
+  0% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  15%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(120vw);
+    opacity: 0;
+  }
+}
+html[dir="rtl"] .fx-streak {
+  left: auto;
+  right: -20%;
+  animation-name: streak-rtl;
+}
+@keyframes streak-rtl {
+  0% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  15%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-120vw);
+    opacity: 0;
+  }
+}
+
+/* Chequered flag, for the end of the race (order placed). */
+.fx-checker {
+  background-image: repeating-conic-gradient(
+    rgb(var(--c-ink) / 0.14) 0% 25%,
+    transparent 0% 50%
+  );
+  background-size: 14px 14px;
+}
+
+/* Skips paint (not layout/intersection) for below-fold sections until they're
+   near the viewport — never applied to the hero. */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 640px;
+}
+
+/* Form-error shake, replayed by re-keying the element on the error message. */
+@keyframes fx-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-5px);
+  }
+  40%,
+  80% {
+    transform: translateX(5px);
+  }
+}
+.fx-shake {
+  animation: fx-shake 0.35s ease-in-out;
+}
+
+/* Rotating conic-gradient ring, hover-only so the per-frame gradient repaint
+   only happens while a pointer is actually over the card. Browsers without
+   @property support simply show no ring (var() falls back to invalid, the
+   background is dropped) — a safe, silent no-op, not a broken layout. */
+@property --fx-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+@keyframes fx-conic-spin {
+  to {
+    --fx-angle: 360deg;
+  }
+}
+@media (hover: hover) {
+  .fx-conic-border {
+    position: relative;
+  }
+  .fx-conic-border::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    padding: 1px;
+    border-radius: inherit;
+    background: conic-gradient(
+      from var(--fx-angle),
+      transparent 0 72%,
+      rgb(var(--c-brand) / 0.9) 85%,
+      rgb(var(--c-green) / 0.6) 93%,
+      transparent
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+  .fx-conic-border:hover::before {
+    opacity: 1;
+    animation: fx-conic-spin 2.4s linear infinite;
+  }
+}
+
+/* Symmetric fade at both edges of a marquee track. */
+.fx-marquee-mask {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent);
+}
+
+/* Quick scale-in pop, e.g. for a badge that just appeared. */
+@keyframes fx-pop {
+  from {
+    transform: scale(0.85);
+    opacity: 0.4;
+  }
+}
+.fx-pop {
+  animation: fx-pop 0.25s ease-out both;
+}

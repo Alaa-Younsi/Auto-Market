@@ -1,0 +1,31 @@
+hero-car.glb
+============
+
+Model:    "Sports Car"
+Author:   Quaternius (https://poly.pizza/u/Quaternius)
+Source:   https://poly.pizza/m/1mkmFkAz5v
+License:  CC0 1.0 Universal (Public Domain Dedication)
+          https://creativecommons.org/publicdomain/zero/1.0/
+
+CC0 places the work in the public domain. It may be used for any purpose,
+including commercial use, with no attribution required. This file is kept as a
+courtesy credit and as a provenance record.
+
+Processing applied (via @gltf-transform/cli):
+  dedup -> weld -> prune -> quantize (position 14-bit, normal 10-bit)
+
+  Original:  175.1 KB (float32 POSITION + NORMAL, unwelded)
+  Optimised: 124.9 KB raw / ~27 KB over the wire (brotli)
+
+Draco compression was deliberately NOT applied: at 3,148 triangles the Draco
+decoder (~200 KB of JS + WASM) costs far more than the geometry it would save.
+KHR_mesh_quantization is decoded natively by three.js GLTFLoader with no extra
+runtime payload.
+
+Geometry facts relied on by src/components/effects/car3d/constants.ts:
+  - Model faces +Z (headlights at z = +1.72); the scene rotates it 180 deg so it
+    faces -Z, matching the camera framing inherited from the old procedural car.
+  - Bounding box: 1.871 (x) x 1.203 (y) x 3.927 (z); min y = -0.0157.
+  - Wheel nodes are pre-pivoted at their axle centres by the quantize pass, so
+    rotating a wheel node about its local X axis spins it about the axle.
+  - three.js strips dots from glTF node names: "Cube.006" -> "Cube006".
