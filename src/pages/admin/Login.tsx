@@ -24,7 +24,9 @@ export default function AdminLogin() {
     setError(null);
     const { error: signInError } = await signIn(email, password);
     if (signInError) {
-      setError(t("admin_login_error"));
+      // In dev, show Supabase's real message (e.g. "Email not confirmed")
+      // instead of the generic one — makes local auth issues diagnosable.
+      setError(import.meta.env.DEV ? signInError : t("admin_login_error"));
     }
     setSubmitting(false);
   }
