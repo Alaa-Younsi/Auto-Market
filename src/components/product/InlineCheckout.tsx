@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -42,12 +42,14 @@ export function InlineCheckout({ product, quantity, color, size }: InlineCheckou
     defaultValues: { delivery_type: "home" },
   });
 
-  useEffect(() => {
+  // This form is visible on every product-page load, so firing on mount would
+  // overcount checkout intent. Track from the first real interaction instead:
+  // focus events bubble, so one handler on the <form> catches any field.
+  function handleFormFocus() {
     if (trackedProductId.current === product.id) return;
     trackedProductId.current = product.id;
-    trackInitiateCheckout(product.id, product.price * quantity);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [product.id]);
+    trackInitiateCheckout(product.id, Number(product.price) * quantity);
+  }
 
   const selectedWilaya = watch("wilaya");
   const selectedWilayaPrice = deliveryPrices.find((dp) => dp.wilaya === selectedWilaya);
@@ -57,7 +59,7 @@ export function InlineCheckout({ product, quantity, color, size }: InlineCheckou
         ? selectedWilayaPrice.office_price
         : selectedWilayaPrice.home_price
       : 0;
-  const subtotal = product.price * quantity;
+  const subtotal = Number(product.price) * quantity;
 
   async function onSubmit(values: CheckoutFormValues) {
     if (isSpam(values.website)) return;
@@ -88,7 +90,7 @@ export function InlineCheckout({ product, quantity, color, size }: InlineCheckou
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} onFocus={handleFormFocus} className="space-y-4">
       <CheckoutFields
         register={register}
         errors={errors}

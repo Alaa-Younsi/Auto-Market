@@ -6,6 +6,7 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useCartStore } from "@/store/cart";
 import { ScrollProgress } from "@/components/effects/ScrollProgress";
+import { BrandMark } from "@/components/ui/BrandMark";
 import { cn } from "@/lib/utils";
 
 export function Header() {
@@ -46,9 +47,7 @@ export function Header() {
     >
       <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
         <Link to="/" className="flex shrink-0 items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-white font-heading font-extrabold shadow-glow">
-            A
-          </span>
+          <BrandMark />
           <span className="font-heading text-lg font-extrabold text-ink">
             {t("brand_name")}
           </span>

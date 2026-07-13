@@ -20,6 +20,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useTheme } from "@/theme/ThemeProvider";
 import { TachometerLoader } from "@/components/effects/TachometerLoader";
+import { BrandMark } from "@/components/ui/BrandMark";
 import { cn } from "@/lib/utils";
 import type { TranslationKey } from "@/i18n/translations";
 
@@ -46,9 +47,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-2 px-5 py-5">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-white font-heading font-extrabold">
-          A
-        </span>
+        <BrandMark className="shadow-none" />
         <span className="font-heading text-base font-extrabold text-ink">
           {t("brand_name")}
         </span>

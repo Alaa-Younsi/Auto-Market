@@ -8,7 +8,7 @@ import { useTheme } from "@/theme/ThemeProvider";
 import { useMediaFlags } from "@/hooks/useMediaFlags";
 
 const FOG_COLORS = {
-  light: "#f7f9fc",
+  light: "#e2e7f0",
   dark: "#080d18",
 };
 

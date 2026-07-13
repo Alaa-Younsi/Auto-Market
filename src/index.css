@@ -5,12 +5,13 @@
 :root,
 html[data-theme="light"] {
   color-scheme: light;
-  --c-bg: 247 249 252;
-  --c-panel: 255 255 255;
-  --c-panel-2: 240 244 250;
-  --c-line: 223 230 240;
+  /* Deliberately dimmed: no pure whites, gray-blue surfaces easy on the eyes. */
+  --c-bg: 226 231 240;
+  --c-panel: 241 244 249;
+  --c-panel-2: 215 222 233;
+  --c-line: 197 206 221;
   --c-ink: 15 23 42;
-  --c-muted: 100 112 133;
+  --c-muted: 88 100 122;
   --c-brand: 33 96 235;
   --c-brand-light: 96 148 255;
   --c-brand-dark: 22 68 176;
@@ -103,8 +104,21 @@ html[dir="rtl"] body {
   transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
   pointer-events: none;
 }
-.fx-sweep:hover::before {
+.fx-sweep:hover::before,
+.group:hover .fx-sweep::before {
   transform: translateX(120%);
+}
+
+/* 3D barrel roll of the logo mark on hover, like a wheel spinning up. */
+.fx-logo-spin {
+  perspective: 400px;
+}
+.fx-logo-spin img {
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-style: preserve-3d;
+}
+.fx-logo-spin:hover img {
+  transform: rotateY(360deg);
 }
 
 .fx-lift {

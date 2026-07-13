@@ -89,7 +89,7 @@ export default function Landing() {
 
         {/* Copy. The wrapper is click-through so drags over the empty half of
             the hero reach OrbitControls; interactive children opt back in. */}
-        <div className="pointer-events-none relative z-10 mx-auto max-w-7xl px-4 pb-[330px] pt-14 sm:px-6 sm:pb-[370px] lg:px-8 lg:py-24 lg:pb-24">
+        <div className="pointer-events-none relative z-10 mx-auto max-w-7xl px-4 pb-[330px] pt-8 sm:px-6 sm:pb-[370px] lg:px-8 lg:pb-24 lg:pt-10">
           <motion.div
             className="max-w-xl lg:max-w-[46%]"
             initial={{ x: lang === "ar" ? 24 : -24 }}

@@ -3,6 +3,7 @@ import { Mail, MapPin, Phone } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { RoadDivider } from "@/components/effects/RoadDivider";
 import { FacebookIcon, InstagramIcon } from "@/components/ui/SocialIcons";
+import { BrandMark } from "@/components/ui/BrandMark";
 
 export function Footer() {
   const { t } = useLanguage();
@@ -16,9 +17,7 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <Link to="/" className="mb-3 flex items-center gap-2">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-white font-heading font-extrabold">
-                A
-              </span>
+              <BrandMark className="shadow-none" />
               <span className="font-heading text-lg font-extrabold text-ink">
                 {t("brand_name")}
               </span>

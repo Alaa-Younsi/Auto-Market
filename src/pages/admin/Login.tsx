@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { BentoPanel } from "@/components/ui/BentoPanel";
+import { BrandMark } from "@/components/ui/BrandMark";
 
 export default function AdminLogin() {
   const { t } = useLanguage();
@@ -35,9 +36,7 @@ export default function AdminLogin() {
     <div className="flex min-h-screen items-center justify-center bg-bg px-4">
       <BentoPanel className="w-full max-w-sm p-7">
         <div className="mb-6 text-center">
-          <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand text-white font-heading text-xl font-extrabold shadow-glow">
-            A
-          </span>
+          <BrandMark className="mx-auto mb-3 h-12 w-12 rounded-2xl" />
           <h1 className="font-heading text-lg font-extrabold text-ink">
             {t("admin_login_title")}
           </h1>

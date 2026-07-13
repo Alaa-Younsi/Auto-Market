@@ -35,7 +35,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
       imageUrl: image,
       stock: product.stock,
     });
-    trackAddToCart(product.id, product.price);
+    trackAddToCart(product.id, Number(product.price));
   }
 
   return (
@@ -56,7 +56,9 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
           to={`/product/${product.slug}`}
           className="fx-lift group block overflow-hidden rounded-2xl border border-line bg-panel"
         >
-          <div className="relative aspect-square overflow-hidden bg-panel-2">
+          {/* fx-sweep here fires on .group hover: a headlight glare passes
+              over the product photo as the card lifts. */}
+          <div className="fx-sweep relative aspect-square overflow-hidden bg-panel-2">
             {image ? (
               <img
                 src={image}

@@ -69,7 +69,7 @@ export default function Product() {
   useEffect(() => {
     if (!product || trackedId.current === product.id) return;
     trackedId.current = product.id;
-    trackViewContent(product.id, product.price);
+    trackViewContent(product.id, Number(product.price));
   }, [product]);
 
   if (isLoading) {
@@ -128,7 +128,7 @@ export default function Product() {
       imageUrl: images[0]?.url ?? null,
       stock: product!.stock,
     });
-    trackAddToCart(product!.id, product!.price * quantity);
+    trackAddToCart(product!.id, Number(product!.price) * quantity);
     setAdded(true);
     if (addedTimeout.current) clearTimeout(addedTimeout.current);
     addedTimeout.current = setTimeout(() => setAdded(false), 1100);

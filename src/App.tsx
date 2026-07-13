@@ -1,15 +1,18 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, type ReactNode } from "react";
 import { Route, Routes } from "react-router-dom";
 import { StorefrontLayout } from "@/components/layout/StorefrontLayout";
 import { ScrollToTop } from "@/components/effects/ScrollToTop";
 import { PixelPageView } from "@/components/effects/PixelPageView";
 import { TachometerLoader } from "@/components/effects/TachometerLoader";
 import Landing from "@/pages/Landing";
-import Shop from "@/pages/Shop";
-import Product from "@/pages/Product";
-import Checkout from "@/pages/Checkout";
-import OrderConfirmation from "@/pages/OrderConfirmation";
-import NotFound from "@/pages/NotFound";
+
+// Landing stays eager (it's the entry page); everything else loads on demand
+// so the first paint doesn't pay for checkout forms or admin tables.
+const Shop = lazy(() => import("@/pages/Shop"));
+const Product = lazy(() => import("@/pages/Product"));
+const Checkout = lazy(() => import("@/pages/Checkout"));
+const OrderConfirmation = lazy(() => import("@/pages/OrderConfirmation"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const AdminLayout = lazy(() => import("@/pages/admin/AdminLayout"));
 const AdminLogin = lazy(() => import("@/pages/admin/Login"));
@@ -30,6 +33,21 @@ function AdminFallback() {
   );
 }
 
+/* Keeps header/footer in place while a storefront page chunk loads. */
+function page(element: ReactNode) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <TachometerLoader />
+        </div>
+      }
+    >
+      {element}
+    </Suspense>
+  );
+}
+
 export default function App() {
   return (
     <>
@@ -38,11 +56,11 @@ export default function App() {
       <Routes>
         <Route element={<StorefrontLayout />}>
           <Route index element={<Landing />} />
-          <Route path="shop" element={<Shop />} />
-          <Route path="product/:slug" element={<Product />} />
-          <Route path="checkout" element={<Checkout />} />
-          <Route path="order-confirmation/:orderNumber" element={<OrderConfirmation />} />
-          <Route path="*" element={<NotFound />} />
+          <Route path="shop" element={page(<Shop />)} />
+          <Route path="product/:slug" element={page(<Product />)} />
+          <Route path="checkout" element={page(<Checkout />)} />
+          <Route path="order-confirmation/:orderNumber" element={page(<OrderConfirmation />)} />
+          <Route path="*" element={page(<NotFound />)} />
         </Route>
 
         <Route
