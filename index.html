@@ -40,8 +40,14 @@
     />
     <meta name="twitter:image" content="https://automarket.dz/og-image.png" />
 
-    <!-- Hero 3D car model: fetched by a lazy chunk, so warm the cache early -->
-    <link rel="preload" href="/models/hero-car.glb" as="fetch" type="model/gltf-binary" crossorigin />
+    <!-- Supabase: the first product query and every product image come from
+         here, so pay the DNS/TLS cost up front instead of on first paint. -->
+    <link rel="preconnect" href="https://yijhcjjjizwdckrvoptc.supabase.co" crossorigin />
+
+    <!-- The hero car GLB is NOT preloaded here on purpose: index.html is served
+         for every route, so a blanket preload made /checkout and /admin download
+         122 KB they never use. HeroScene warms it instead, on the one page that
+         renders it. -->
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />

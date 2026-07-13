@@ -63,6 +63,21 @@ export function useProducts(options: UseProductsOptions = {}) {
   });
 }
 
+/** How many products the storefront actually lists. Head-only: counts rows, transfers none. */
+export function useProductsCount() {
+  return useQuery({
+    queryKey: ["products-count"],
+    queryFn: async (): Promise<number> => {
+      const { count, error } = await supabase
+        .from("products")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "active");
+      if (error) throw error;
+      return count ?? 0;
+    },
+  });
+}
+
 export function useProduct(slug: string | undefined) {
   return useQuery({
     queryKey: ["product", slug],

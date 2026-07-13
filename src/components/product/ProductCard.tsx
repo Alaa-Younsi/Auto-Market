@@ -65,8 +65,11 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
               <img
                 src={image}
                 alt={name}
+                width={800}
+                height={800}
                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                 loading="lazy"
+                decoding="async"
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-muted">

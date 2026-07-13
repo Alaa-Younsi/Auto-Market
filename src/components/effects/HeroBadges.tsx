@@ -18,7 +18,7 @@ export function HeroBadges() {
         animate={enableHeavyEffects ? { y: [0, -10, 0] } : undefined}
         transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
       >
-        <p className="fx-gradient-text font-heading text-xl font-extrabold">58</p>
+        <p className="fx-gradient-text font-heading text-xl font-extrabold">69</p>
         <p className="text-xs text-muted">{t("hero_stat_wilayas")}</p>
       </motion.div>
 

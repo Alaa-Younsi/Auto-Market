@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import type { MotionValue } from "framer-motion";
 import { HeroArt } from "./HeroArt";
 import { HeroBadges } from "./HeroBadges";
@@ -28,9 +28,27 @@ function HeroArtFallback() {
 }
 
 export function HeroScene({ sideOffset, scrollProgress }: HeroSceneProps) {
-  const webglSupported = useWebglSupport();
-  const { isCompact } = useMediaFlags();
+  const webglSupport = useWebglSupport();
+  const { isCompact, saveData } = useMediaFlags();
   const [paintColor, setPaintColor] = useState<string>(PAINT_SWATCHES[0].hex);
+
+  // The 3D scene is ~270 KB of JS plus the model. On Data Saver or a 2G-class
+  // connection that is the whole page budget, so those visitors get the 2D art.
+  const webglSupported = webglSupport && !saveData;
+
+  // Start the GLB download in parallel with the 3D chunk, but only on the page
+  // that actually renders it and only when WebGL is there to use it.
+  useEffect(() => {
+    if (!webglSupported) return;
+    const link = document.createElement("link");
+    link.rel = "preload";
+    link.as = "fetch";
+    link.type = "model/gltf-binary";
+    link.crossOrigin = "anonymous";
+    link.href = "/models/hero-car.glb";
+    document.head.appendChild(link);
+    return () => link.remove();
+  }, [webglSupported]);
 
   return (
     <div className="relative h-full w-full">

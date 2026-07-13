@@ -6,6 +6,7 @@ import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useDeliveryPrices } from "@/hooks/useDeliveryPrices";
 import { useHoneypot } from "@/hooks/useHoneypot";
+import { resolveShipping, useStoreSettings } from "@/hooks/useStoreSettings";
 import { useMediaFlags } from "@/hooks/useMediaFlags";
 import { useSeo } from "@/hooks/useSeo";
 import { useCartStore } from "@/store/cart";
@@ -36,6 +37,7 @@ export default function Checkout() {
   const discount = useCartStore((s) => s.discount());
   const clear = useCartStore((s) => s.clear);
   const { data: deliveryPrices = [] } = useDeliveryPrices();
+  const { data: storeSettings } = useStoreSettings();
   const { isSpam } = useHoneypot();
   const { prefersReducedMotion } = useMediaFlags();
 
@@ -65,11 +67,12 @@ export default function Checkout() {
 
   const selectedWilaya = watch("wilaya");
   const selectedWilayaPrice = deliveryPrices.find((dp) => dp.wilaya === selectedWilaya);
-  const shippingEstimate = selectedWilayaPrice
+  const wilayaFee = selectedWilayaPrice
     ? deliveryType === "office"
       ? selectedWilayaPrice.office_price
       : selectedWilayaPrice.home_price
-    : 0;
+    : undefined;
+  const shippingEstimate = resolveShipping(wilayaFee, subtotal - discount, storeSettings);
 
   if (items.length === 0) {
     return <Navigate to="/shop" replace />;
@@ -92,8 +95,6 @@ export default function Checkout() {
           customer_phone: values.customer_phone,
           wilaya: values.wilaya,
           city: values.city,
-          address: values.address,
-          notes: values.notes,
           delivery_type: deliveryType,
           language: lang,
         }
@@ -210,7 +211,14 @@ export default function Checkout() {
             )}
             <div className="flex justify-between text-muted">
               <span>{t("cart_shipping")}</span>
-              <span>{shippingEstimate > 0 ? formatPrice(shippingEstimate) : "—"}</span>
+              {/* No wilaya picked yet = unknown, not free. */}
+              <span className={wilayaFee !== undefined && shippingEstimate === 0 ? "font-semibold text-accent" : undefined}>
+                {wilayaFee === undefined
+                  ? "—"
+                  : shippingEstimate === 0
+                    ? t("cart_shipping_free")
+                    : formatPrice(shippingEstimate)}
+              </span>
             </div>
             <div className="flex justify-between border-t border-line pt-2 font-bold text-ink">
               <span>{t("cart_total")}</span>

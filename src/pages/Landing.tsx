@@ -11,7 +11,7 @@ import {
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useCategories } from "@/hooks/useCategories";
 import { useMediaFlags } from "@/hooks/useMediaFlags";
-import { useProducts } from "@/hooks/useProducts";
+import { useProducts, useProductsCount } from "@/hooks/useProducts";
 import { useReviews } from "@/hooks/useReviews";
 import { useSeo } from "@/hooks/useSeo";
 import { HeroScene } from "@/components/effects/HeroScene";
@@ -29,6 +29,7 @@ export default function Landing() {
   const { t, lang } = useLanguage();
   const { data: categories = [] } = useCategories();
   const { data: featured = [] } = useProducts({ featuredOnly: true });
+  const { data: productsCount = 0 } = useProductsCount();
   const { data: reviews = [] } = useReviews();
   const { enableHeavyEffects } = useMediaFlags();
 
@@ -60,10 +61,10 @@ export default function Landing() {
     suffix?: string;
     decimals?: number;
   }[] = [
-    { value: 1200, suffix: "+", label: t("hero_stat_products") },
-    { value: 58, label: t("hero_stat_wilayas") },
-    { value: 15, suffix: "K+", label: t("hero_stat_clients") },
-    { value: 4.8, decimals: 1, suffix: "/5", label: t("hero_stat_rating") },
+    { value: productsCount, label: t("hero_stat_products") },
+    { value: 69, label: t("hero_stat_wilayas") },
+    { value: 1000, suffix: "+", label: t("hero_stat_clients") },
+    { value: 4.9, decimals: 1, suffix: "/5", label: t("hero_stat_rating") },
   ];
 
   return (
@@ -234,7 +235,7 @@ export default function Landing() {
             </div>
 
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-              {featured.slice(0, 8).map((product, i) => (
+              {featured.slice(0, 4).map((product, i) => (
                 <ProductCard key={product.id} product={product} index={i} />
               ))}
             </div>

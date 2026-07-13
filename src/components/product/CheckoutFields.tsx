@@ -1,7 +1,6 @@
 import type { FieldErrors, UseFormRegister } from "react-hook-form";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { Input } from "@/components/ui/Input";
-import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
 import { cn } from "@/lib/utils";
 import type { CheckoutFormValues } from "@/lib/checkoutSchema";
@@ -72,14 +71,6 @@ export function CheckoutFields({
           {...register("city")}
         />
       </div>
-
-      <Textarea
-        placeholder={t("checkout_address")}
-        rows={2}
-        error={errText("address")}
-        {...register("address")}
-      />
-      <Textarea placeholder={t("checkout_notes")} rows={2} {...register("notes")} />
 
       <div>
         <p className="mb-2 text-sm font-semibold text-ink">{t("checkout_delivery_type")}</p>

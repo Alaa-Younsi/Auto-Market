@@ -56,6 +56,25 @@ html[dir="rtl"] body {
   background-color: rgb(var(--c-brand) / 0.25);
 }
 
+/* A select's popup is drawn by the OS, and on Android it opens as a full-screen
+   dialog that ignores the page's color-scheme — a white sheet over the dark
+   theme. Colouring the options themselves is what actually carries over. */
+option {
+  background-color: rgb(var(--c-panel));
+  color: rgb(var(--c-ink));
+}
+
+/* Number fields in narrow admin cells: the spinner buttons steal the digits. */
+.fx-no-spin {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+.fx-no-spin::-webkit-outer-spin-button,
+.fx-no-spin::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;

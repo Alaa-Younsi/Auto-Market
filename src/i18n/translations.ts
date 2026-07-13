@@ -12,7 +12,7 @@ export const translations = {
     nav_search_placeholder: "Rechercher une pièce, un accessoire...",
 
     // Hero
-    hero_badge: "Livraison COD dans les 58 wilayas",
+    hero_badge: "Livraison COD dans les 69 wilayas",
     hero_title_line1: "Équipez votre voiture",
     hero_title_line2: "comme un pro",
     hero_subtitle:
@@ -114,7 +114,7 @@ export const translations = {
     cart_total: "Total",
     cart_checkout: "Passer la commande",
     cart_remove: "Retirer",
-    cart_free_shipping_notice: "Livraison gratuite dès",
+    cart_shipping_free: "Offerte",
 
     // Checkout
     checkout_title: "Finaliser la commande",
@@ -123,8 +123,6 @@ export const translations = {
     checkout_phone: "Téléphone",
     checkout_wilaya: "Wilaya",
     checkout_city: "Commune",
-    checkout_address: "Adresse complète",
-    checkout_notes: "Remarques (optionnel)",
     checkout_delivery_type: "Type de livraison",
     checkout_delivery_home: "À domicile",
     checkout_delivery_office: "Point relais (bureau)",
@@ -156,6 +154,9 @@ export const translations = {
     error_wilaya_disabled: "La livraison n'est pas disponible pour cette wilaya actuellement.",
     error_invalid_phone: "Numéro de téléphone invalide.",
     error_required_field: "Ce champ est requis.",
+    error_invalid_input: "Vérifiez vos informations : nom, téléphone et commune.",
+    error_rate_limit:
+      "Trop de commandes depuis ce numéro. Patientez quelques minutes ou appelez-nous.",
 
     // Admin - shared
     admin_login_title: "Connexion administrateur",
@@ -230,6 +231,7 @@ export const translations = {
     admin_product_video: "Vidéo du produit",
     admin_upload_video: "Téléverser une vidéo",
     admin_video_hint: "MP4 ou WebM recommandé, taille raisonnable (< 50 Mo).",
+    admin_video_url_placeholder: "…ou collez une URL (Cloudinary, Bunny, etc.)",
     admin_publishing: "Publication",
     admin_remove: "Supprimer",
 
@@ -293,7 +295,7 @@ export const translations = {
     nav_search_placeholder: "ابحث عن قطعة أو إكسسوار...",
 
     // Hero
-    hero_badge: "توصيل الدفع عند الاستلام في 58 ولاية",
+    hero_badge: "توصيل الدفع عند الاستلام في 69 ولاية",
     hero_title_line1: "جهّز سيارتك",
     hero_title_line2: "بأناقة واحترافية",
     hero_subtitle:
@@ -395,7 +397,7 @@ export const translations = {
     cart_total: "المجموع الكلي",
     cart_checkout: "إتمام الطلب",
     cart_remove: "إزالة",
-    cart_free_shipping_notice: "توصيل مجاني ابتداءً من",
+    cart_shipping_free: "مجاني",
 
     // Checkout
     checkout_title: "إتمام الطلب",
@@ -404,8 +406,6 @@ export const translations = {
     checkout_phone: "رقم الهاتف",
     checkout_wilaya: "الولاية",
     checkout_city: "البلدية",
-    checkout_address: "العنوان الكامل",
-    checkout_notes: "ملاحظات (اختياري)",
     checkout_delivery_type: "نوع التوصيل",
     checkout_delivery_home: "إلى المنزل",
     checkout_delivery_office: "نقطة استلام (مكتب)",
@@ -437,6 +437,8 @@ export const translations = {
     error_wilaya_disabled: "التوصيل غير متوفر حالياً لهذه الولاية.",
     error_invalid_phone: "رقم الهاتف غير صحيح.",
     error_required_field: "هذا الحقل مطلوب.",
+    error_invalid_input: "تحقق من معلوماتك: الاسم، الهاتف والبلدية.",
+    error_rate_limit: "طلبات كثيرة من هذا الرقم. انتظر بضع دقائق أو اتصل بنا.",
 
     // Admin - shared
     admin_login_title: "تسجيل دخول المسؤول",
@@ -511,6 +513,7 @@ export const translations = {
     admin_product_video: "فيديو المنتج",
     admin_upload_video: "رفع فيديو",
     admin_video_hint: "يُفضّل MP4 أو WebM بحجم معقول (أقل من 50 م.ب).",
+    admin_video_url_placeholder: "…أو الصق رابط فيديو (Cloudinary، Bunny، إلخ)",
     admin_publishing: "النشر",
     admin_remove: "حذف",
 

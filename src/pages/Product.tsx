@@ -62,9 +62,37 @@ export default function Product() {
     };
   }, []);
 
+  const seoName = product ? (lang === "ar" ? product.name_ar : product.name_fr) : null;
+  const seoImage = product?.product_images?.[0]?.url;
+  const seoDescription = product
+    ? (lang === "ar" ? product.description_ar : product.description_fr) ?? undefined
+    : undefined;
+
   useSeo({
-    title: product ? `${lang === "ar" ? product.name_ar : product.name_fr} — ${t("brand_name")}` : t("brand_name"),
-    description: product ? (lang === "ar" ? product.description_ar ?? undefined : product.description_fr ?? undefined) : undefined,
+    title: seoName ? `${seoName} — ${t("brand_name")}` : t("brand_name"),
+    description: seoDescription,
+    image: seoImage,
+    jsonLd: product
+      ? {
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: seoName,
+          description: seoDescription,
+          image: product.product_images?.map((img) => img.url) ?? [],
+          sku: product.style_code ?? product.slug,
+          brand: { "@type": "Brand", name: t("brand_name") },
+          offers: {
+            "@type": "Offer",
+            url: `https://automarket.dz/product/${product.slug}`,
+            priceCurrency: "DZD",
+            price: Number(product.price),
+            availability:
+              product.stock > 0
+                ? "https://schema.org/InStock"
+                : "https://schema.org/OutOfStock",
+          },
+        }
+      : undefined,
   });
 
   useEffect(() => {
@@ -165,6 +193,13 @@ export default function Product() {
                   key={activeImage}
                   src={images[activeImage].url}
                   alt={name}
+                  width={800}
+                  height={800}
+                  /* The LCP element on this page — never lazy, and asked for
+                     ahead of the rest of the page's requests. */
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
                   initial={prefersReducedMotion ? false : { opacity: 0, scale: 1.04 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0 }}
@@ -189,7 +224,15 @@ export default function Product() {
                     i === activeImage ? "border-brand" : "border-line"
                   )}
                 >
-                  <img src={img.url} alt="" className="h-full w-full object-cover" />
+                  <img
+                    src={img.url}
+                    alt=""
+                    width={64}
+                    height={64}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-cover"
+                  />
                 </button>
               ))}
             </div>
@@ -202,11 +245,16 @@ export default function Product() {
               <h2 className="mb-3 font-heading text-base font-bold text-ink">
                 {t("product_video_title")}
               </h2>
+              {/* preload="none" + poster: the video is the heaviest asset on the
+                  page and both breakpoints' <video> tags are in the DOM at once,
+                  so metadata preload would cost two requests on every view.
+                  Nothing downloads until the shopper presses play. */}
               <video
                 src={product.video_url}
+                poster={images[0]?.url}
                 controls
                 playsInline
-                preload="metadata"
+                preload="none"
                 className="w-full rounded-2xl border border-line bg-panel-2"
               />
             </div>
@@ -382,9 +430,10 @@ export default function Product() {
               </h2>
               <video
                 src={product.video_url}
+                poster={images[0]?.url}
                 controls
                 playsInline
-                preload="metadata"
+                preload="none"
                 className="w-full rounded-2xl border border-line bg-panel-2"
               />
             </div>

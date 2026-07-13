@@ -6,10 +6,25 @@ interface MediaFlags {
   isCompact: boolean;
   prefersReducedMotion: boolean;
   enableHeavyEffects: boolean;
+  /** Data Saver on, or a 2G-class connection: skip megabyte-scale extras. */
+  saveData: boolean;
+}
+
+interface NetworkInformation {
+  saveData?: boolean;
+  effectiveType?: string;
 }
 
 function matchesQuery(query: string): boolean {
   return typeof window !== "undefined" && window.matchMedia(query).matches;
+}
+
+function detectSaveData(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const connection = (navigator as Navigator & { connection?: NetworkInformation }).connection;
+  if (!connection) return false;
+  if (connection.saveData) return true;
+  return connection.effectiveType === "slow-2g" || connection.effectiveType === "2g";
 }
 
 export function useMediaFlags(): MediaFlags {
@@ -49,5 +64,6 @@ export function useMediaFlags(): MediaFlags {
     isCompact,
     prefersReducedMotion,
     enableHeavyEffects: !isMobile && !prefersReducedMotion,
+    saveData: detectSaveData(),
   };
 }

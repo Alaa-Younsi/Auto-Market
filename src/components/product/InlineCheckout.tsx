@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useDeliveryPrices } from "@/hooks/useDeliveryPrices";
 import { useHoneypot } from "@/hooks/useHoneypot";
+import { resolveShipping, useStoreSettings } from "@/hooks/useStoreSettings";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/checkoutSchema";
 import { placeOrder } from "@/lib/placeOrder";
 import { orderErrorKey } from "@/lib/orderErrors";
@@ -27,6 +28,7 @@ export function InlineCheckout({ product, quantity, color, size }: InlineCheckou
   const { t, lang } = useLanguage();
   const navigate = useNavigate();
   const { data: deliveryPrices = [] } = useDeliveryPrices();
+  const { data: storeSettings } = useStoreSettings();
   const { isSpam } = useHoneypot();
   const [deliveryType, setDeliveryType] = useState<"home" | "office">("home");
   const [submitting, setSubmitting] = useState(false);
@@ -54,14 +56,14 @@ export function InlineCheckout({ product, quantity, color, size }: InlineCheckou
 
   const selectedWilaya = watch("wilaya");
   const selectedWilayaPrice = deliveryPrices.find((dp) => dp.wilaya === selectedWilaya);
-  const shippingEstimate =
-    selectedWilayaPrice
-      ? deliveryType === "office"
-        ? selectedWilayaPrice.office_price
-        : selectedWilayaPrice.home_price
-      : 0;
+  const wilayaFee = selectedWilayaPrice
+    ? deliveryType === "office"
+      ? selectedWilayaPrice.office_price
+      : selectedWilayaPrice.home_price
+    : undefined;
   const subtotal = Number(product.price) * quantity;
   const discount = lineDiscount(product.price, quantity, product.quantity_offers);
+  const shippingEstimate = resolveShipping(wilayaFee, subtotal - discount, storeSettings);
 
   async function onSubmit(values: CheckoutFormValues) {
     if (isSpam(values.website)) return;
@@ -75,8 +77,6 @@ export function InlineCheckout({ product, quantity, color, size }: InlineCheckou
           customer_phone: values.customer_phone,
           wilaya: values.wilaya,
           city: values.city,
-          address: values.address,
-          notes: values.notes,
           delivery_type: deliveryType,
           language: lang,
         }
@@ -114,7 +114,14 @@ export function InlineCheckout({ product, quantity, color, size }: InlineCheckou
         )}
         <div className="mt-1 flex justify-between text-muted">
           <span>{t("cart_shipping")}</span>
-          <span>{shippingEstimate > 0 ? formatPrice(shippingEstimate) : "—"}</span>
+          {/* No wilaya picked yet = unknown, not free. */}
+          <span className={wilayaFee !== undefined && shippingEstimate === 0 ? "font-semibold text-accent" : undefined}>
+            {wilayaFee === undefined
+              ? "—"
+              : shippingEstimate === 0
+                ? t("cart_shipping_free")
+                : formatPrice(shippingEstimate)}
+          </span>
         </div>
         <div className="mt-2 flex justify-between border-t border-line pt-2 font-bold text-ink">
           <span>{t("cart_total")}</span>

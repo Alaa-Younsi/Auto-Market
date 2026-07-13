@@ -5,6 +5,8 @@ const ERROR_MAP: Record<string, TranslationKey> = {
   ERR_PRODUCT_UNAVAILABLE: "error_product_unavailable",
   ERR_STOCK: "error_stock",
   ERR_WILAYA_DISABLED: "error_wilaya_disabled",
+  ERR_INVALID_INPUT: "error_invalid_input",
+  ERR_RATE_LIMIT: "error_rate_limit",
 };
 
 export function orderErrorKey(message: string | null | undefined): TranslationKey {

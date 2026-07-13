@@ -12,6 +12,9 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 60_000,
       retry: 1,
+      // A catalogue does not change while the shopper tabs away; refetching on
+      // every focus just burns their data and our Supabase egress.
+      refetchOnWindowFocus: false,
     },
   },
 });

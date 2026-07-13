@@ -67,7 +67,8 @@ export interface Order {
   customer_phone: string;
   wilaya: string;
   city: string;
-  address: string;
+  /* Dropped from checkout — still present on orders placed before that change. */
+  address: string | null;
   notes: string | null;
   subtotal: number;
   shipping: number;
@@ -95,7 +96,8 @@ export interface OrderItem {
 export interface StoreSettings {
   id: number;
   shipping_fee: number;
-  free_ship_threshold: number;
+  /** null = no free-shipping offer; place_order and resolveShipping both treat it as "off". */
+  free_ship_threshold: number | null;
 }
 
 export interface DeliveryPrice {
@@ -145,8 +147,6 @@ export interface PlaceOrderCustomer {
   customer_phone: string;
   wilaya: string;
   city: string;
-  address: string;
-  notes?: string;
   delivery_type: DeliveryType;
   language: string;
 }

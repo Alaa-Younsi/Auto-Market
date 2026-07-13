@@ -4,6 +4,7 @@ import { Film, Plus, Trash2, Upload, X } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useCategories } from "@/hooks/useCategories";
 import { supabase } from "@/lib/supabase";
+import { compressImage } from "@/lib/image";
 import { sanitizeOffers } from "@/lib/offers";
 import { slugify } from "@/lib/utils";
 import { BentoPanel } from "@/components/ui/BentoPanel";
@@ -58,6 +59,26 @@ function Field({ label, children, hint }: { label: string; children: ReactNode; 
 
 function SectionTitle({ children }: { children: ReactNode }) {
   return <h2 className="font-heading text-base font-bold text-ink">{children}</h2>;
+}
+
+/**
+ * `slug` is unique. Two products with the same name — or any name that slugifies
+ * to nothing, like an Arabic-only title — collided on insert and surfaced as a
+ * generic "save failed". Suffix until it's free.
+ */
+async function uniqueSlug(nameFr: string): Promise<string> {
+  const base = slugify(nameFr) || "produit";
+  let candidate = base;
+  for (let i = 2; i < 50; i++) {
+    const { data } = await supabase
+      .from("products")
+      .select("id")
+      .eq("slug", candidate)
+      .maybeSingle();
+    if (!data) return candidate;
+    candidate = `${base}-${i}`;
+  }
+  return `${base}-${Date.now()}`;
 }
 
 function ChipListEditor({
@@ -302,10 +323,13 @@ export default function AdminProductForm() {
     setUploading(true);
     setError(null);
     try {
-      const path = `products/${crypto.randomUUID()}-${file.name}`;
+      // Resize/re-encode first: whatever lands in the bucket is exactly what
+      // every shopper downloads, and the path is unique so it can cache forever.
+      const optimized = await compressImage(file);
+      const path = `products/${crypto.randomUUID()}-${optimized.name}`;
       const { error: uploadError } = await supabase.storage
         .from("product-images")
-        .upload(path, file);
+        .upload(path, optimized, { cacheControl: "31536000", contentType: optimized.type });
       if (uploadError) throw uploadError;
       const { data: publicUrl } = supabase.storage.from("product-images").getPublicUrl(path);
       setImages((prev) => [
@@ -329,7 +353,7 @@ export default function AdminProductForm() {
       const path = `products/${crypto.randomUUID()}-${file.name}`;
       const { error: uploadError } = await supabase.storage
         .from("product-videos")
-        .upload(path, file);
+        .upload(path, file, { cacheControl: "31536000", contentType: file.type });
       if (uploadError) throw uploadError;
       const { data: publicUrl } = supabase.storage.from("product-videos").getPublicUrl(path);
       setVideoUrl(publicUrl.publicUrl);
@@ -372,7 +396,7 @@ export default function AdminProductForm() {
       if (isNew) {
         const { data, error } = await supabase
           .from("products")
-          .insert({ ...payload, slug: slugify(form.name_fr) })
+          .insert({ ...payload, slug: await uniqueSlug(form.name_fr) })
           .select()
           .single();
         if (error) throw error;
@@ -554,17 +578,26 @@ export default function AdminProductForm() {
                   </Button>
                 </div>
               ) : (
-                <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-line px-4 py-3 text-sm font-semibold text-muted hover:border-brand hover:text-brand">
-                  <Film size={16} />
-                  {uploadingVideo ? "..." : t("admin_upload_video")}
-                  <input
-                    type="file"
-                    accept="video/mp4,video/webm,video/quicktime"
-                    className="hidden"
-                    onChange={handleVideoUpload}
-                    disabled={uploadingVideo}
+                <div className="space-y-3">
+                  <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-line px-4 py-3 text-sm font-semibold text-muted hover:border-brand hover:text-brand">
+                    <Film size={16} />
+                    {uploadingVideo ? "..." : t("admin_upload_video")}
+                    <input
+                      type="file"
+                      accept="video/mp4,video/webm,video/quicktime"
+                      className="hidden"
+                      onChange={handleVideoUpload}
+                      disabled={uploadingVideo}
+                    />
+                  </label>
+                  {/* Escape hatch from Supabase egress: paste a video hosted on
+                      Cloudinary/Bunny/etc. The player only needs a URL. */}
+                  <Input
+                    type="url"
+                    placeholder={t("admin_video_url_placeholder")}
+                    onChange={(e) => setVideoUrl(e.target.value.trim() || null)}
                   />
-                </label>
+                </div>
               )}
             </Field>
           </BentoPanel>

@@ -3,7 +3,9 @@ import { createClient } from "@supabase/supabase-js";
 
 const DOMAIN = "https://automarket.dz";
 
-const STATIC_ROUTES = ["/", "/shop", "/track-order"];
+// Only routes the router actually serves — /track-order was listed here but no
+// such route exists, so the sitemap was advertising a 404 to Google.
+const STATIC_ROUTES = ["/", "/shop"];
 
 function buildXml(urls) {
   const entries = urls

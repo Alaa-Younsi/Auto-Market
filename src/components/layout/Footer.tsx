@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { RoadDivider } from "@/components/effects/RoadDivider";
-import { FacebookIcon, InstagramIcon } from "@/components/ui/SocialIcons";
+import { FacebookIcon, InstagramIcon, TikTokIcon } from "@/components/ui/SocialIcons";
 import { BrandMark } from "@/components/ui/BrandMark";
 
 export function Footer() {
@@ -39,6 +39,13 @@ export function Footer() {
                 aria-label="Instagram"
               >
                 <InstagramIcon size={16} />
+              </a>
+              <a
+                href="#"
+                className="rounded-full border border-line p-2 text-muted transition-colors hover:border-brand hover:text-brand"
+                aria-label="TikTok"
+              >
+                <TikTokIcon size={16} />
               </a>
             </div>
           </div>

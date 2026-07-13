@@ -101,7 +101,8 @@ export default function AdminOrderDetail() {
             <p className="text-muted">
               {order.wilaya}, {order.city}
             </p>
-            <p className="text-muted">{order.address}</p>
+            {/* Both were dropped from checkout; older orders still carry them. */}
+            {order.address && <p className="text-muted">{order.address}</p>}
             {order.notes && <p className="italic text-muted">"{order.notes}"</p>}
           </BentoPanel>
 
