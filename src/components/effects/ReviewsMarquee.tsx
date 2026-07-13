@@ -52,7 +52,12 @@ export function ReviewsMarquee({ reviews }: ReviewsMarqueeProps) {
     );
   }
 
-  const duration = Math.max(24, reviews.length * 6);
+  // With only 1–2 reviews each half of the track is narrower than the
+  // viewport, so the -50% loop shows a hole and half-clipped cards at the
+  // mask edges. Repeat the list until a half is comfortably wide (~6 cards).
+  const repeats = Math.ceil(6 / reviews.length);
+  const track = Array.from({ length: repeats }, () => reviews).flat();
+  const duration = Math.max(24, track.length * 6);
 
   return (
     // Locked to ltr: an rtl overflow container anchors overflowing content
@@ -66,13 +71,13 @@ export function ReviewsMarquee({ reviews }: ReviewsMarqueeProps) {
         style={{ animationDuration: `${duration}s` }}
       >
         <div className="flex shrink-0 gap-5">
-          {reviews.map((review) => (
-            <ReviewCard key={review.id} review={review} />
+          {track.map((review, i) => (
+            <ReviewCard key={`${review.id}-${i}`} review={review} />
           ))}
         </div>
         <div className="flex shrink-0 gap-5" aria-hidden="true">
-          {reviews.map((review) => (
-            <ReviewCard key={`dup-${review.id}`} review={review} />
+          {track.map((review, i) => (
+            <ReviewCard key={`dup-${review.id}-${i}`} review={review} />
           ))}
         </div>
       </div>

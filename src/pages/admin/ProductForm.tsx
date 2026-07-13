@@ -1,16 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Trash2, Upload } from "lucide-react";
+import { Film, Plus, Trash2, Upload, X } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useCategories } from "@/hooks/useCategories";
 import { supabase } from "@/lib/supabase";
+import { sanitizeOffers } from "@/lib/offers";
 import { slugify } from "@/lib/utils";
 import { BentoPanel } from "@/components/ui/BentoPanel";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
-import type { ProductImage } from "@/types/db";
+import type { ProductImage, QuantityOffer } from "@/types/db";
+import type { TranslationKey } from "@/i18n/translations";
 
 interface FormState {
   name_fr: string;
@@ -23,8 +25,6 @@ interface FormState {
   compare_at_price: string;
   category_id: string;
   stock: string;
-  colors: string;
-  sizes: string;
   featured: boolean;
   status: "active" | "draft";
 }
@@ -40,11 +40,212 @@ const EMPTY_FORM: FormState = {
   compare_at_price: "",
   category_id: "",
   stock: "0",
-  colors: "",
-  sizes: "",
   featured: false,
   status: "draft",
 };
+
+/* Every control gets a visible label — placeholder-only forms are unusable
+   once more than a couple of fields are on screen. */
+function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
+  return (
+    <div>
+      <label className="mb-1.5 block text-sm font-semibold text-ink">{label}</label>
+      {children}
+      {hint && <p className="mt-1 text-xs text-muted">{hint}</p>}
+    </div>
+  );
+}
+
+function SectionTitle({ children }: { children: ReactNode }) {
+  return <h2 className="font-heading text-base font-bold text-ink">{children}</h2>;
+}
+
+function ChipListEditor({
+  labelKey,
+  placeholderKey,
+  values,
+  onChange,
+}: {
+  labelKey: TranslationKey;
+  placeholderKey: TranslationKey;
+  values: string[];
+  onChange: (next: string[]) => void;
+}) {
+  const { t } = useLanguage();
+  const [draft, setDraft] = useState("");
+
+  function add() {
+    const v = draft.trim();
+    if (!v || values.includes(v)) return;
+    onChange([...values, v]);
+    setDraft("");
+  }
+
+  return (
+    <Field label={t(labelKey)}>
+      <div className="flex gap-2">
+        <Input
+          placeholder={t(placeholderKey)}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              add();
+            }
+          }}
+        />
+        <Button type="button" variant="secondary" size="sm" onClick={add} className="shrink-0">
+          <Plus size={15} />
+          {t("admin_variant_add")}
+        </Button>
+      </div>
+      {values.length > 0 && (
+        <div className="mt-2.5 flex flex-wrap gap-2">
+          {values.map((v) => (
+            <span
+              key={v}
+              className="fx-pop inline-flex items-center gap-1.5 rounded-full border border-brand/30 bg-brand/10 px-3 py-1 text-sm font-medium text-brand"
+            >
+              {v}
+              <button
+                type="button"
+                onClick={() => onChange(values.filter((x) => x !== v))}
+                className="rounded-full p-0.5 hover:bg-brand/20"
+                aria-label={`Remove ${v}`}
+              >
+                <X size={12} />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+    </Field>
+  );
+}
+
+function OffersEditor({
+  offers,
+  onChange,
+}: {
+  offers: QuantityOffer[];
+  onChange: (next: QuantityOffer[]) => void;
+}) {
+  const { t } = useLanguage();
+
+  function update(index: number, offer: QuantityOffer) {
+    onChange(offers.map((o, i) => (i === index ? offer : o)));
+  }
+
+  function setNumber(index: number, key: string, raw: string) {
+    const value = Math.max(0, Number(raw) || 0);
+    update(index, { ...offers[index], [key]: value } as QuantityOffer);
+  }
+
+  return (
+    <div className="space-y-3">
+      {offers.length === 0 && <p className="text-sm text-muted">{t("admin_offer_none")}</p>}
+
+      {offers.map((offer, i) => (
+        <div
+          key={i}
+          className="flex flex-wrap items-end gap-3 rounded-xl border border-line bg-panel-2/50 p-3"
+        >
+          <div className="min-w-44 flex-1">
+            <label className="mb-1.5 block text-xs font-semibold text-muted">
+              {t("admin_product_offers")}
+            </label>
+            <Select
+              value={offer.type}
+              onChange={(e) =>
+                update(
+                  i,
+                  e.target.value === "free"
+                    ? { type: "free", buy: 2, get: 1 }
+                    : { type: "price", qty: 2, price: 0 }
+                )
+              }
+            >
+              <option value="free">{t("admin_offer_type_free")}</option>
+              <option value="price">{t("admin_offer_type_price")}</option>
+            </Select>
+          </div>
+
+          {offer.type === "free" ? (
+            <>
+              <div className="w-24">
+                <label className="mb-1.5 block text-xs font-semibold text-muted">
+                  {t("admin_offer_buy")}
+                </label>
+                <Input
+                  type="number"
+                  min={1}
+                  value={offer.buy || ""}
+                  onChange={(e) => setNumber(i, "buy", e.target.value)}
+                />
+              </div>
+              <div className="w-24">
+                <label className="mb-1.5 block text-xs font-semibold text-muted">
+                  {t("admin_offer_get")}
+                </label>
+                <Input
+                  type="number"
+                  min={1}
+                  value={offer.get || ""}
+                  onChange={(e) => setNumber(i, "get", e.target.value)}
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="w-24">
+                <label className="mb-1.5 block text-xs font-semibold text-muted">
+                  {t("admin_offer_qty")}
+                </label>
+                <Input
+                  type="number"
+                  min={2}
+                  value={offer.qty || ""}
+                  onChange={(e) => setNumber(i, "qty", e.target.value)}
+                />
+              </div>
+              <div className="w-32">
+                <label className="mb-1.5 block text-xs font-semibold text-muted">
+                  {t("admin_offer_price")}
+                </label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={offer.price || ""}
+                  onChange={(e) => setNumber(i, "price", e.target.value)}
+                />
+              </div>
+            </>
+          )}
+
+          <button
+            type="button"
+            onClick={() => onChange(offers.filter((_, x) => x !== i))}
+            className="mb-1 rounded-lg p-2 text-muted hover:bg-panel-2 hover:text-red-500"
+            aria-label={t("admin_confirm_delete")}
+          >
+            <Trash2 size={15} />
+          </button>
+        </div>
+      ))}
+
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => onChange([...offers, { type: "free", buy: 2, get: 1 }])}
+      >
+        <Plus size={15} />
+        {t("admin_offer_add")}
+      </Button>
+    </div>
+  );
+}
 
 export default function AdminProductForm() {
   const { t } = useLanguage();
@@ -54,8 +255,13 @@ export default function AdminProductForm() {
 
   const { data: categories = [] } = useCategories();
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const [colors, setColors] = useState<string[]>([]);
+  const [sizes, setSizes] = useState<string[]>([]);
+  const [offers, setOffers] = useState<QuantityOffer[]>([]);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [images, setImages] = useState<ProductImage[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -79,11 +285,13 @@ export default function AdminProductForm() {
           compare_at_price: data.compare_at_price ? String(data.compare_at_price) : "",
           category_id: data.category_id ?? "",
           stock: String(data.stock),
-          colors: (data.colors ?? []).join(", "),
-          sizes: (data.sizes ?? []).join(", "),
           featured: data.featured,
           status: data.status,
         });
+        setColors(data.colors ?? []);
+        setSizes(data.sizes ?? []);
+        setOffers(sanitizeOffers(data.quantity_offers));
+        setVideoUrl(data.video_url ?? null);
         setImages(data.product_images ?? []);
       });
   }, [id, isNew]);
@@ -112,6 +320,27 @@ export default function AdminProductForm() {
     }
   }
 
+  async function handleVideoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingVideo(true);
+    setError(null);
+    try {
+      const path = `products/${crypto.randomUUID()}-${file.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from("product-videos")
+        .upload(path, file);
+      if (uploadError) throw uploadError;
+      const { data: publicUrl } = supabase.storage.from("product-videos").getPublicUrl(path);
+      setVideoUrl(publicUrl.publicUrl);
+    } catch {
+      setError(t("admin_save_error"));
+    } finally {
+      setUploadingVideo(false);
+      e.target.value = "";
+    }
+  }
+
   function removeImage(imageId: string) {
     setImages((prev) => prev.filter((img) => img.id !== imageId));
   }
@@ -131,8 +360,10 @@ export default function AdminProductForm() {
         compare_at_price: form.compare_at_price ? Number(form.compare_at_price) : null,
         category_id: form.category_id || null,
         stock: Number(form.stock),
-        colors: form.colors.split(",").map((s) => s.trim()).filter(Boolean),
-        sizes: form.sizes.split(",").map((s) => s.trim()).filter(Boolean),
+        colors,
+        sizes,
+        quantity_offers: sanitizeOffers(offers),
+        video_url: videoUrl,
         featured: form.featured,
         status: form.status,
       };
@@ -181,113 +412,168 @@ export default function AdminProductForm() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
         <div className="space-y-4">
           <BentoPanel className="space-y-4 p-5">
+            <SectionTitle>{t("admin_product_info")}</SectionTitle>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Input
-                placeholder={t("admin_product_name_fr")}
-                value={form.name_fr}
-                onChange={(e) => setForm((f) => ({ ...f, name_fr: e.target.value }))}
-              />
-              <Input
-                placeholder={t("admin_product_name_ar")}
-                dir="rtl"
-                value={form.name_ar}
-                onChange={(e) => setForm((f) => ({ ...f, name_ar: e.target.value }))}
-              />
+              <Field label={t("admin_product_name_fr")}>
+                <Input
+                  value={form.name_fr}
+                  onChange={(e) => setForm((f) => ({ ...f, name_fr: e.target.value }))}
+                />
+              </Field>
+              <Field label={t("admin_product_name_ar")}>
+                <Input
+                  dir="rtl"
+                  value={form.name_ar}
+                  onChange={(e) => setForm((f) => ({ ...f, name_ar: e.target.value }))}
+                />
+              </Field>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Textarea
-                placeholder={t("admin_product_description_fr")}
-                rows={3}
-                value={form.description_fr}
-                onChange={(e) => setForm((f) => ({ ...f, description_fr: e.target.value }))}
-              />
-              <Textarea
-                placeholder={t("admin_product_description_ar")}
-                dir="rtl"
-                rows={3}
-                value={form.description_ar}
-                onChange={(e) => setForm((f) => ({ ...f, description_ar: e.target.value }))}
-              />
+              <Field label={t("admin_product_description_fr")}>
+                <Textarea
+                  rows={3}
+                  value={form.description_fr}
+                  onChange={(e) => setForm((f) => ({ ...f, description_fr: e.target.value }))}
+                />
+              </Field>
+              <Field label={t("admin_product_description_ar")}>
+                <Textarea
+                  dir="rtl"
+                  rows={3}
+                  value={form.description_ar}
+                  onChange={(e) => setForm((f) => ({ ...f, description_ar: e.target.value }))}
+                />
+              </Field>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Textarea
-                placeholder={t("admin_product_details_fr")}
-                rows={3}
-                value={form.details_fr}
-                onChange={(e) => setForm((f) => ({ ...f, details_fr: e.target.value }))}
-              />
-              <Textarea
-                placeholder={t("admin_product_details_ar")}
-                dir="rtl"
-                rows={3}
-                value={form.details_ar}
-                onChange={(e) => setForm((f) => ({ ...f, details_ar: e.target.value }))}
-              />
+              <Field label={t("admin_product_details_fr")}>
+                <Textarea
+                  rows={3}
+                  value={form.details_fr}
+                  onChange={(e) => setForm((f) => ({ ...f, details_fr: e.target.value }))}
+                />
+              </Field>
+              <Field label={t("admin_product_details_ar")}>
+                <Textarea
+                  dir="rtl"
+                  rows={3}
+                  value={form.details_ar}
+                  onChange={(e) => setForm((f) => ({ ...f, details_ar: e.target.value }))}
+                />
+              </Field>
             </div>
           </BentoPanel>
 
           <BentoPanel className="space-y-4 p-5">
+            <SectionTitle>{t("admin_product_pricing")}</SectionTitle>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <Input
-                type="number"
-                placeholder={t("admin_product_price")}
-                value={form.price}
-                onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
-              />
-              <Input
-                type="number"
-                placeholder={t("admin_product_compare_price")}
-                value={form.compare_at_price}
-                onChange={(e) => setForm((f) => ({ ...f, compare_at_price: e.target.value }))}
-              />
-              <Input
-                type="number"
-                placeholder={t("admin_product_stock")}
-                value={form.stock}
-                onChange={(e) => setForm((f) => ({ ...f, stock: e.target.value }))}
-              />
-            </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Input
-                placeholder={t("admin_product_colors")}
-                value={form.colors}
-                onChange={(e) => setForm((f) => ({ ...f, colors: e.target.value }))}
-              />
-              <Input
-                placeholder={t("admin_product_sizes")}
-                value={form.sizes}
-                onChange={(e) => setForm((f) => ({ ...f, sizes: e.target.value }))}
-              />
+              <Field label={`${t("admin_product_price")} (DA)`}>
+                <Input
+                  type="number"
+                  min={0}
+                  value={form.price}
+                  onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
+                />
+              </Field>
+              <Field label={`${t("admin_product_compare_price")} (DA)`}>
+                <Input
+                  type="number"
+                  min={0}
+                  value={form.compare_at_price}
+                  onChange={(e) => setForm((f) => ({ ...f, compare_at_price: e.target.value }))}
+                />
+              </Field>
+              <Field label={t("admin_product_stock")}>
+                <Input
+                  type="number"
+                  min={0}
+                  value={form.stock}
+                  onChange={(e) => setForm((f) => ({ ...f, stock: e.target.value }))}
+                />
+              </Field>
             </div>
           </BentoPanel>
 
-          <BentoPanel className="p-5">
-            <p className="mb-3 text-sm font-semibold text-ink">{t("admin_product_images")}</p>
-            <div className="flex flex-wrap gap-3">
-              {images.map((img) => (
-                <div key={img.id} className="relative h-20 w-20 overflow-hidden rounded-lg border border-line">
-                  <img src={img.url} alt="" className="h-full w-full object-cover" />
-                  <button
-                    onClick={() => removeImage(img.id)}
-                    className="absolute end-1 top-1 rounded-full bg-black/60 p-1 text-white"
-                  >
-                    <Trash2 size={11} />
-                  </button>
+          <BentoPanel className="space-y-4 p-5">
+            <SectionTitle>{t("admin_product_variants")}</SectionTitle>
+            <ChipListEditor
+              labelKey="admin_variant_colors"
+              placeholderKey="admin_variant_color_placeholder"
+              values={colors}
+              onChange={setColors}
+            />
+            <ChipListEditor
+              labelKey="admin_variant_sizes"
+              placeholderKey="admin_variant_size_placeholder"
+              values={sizes}
+              onChange={setSizes}
+            />
+          </BentoPanel>
+
+          <BentoPanel className="space-y-4 p-5">
+            <SectionTitle>{t("admin_product_offers")}</SectionTitle>
+            <OffersEditor offers={offers} onChange={setOffers} />
+          </BentoPanel>
+
+          <BentoPanel className="space-y-5 p-5">
+            <SectionTitle>{t("admin_product_media")}</SectionTitle>
+
+            <Field label={t("admin_product_images")}>
+              <div className="flex flex-wrap gap-3">
+                {images.map((img) => (
+                  <div key={img.id} className="relative h-20 w-20 overflow-hidden rounded-lg border border-line">
+                    <img src={img.url} alt="" className="h-full w-full object-cover" />
+                    <button
+                      onClick={() => removeImage(img.id)}
+                      className="absolute end-1 top-1 rounded-full bg-black/60 p-1 text-white"
+                    >
+                      <Trash2 size={11} />
+                    </button>
+                  </div>
+                ))}
+                <label className="flex h-20 w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-line text-muted hover:border-brand hover:text-brand">
+                  <Upload size={16} />
+                  <span className="text-[10px]">{uploading ? "..." : t("admin_product_upload")}</span>
+                  <input type="file" accept="image/*" className="hidden" onChange={handleUpload} disabled={uploading} />
+                </label>
+              </div>
+            </Field>
+
+            <Field label={t("admin_product_video")} hint={t("admin_video_hint")}>
+              {videoUrl ? (
+                <div className="space-y-2">
+                  <video
+                    src={videoUrl}
+                    controls
+                    preload="metadata"
+                    className="max-h-64 w-full rounded-xl border border-line bg-panel-2"
+                  />
+                  <Button type="button" variant="secondary" size="sm" onClick={() => setVideoUrl(null)}>
+                    <Trash2 size={14} />
+                    {t("admin_remove")}
+                  </Button>
                 </div>
-              ))}
-              <label className="flex h-20 w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-line text-muted hover:border-brand hover:text-brand">
-                <Upload size={16} />
-                <span className="text-[10px]">{uploading ? "..." : t("admin_product_upload")}</span>
-                <input type="file" accept="image/*" className="hidden" onChange={handleUpload} disabled={uploading} />
-              </label>
-            </div>
+              ) : (
+                <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-line px-4 py-3 text-sm font-semibold text-muted hover:border-brand hover:text-brand">
+                  <Film size={16} />
+                  {uploadingVideo ? "..." : t("admin_upload_video")}
+                  <input
+                    type="file"
+                    accept="video/mp4,video/webm,video/quicktime"
+                    className="hidden"
+                    onChange={handleVideoUpload}
+                    disabled={uploadingVideo}
+                  />
+                </label>
+              )}
+            </Field>
           </BentoPanel>
         </div>
 
         <div className="space-y-4">
           <BentoPanel className="space-y-4 p-5">
-            <div>
-              <p className="mb-1.5 text-sm font-semibold text-ink">{t("admin_product_category")}</p>
+            <SectionTitle>{t("admin_publishing")}</SectionTitle>
+            <Field label={t("admin_product_category")}>
               <Select
                 value={form.category_id}
                 onChange={(e) => setForm((f) => ({ ...f, category_id: e.target.value }))}
@@ -299,9 +585,8 @@ export default function AdminProductForm() {
                   </option>
                 ))}
               </Select>
-            </div>
-            <div>
-              <p className="mb-1.5 text-sm font-semibold text-ink">{t("admin_product_status")}</p>
+            </Field>
+            <Field label={t("admin_product_status")}>
               <Select
                 value={form.status}
                 onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as "active" | "draft" }))}
@@ -309,7 +594,7 @@ export default function AdminProductForm() {
                 <option value="draft">{t("admin_product_status_draft")}</option>
                 <option value="active">{t("admin_product_status_active")}</option>
               </Select>
-            </div>
+            </Field>
             <label className="flex items-center gap-2 text-sm text-ink">
               <input
                 type="checkbox"

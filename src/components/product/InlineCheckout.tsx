@@ -10,6 +10,7 @@ import { checkoutSchema, type CheckoutFormValues } from "@/lib/checkoutSchema";
 import { placeOrder } from "@/lib/placeOrder";
 import { orderErrorKey } from "@/lib/orderErrors";
 import { formatPrice } from "@/lib/format";
+import { lineDiscount } from "@/lib/offers";
 import { trackInitiateCheckout, trackPurchase } from "@/lib/pixel";
 import { CheckoutFields } from "./CheckoutFields";
 import { Button } from "@/components/ui/Button";
@@ -60,6 +61,7 @@ export function InlineCheckout({ product, quantity, color, size }: InlineCheckou
         : selectedWilayaPrice.home_price
       : 0;
   const subtotal = Number(product.price) * quantity;
+  const discount = lineDiscount(product.price, quantity, product.quantity_offers);
 
   async function onSubmit(values: CheckoutFormValues) {
     if (isSpam(values.website)) return;
@@ -79,7 +81,7 @@ export function InlineCheckout({ product, quantity, color, size }: InlineCheckou
           language: lang,
         }
       );
-      trackPurchase(orderNumber, subtotal + shippingEstimate);
+      trackPurchase(orderNumber, subtotal - discount + shippingEstimate);
       navigate(`/order-confirmation/${orderNumber}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : null;
@@ -104,13 +106,19 @@ export function InlineCheckout({ product, quantity, color, size }: InlineCheckou
           <span>{t("cart_subtotal")}</span>
           <span>{formatPrice(subtotal)}</span>
         </div>
+        {discount > 0 && (
+          <div className="mt-1 flex justify-between font-semibold text-accent">
+            <span>{t("cart_discount")}</span>
+            <span>-{formatPrice(discount)}</span>
+          </div>
+        )}
         <div className="mt-1 flex justify-between text-muted">
           <span>{t("cart_shipping")}</span>
           <span>{shippingEstimate > 0 ? formatPrice(shippingEstimate) : "—"}</span>
         </div>
         <div className="mt-2 flex justify-between border-t border-line pt-2 font-bold text-ink">
           <span>{t("cart_total")}</span>
-          <span>{formatPrice(subtotal + shippingEstimate)}</span>
+          <span>{formatPrice(subtotal - discount + shippingEstimate)}</span>
         </div>
       </div>
 

@@ -29,6 +29,11 @@ export interface ProductImage {
   sort_order: number;
 }
 
+/** "free": order buy+get units, pay for buy. "price": every qty units cost price total. */
+export type QuantityOffer =
+  | { type: "free"; buy: number; get: number }
+  | { type: "price"; qty: number; price: number };
+
 export interface Product {
   id: string;
   slug: string;
@@ -47,6 +52,8 @@ export interface Product {
   sizes: string[];
   featured: boolean;
   status: ProductStatus;
+  video_url: string | null;
+  quantity_offers: QuantityOffer[];
   created_at: string;
   updated_at: string;
   product_images?: ProductImage[];
@@ -64,6 +71,7 @@ export interface Order {
   notes: string | null;
   subtotal: number;
   shipping: number;
+  discount: number;
   total: number;
   status: OrderStatus;
   language: string;
@@ -120,6 +128,9 @@ export interface CartItem {
   size?: string;
   imageUrl: string | null;
   stock: number;
+  /* Snapshot for the client-side estimate only — place_order re-reads
+     the live offers server-side. */
+  offers?: QuantityOffer[];
 }
 
 export interface PlaceOrderItem {

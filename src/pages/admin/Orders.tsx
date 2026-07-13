@@ -48,10 +48,10 @@ export default function AdminOrders() {
             <tr className="border-b border-line text-start text-xs text-muted">
               <th className="px-4 py-3 text-start font-semibold">{t("admin_order_number")}</th>
               <th className="px-4 py-3 text-start font-semibold">{t("admin_order_customer")}</th>
-              <th className="px-4 py-3 text-start font-semibold">{t("admin_order_wilaya")}</th>
+              <th className="hidden px-4 py-3 text-start font-semibold sm:table-cell">{t("admin_order_wilaya")}</th>
               <th className="px-4 py-3 text-start font-semibold">{t("admin_order_total")}</th>
               <th className="px-4 py-3 text-start font-semibold">{t("admin_order_status")}</th>
-              <th className="px-4 py-3 text-start font-semibold">{t("admin_order_date")}</th>
+              <th className="hidden px-4 py-3 text-start font-semibold md:table-cell">{t("admin_order_date")}</th>
             </tr>
           </thead>
           <tbody>
@@ -73,14 +73,14 @@ export default function AdminOrders() {
                   </Link>
                 </td>
                 <td className="px-4 py-3">{order.customer_name}</td>
-                <td className="px-4 py-3">{order.wilaya}</td>
+                <td className="hidden px-4 py-3 sm:table-cell">{order.wilaya}</td>
                 <td className="px-4 py-3 font-semibold">{formatPrice(order.total)}</td>
                 <td className="px-4 py-3">
                   <Badge tone={STATUS_TONE[order.status]}>
                     {t(ORDER_STATUS_LABEL_KEY[order.status])}
                   </Badge>
                 </td>
-                <td className="px-4 py-3 text-muted">{formatDate(order.created_at, lang)}</td>
+                <td className="hidden px-4 py-3 text-muted md:table-cell">{formatDate(order.created_at, lang)}</td>
               </tr>
             ))}
           </tbody>

@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { AnimatePresence, animate, motion } from "framer-motion";
-import { Check, Minus, Plus, ShoppingBag } from "lucide-react";
+import { Check, Gift, Minus, Plus, ShoppingBag } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useCartStore } from "@/store/cart";
 import { useMediaFlags } from "@/hooks/useMediaFlags";
 import { useSeo } from "@/hooks/useSeo";
 import { formatPrice } from "@/lib/format";
+import { lineDiscount, offerLabel } from "@/lib/offers";
 import { trackAddToCart, trackViewContent } from "@/lib/pixel";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
@@ -127,6 +128,7 @@ export default function Product() {
       size,
       imageUrl: images[0]?.url ?? null,
       stock: product!.stock,
+      offers: product!.quantity_offers,
     });
     trackAddToCart(product!.id, Number(product!.price) * quantity);
     setAdded(true);
@@ -145,6 +147,11 @@ export default function Product() {
       : product.stock <= 5
         ? t("product_low_stock")
         : t("product_in_stock");
+
+  // Never reveal the real stock count to customers: the stepper stops at 10
+  // (the RPC still rejects anything the stock can't cover).
+  const maxQuantity = Math.min(product.stock, 10);
+  const savings = lineDiscount(product.price, quantity, product.quantity_offers);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
@@ -187,6 +194,23 @@ export default function Product() {
               ))}
             </div>
           )}
+
+          {/* Desktop: showcase video sits under the gallery. On mobile it
+              renders below the buy buttons instead (see the info column). */}
+          {product.video_url && (
+            <div className="mt-6 hidden lg:block">
+              <h2 className="mb-3 font-heading text-base font-bold text-ink">
+                {t("product_video_title")}
+              </h2>
+              <video
+                src={product.video_url}
+                controls
+                playsInline
+                preload="metadata"
+                className="w-full rounded-2xl border border-line bg-panel-2"
+              />
+            </div>
+          )}
         </div>
 
         {/* Info */}
@@ -209,6 +233,20 @@ export default function Product() {
             )}
             <Badge tone={product.stock === 0 ? "danger" : "accent"}>{stockLabel}</Badge>
           </div>
+
+          {product.quantity_offers.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {product.quantity_offers.map((offer, i) => (
+                <span
+                  key={i}
+                  className="fx-pop inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-3.5 py-1.5 text-xs font-bold text-accent"
+                >
+                  <Gift size={13} />
+                  {offerLabel(offer, lang, formatPrice)}
+                </span>
+              ))}
+            </div>
+          )}
 
           {description && (
             <p className="mt-4 text-sm leading-relaxed text-muted">{description}</p>
@@ -272,12 +310,18 @@ export default function Product() {
               </button>
               <span className="w-6 text-center text-sm font-semibold">{quantity}</span>
               <button
-                onClick={() => setQuantity((q) => Math.min(product.stock, q + 1))}
+                onClick={() => setQuantity((q) => Math.min(maxQuantity, q + 1))}
                 className="text-muted hover:text-ink"
               >
                 <Plus size={16} />
               </button>
             </div>
+            {savings > 0 && (
+              <p className="fx-pop mt-2 flex items-center gap-1.5 text-sm font-bold text-accent">
+                <Gift size={14} />
+                {t("product_you_save")} {formatPrice(savings)}
+              </p>
+            )}
           </div>
 
           {selectionError && (
@@ -330,6 +374,21 @@ export default function Product() {
               {t("product_buy_now")}
             </Button>
           </div>
+
+          {product.video_url && (
+            <div className="mt-6 lg:hidden">
+              <h2 className="mb-3 font-heading text-base font-bold text-ink">
+                {t("product_video_title")}
+              </h2>
+              <video
+                src={product.video_url}
+                controls
+                playsInline
+                preload="metadata"
+                className="w-full rounded-2xl border border-line bg-panel-2"
+              />
+            </div>
+          )}
 
           {details.length > 0 && (
             <div className="mt-8 border-t border-line pt-6">

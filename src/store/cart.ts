@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { lineDiscount } from "@/lib/offers";
 import type { CartItem } from "@/types/db";
 
 interface CartState {
@@ -17,6 +18,7 @@ interface CartState {
   ) => void;
   clear: () => void;
   subtotal: () => number;
+  discount: () => number;
   totalQuantity: () => number;
 }
 
@@ -72,6 +74,11 @@ export const useCartStore = create<CartState>()(
       clear: () => set({ items: [] }),
       subtotal: () =>
         get().items.reduce((sum, i) => sum + i.price * i.quantity, 0),
+      discount: () =>
+        get().items.reduce(
+          (sum, i) => sum + lineDiscount(i.price, i.quantity, i.offers),
+          0
+        ),
       totalQuantity: () =>
         get().items.reduce((sum, i) => sum + i.quantity, 0),
     }),

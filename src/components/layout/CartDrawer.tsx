@@ -19,7 +19,8 @@ export function CartDrawer() {
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
   const subtotal = useCartStore((s) => s.subtotal());
-  const animatedSubtotal = useAnimatedNumber(subtotal, {
+  const discount = useCartStore((s) => s.discount());
+  const animatedTotal = useAnimatedNumber(subtotal - discount, {
     duration: 0.5,
     enabled: !prefersReducedMotion,
   });
@@ -120,9 +121,15 @@ export function CartDrawer() {
           </div>
 
           <div className="border-t border-line px-5 py-5">
+            {discount > 0 && (
+              <div className="mb-1.5 flex items-center justify-between text-sm">
+                <span className="text-muted">{t("cart_discount")}</span>
+                <span className="font-bold text-accent">-{formatPrice(discount)}</span>
+              </div>
+            )}
             <div className="mb-4 flex items-center justify-between text-sm">
               <span className="text-muted">{t("cart_subtotal")}</span>
-              <span className="font-bold text-ink">{formatPrice(animatedSubtotal)}</span>
+              <span className="font-bold text-ink">{formatPrice(animatedTotal)}</span>
             </div>
             <LinkButton to="/checkout" onClick={close} className="w-full" size="lg">
               {t("cart_checkout")}

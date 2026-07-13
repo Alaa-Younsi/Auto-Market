@@ -74,6 +74,12 @@ export default function AdminOrderDetail() {
               <span>{t("cart_subtotal")}</span>
               <span>{formatPrice(order.subtotal)}</span>
             </div>
+            {order.discount > 0 && (
+              <div className="flex justify-between font-semibold text-accent">
+                <span>{t("cart_discount")}</span>
+                <span>-{formatPrice(order.discount)}</span>
+              </div>
+            )}
             <div className="flex justify-between text-muted">
               <span>{t("cart_shipping")}</span>
               <span>{formatPrice(order.shipping)}</span>

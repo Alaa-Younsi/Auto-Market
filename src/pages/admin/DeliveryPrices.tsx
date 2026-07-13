@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import { BentoPanel } from "@/components/ui/BentoPanel";
 import { Input } from "@/components/ui/Input";
+import { Toggle } from "@/components/ui/Toggle";
 
 export default function AdminDeliveryPrices() {
   const { t } = useLanguage();
@@ -54,7 +55,7 @@ export default function AdminDeliveryPrices() {
                   <Input
                     type="number"
                     defaultValue={row.home_price}
-                    className="w-28"
+                    className="w-20 sm:w-28"
                     disabled={savingId === row.id}
                     onBlur={(e) => updateRow(row.id, { home_price: Number(e.target.value) })}
                   />
@@ -63,26 +64,18 @@ export default function AdminDeliveryPrices() {
                   <Input
                     type="number"
                     defaultValue={row.office_price}
-                    className="w-28"
+                    className="w-20 sm:w-28"
                     disabled={savingId === row.id}
                     onBlur={(e) => updateRow(row.id, { office_price: Number(e.target.value) })}
                   />
                 </td>
                 <td className="px-4 py-2">
-                  <button
-                    onClick={() => updateRow(row.id, { active: !row.active })}
-                    className={cn(
-                      "relative h-6 w-11 rounded-full transition-colors",
-                      row.active ? "bg-accent" : "bg-line"
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform",
-                        row.active ? "translate-x-[22px] rtl:-translate-x-[22px]" : "translate-x-0.5"
-                      )}
-                    />
-                  </button>
+                  <Toggle
+                    checked={row.active}
+                    onChange={() => updateRow(row.id, { active: !row.active })}
+                    disabled={savingId === row.id}
+                    aria-label={`${row.wilaya}: ${t("admin_delivery_active")}`}
+                  />
                 </td>
               </tr>
             ))}

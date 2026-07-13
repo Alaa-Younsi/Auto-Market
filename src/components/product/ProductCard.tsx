@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ShoppingBag } from "lucide-react";
+import { Gift, ShoppingBag } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useMediaFlags } from "@/hooks/useMediaFlags";
 import { useCartStore } from "@/store/cart";
 import { formatPrice } from "@/lib/format";
+import { offerLabel } from "@/lib/offers";
 import { trackAddToCart } from "@/lib/pixel";
 import { Badge } from "@/components/ui/Badge";
 import { TiltCard } from "@/components/ui/TiltCard";
@@ -34,6 +35,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
       quantity: 1,
       imageUrl: image,
       stock: product.stock,
+      offers: product.quantity_offers,
     });
     trackAddToCart(product.id, Number(product.price));
   }
@@ -72,11 +74,19 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
               </div>
             )}
 
-            {hasDiscount && (
-              <Badge tone="accent" className="absolute start-3 top-3 bg-accent text-white border-transparent">
-                -{discountPct}%
-              </Badge>
-            )}
+            <div className="absolute start-3 top-3 flex flex-col items-start gap-1.5">
+              {hasDiscount && (
+                <Badge tone="accent" className="bg-accent text-white border-transparent">
+                  -{discountPct}%
+                </Badge>
+              )}
+              {product.quantity_offers.length > 0 && (
+                <Badge tone="accent" className="flex items-center gap-1 bg-accent text-white border-transparent">
+                  <Gift size={11} />
+                  {offerLabel(product.quantity_offers[0], lang, formatPrice)}
+                </Badge>
+              )}
+            </div>
 
             <button
               onClick={quickAdd}

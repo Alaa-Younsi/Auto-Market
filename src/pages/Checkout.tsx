@@ -33,6 +33,7 @@ export default function Checkout() {
   const navigate = useNavigate();
   const items = useCartStore((s) => s.items);
   const subtotal = useCartStore((s) => s.subtotal());
+  const discount = useCartStore((s) => s.discount());
   const clear = useCartStore((s) => s.clear);
   const { data: deliveryPrices = [] } = useDeliveryPrices();
   const { isSpam } = useHoneypot();
@@ -97,7 +98,7 @@ export default function Checkout() {
           language: lang,
         }
       );
-      trackPurchase(orderNumber, subtotal + shippingEstimate);
+      trackPurchase(orderNumber, subtotal - discount + shippingEstimate);
       clear();
       navigate(`/order-confirmation/${orderNumber}`);
     } catch (err) {
@@ -201,13 +202,19 @@ export default function Checkout() {
               <span>{t("cart_subtotal")}</span>
               <span>{formatPrice(subtotal)}</span>
             </div>
+            {discount > 0 && (
+              <div className="flex justify-between font-semibold text-accent">
+                <span>{t("cart_discount")}</span>
+                <span>-{formatPrice(discount)}</span>
+              </div>
+            )}
             <div className="flex justify-between text-muted">
               <span>{t("cart_shipping")}</span>
               <span>{shippingEstimate > 0 ? formatPrice(shippingEstimate) : "—"}</span>
             </div>
             <div className="flex justify-between border-t border-line pt-2 font-bold text-ink">
               <span>{t("cart_total")}</span>
-              <span>{formatPrice(subtotal + shippingEstimate)}</span>
+              <span>{formatPrice(subtotal - discount + shippingEstimate)}</span>
             </div>
           </div>
         </motion.aside>

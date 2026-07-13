@@ -1,7 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { sanitizeOffers } from "@/lib/offers";
 import { sanitizeSearchTerm } from "@/lib/utils";
 import type { Product } from "@/types/db";
+
+/* Normalizes rows from PostgREST: offers jsonb parsed defensively, and the
+   column may not exist yet on a DB that hasn't run migration 0005. */
+function normalizeProduct(row: Product): Product {
+  return {
+    ...row,
+    video_url: row.video_url ?? null,
+    quantity_offers: sanitizeOffers(row.quantity_offers),
+  };
+}
 
 interface UseProductsOptions {
   categoryId?: string;
@@ -47,7 +58,7 @@ export function useProducts(options: UseProductsOptions = {}) {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []).map(normalizeProduct);
     },
   });
 }
@@ -64,7 +75,7 @@ export function useProduct(slug: string | undefined) {
         .eq("status", "active")
         .maybeSingle();
       if (error) throw error;
-      return data;
+      return data ? normalizeProduct(data) : null;
     },
     enabled: !!slug,
   });

@@ -36,7 +36,10 @@ export function HeroScene({ sideOffset, scrollProgress }: HeroSceneProps) {
     <div className="relative h-full w-full">
       {webglSupported ? (
         <SceneErrorBoundary fallback={<HeroArtFallback />}>
-          <Suspense fallback={<HeroArtFallback />}>
+          {/* Fallback is deliberately empty: flashing the 2D art for the
+              second the 3D chunk takes to load reads as a glitch. The 2D car
+              only appears when WebGL is unavailable or the scene crashes. */}
+          <Suspense fallback={null}>
             <HeroCar3D
               sideOffset={sideOffset}
               scrollProgress={scrollProgress}

@@ -53,8 +53,8 @@ export default function AdminProducts() {
             <tr className="border-b border-line text-start text-xs text-muted">
               <th className="px-4 py-3 text-start font-semibold"></th>
               <th className="px-4 py-3 text-start font-semibold">{t("admin_product_name")}</th>
-              <th className="px-4 py-3 text-start font-semibold">{t("admin_product_price")}</th>
-              <th className="px-4 py-3 text-start font-semibold">{t("admin_product_stock")}</th>
+              <th className="hidden px-4 py-3 text-start font-semibold sm:table-cell">{t("admin_product_price")}</th>
+              <th className="hidden px-4 py-3 text-start font-semibold sm:table-cell">{t("admin_product_stock")}</th>
               <th className="px-4 py-3 text-start font-semibold">{t("admin_product_status")}</th>
               <th className="px-4 py-3 text-end font-semibold"></th>
             </tr>
@@ -80,9 +80,14 @@ export default function AdminProducts() {
                     )}
                   </div>
                 </td>
-                <td className="px-4 py-2">{lang === "ar" ? product.name_ar : product.name_fr}</td>
-                <td className="px-4 py-2">{formatPrice(product.price)}</td>
-                <td className="px-4 py-2">{product.stock}</td>
+                <td className="px-4 py-2">
+                  {lang === "ar" ? product.name_ar : product.name_fr}
+                  <span className="block text-xs text-muted sm:hidden">
+                    {formatPrice(product.price)} · {product.stock} pcs
+                  </span>
+                </td>
+                <td className="hidden px-4 py-2 sm:table-cell">{formatPrice(product.price)}</td>
+                <td className="hidden px-4 py-2 sm:table-cell">{product.stock}</td>
                 <td className="px-4 py-2">
                   <Badge tone={product.status === "active" ? "accent" : "muted"}>
                     {product.status === "active"

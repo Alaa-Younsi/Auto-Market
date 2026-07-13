@@ -6,6 +6,7 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import { useSeo } from "@/hooks/useSeo";
 import { getOrderByNumber } from "@/lib/placeOrder";
 import { formatPrice } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { LinkButton } from "@/components/ui/LinkButton";
 
 interface OrderRecap {
@@ -15,6 +16,7 @@ interface OrderRecap {
   city: string;
   subtotal: number;
   shipping: number;
+  discount?: number;
   total: number;
   items: Array<{ name_fr: string; name_ar: string; quantity: number; price: number }>;
 }
@@ -92,7 +94,16 @@ export default function OrderConfirmation() {
               </div>
             ))}
           </div>
-          <div className="mt-3 flex justify-between border-t border-line pt-3 text-sm">
+          {(order.discount ?? 0) > 0 && (
+            <div className="mt-3 flex justify-between border-t border-line pt-3 text-sm font-semibold text-accent">
+              <span>{t("cart_discount")}</span>
+              <span>-{formatPrice(order.discount ?? 0)}</span>
+            </div>
+          )}
+          <div className={cn(
+            "flex justify-between text-sm",
+            (order.discount ?? 0) > 0 ? "mt-1" : "mt-3 border-t border-line pt-3"
+          )}>
             <span className="text-muted">{t("cart_shipping")}</span>
             <span>{formatPrice(order.shipping)}</span>
           </div>
