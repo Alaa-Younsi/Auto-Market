@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import type { Order, OrderStatus } from "@/types/db";
+import type { Order, OrderItem, OrderStatus } from "@/types/db";
 
 interface UseOrdersOptions {
   status?: OrderStatus | "all";
@@ -43,7 +43,13 @@ export function useOrder(id: string | undefined) {
         .eq("order_id", id);
       if (itemsError) throw itemsError;
 
-      return { order, items: items ?? [] };
+      // `variants` may not exist yet on a DB that hasn't run migration 0009.
+      const normalizedItems = (items ?? []).map((item: OrderItem) => ({
+        ...item,
+        variants: item.variants ?? [],
+      }));
+
+      return { order, items: normalizedItems };
     },
     enabled: !!id,
   });

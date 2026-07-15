@@ -34,6 +34,22 @@ export type QuantityOffer =
   | { type: "free"; buy: number; get: number }
   | { type: "price"; qty: number; price: number };
 
+/** A custom variant axis beyond the built-in color/size, e.g. "Matériau" / "مادة". */
+export interface ProductVariantGroup {
+  name_fr: string;
+  name_ar: string;
+  values: string[];
+}
+
+/** A shopper's pick for one custom variant group — snapshotted onto the order
+    line the same way color/size are, so it stays readable if the product's
+    variants are edited or removed later. */
+export interface SelectedVariant {
+  name_fr: string;
+  name_ar: string;
+  value: string;
+}
+
 export interface Product {
   id: string;
   slug: string;
@@ -50,6 +66,7 @@ export interface Product {
   style_code: string | null;
   colors: string[];
   sizes: string[];
+  variants: ProductVariantGroup[];
   featured: boolean;
   status: ProductStatus;
   video_url: string | null;
@@ -90,6 +107,7 @@ export interface OrderItem {
   quantity: number;
   color: string | null;
   size: string | null;
+  variants: SelectedVariant[];
   image_url: string | null;
 }
 
@@ -128,6 +146,7 @@ export interface CartItem {
   quantity: number;
   color?: string;
   size?: string;
+  variants?: SelectedVariant[];
   imageUrl: string | null;
   stock: number;
   /* Snapshot for the client-side estimate only — place_order re-reads
@@ -140,6 +159,7 @@ export interface PlaceOrderItem {
   quantity: number;
   color?: string;
   size?: string;
+  variants?: SelectedVariant[];
 }
 
 export interface PlaceOrderCustomer {

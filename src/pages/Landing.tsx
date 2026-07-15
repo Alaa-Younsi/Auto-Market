@@ -73,6 +73,16 @@ export default function Landing() {
 
       {/* Hero */}
       <section ref={heroRef} className="relative overflow-hidden">
+        {/* Phone-only hero background image, behind the copy only. Stops exactly
+            at the 3D strip's own top edge (h-[300px] below) — the canvas clear
+            color matches --c-bg exactly in both themes, so its fade-to-bg scrim
+            still blends seamlessly into it without the image showing through
+            the strip's rounded corners. */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 bottom-[300px] sm:hidden">
+          <img src="/bgimage.png" alt="" className="h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-b from-bg via-bg/75 to-bg/30" />
+        </div>
+
         <div className="pointer-events-none absolute -top-24 start-1/2 h-[520px] w-[720px] -translate-x-1/2 rounded-full bg-brand/10 blur-[100px]" />
 
         {/* 3D scene. Below lg it's a strip under the copy and ignores pointer
@@ -85,7 +95,9 @@ export default function Landing() {
         {/* Scrims: keep the copy legible over the scene, and fade the scene out
             where it meets the section edges. `from-bg` tracks the theme token. */}
         <div className="pointer-events-none absolute inset-0 hidden bg-gradient-to-r from-bg from-15% via-bg/65 to-transparent lg:block rtl:bg-gradient-to-l" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-[290px] h-24 bg-gradient-to-b from-bg to-transparent sm:bottom-[330px] lg:hidden" />
+        {/* Phones get their own fade from the bg-image block above; this one's
+            only for the flat tablet background between sm and lg. */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-[290px] h-24 bg-gradient-to-b from-bg to-transparent max-sm:hidden sm:bottom-[330px] lg:hidden" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-bg to-transparent" />
 
         {/* Copy. The wrapper is click-through so drags over the empty half of
@@ -198,6 +210,8 @@ export default function Landing() {
                   <img
                     src={cat.image_url}
                     alt=""
+                    loading="lazy"
+                    decoding="async"
                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 ) : (

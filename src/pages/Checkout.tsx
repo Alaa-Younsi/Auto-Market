@@ -89,6 +89,7 @@ export default function Checkout() {
           quantity: item.quantity,
           color: item.color,
           size: item.size,
+          variants: item.variants,
         })),
         {
           customer_name: values.customer_name,
@@ -178,7 +179,7 @@ export default function Checkout() {
           <div className="max-h-64 space-y-3 overflow-y-auto">
             {items.map((item) => (
               <div
-                key={`${item.productId}-${item.color}-${item.size}`}
+                key={`${item.productId}-${item.color}-${item.size}-${(item.variants ?? []).map((v) => v.value).join(",")}`}
                 className="flex gap-3 rounded-lg p-1.5 transition-colors hover:bg-panel-2/60"
               >
                 <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-panel-2">

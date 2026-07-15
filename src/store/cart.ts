@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { lineDiscount } from "@/lib/offers";
-import type { CartItem } from "@/types/db";
+import type { CartItem, SelectedVariant } from "@/types/db";
 
 interface CartState {
   items: CartItem[];
@@ -9,12 +9,13 @@ interface CartState {
   open: () => void;
   close: () => void;
   addItem: (item: CartItem) => void;
-  removeItem: (productId: string, color?: string, size?: string) => void;
+  removeItem: (productId: string, color?: string, size?: string, variants?: SelectedVariant[]) => void;
   updateQuantity: (
     productId: string,
     quantity: number,
     color?: string,
-    size?: string
+    size?: string,
+    variants?: SelectedVariant[]
   ) => void;
   clear: () => void;
   subtotal: () => number;
@@ -22,13 +23,29 @@ interface CartState {
   totalQuantity: () => number;
 }
 
+/** Order-independent so two picks of the same values in a different order
+    still merge into the same cart line. */
+function variantsKey(variants?: SelectedVariant[]) {
+  if (!variants || variants.length === 0) return "";
+  return variants
+    .map((v) => `${v.name_fr}:${v.value}`)
+    .sort()
+    .join("|");
+}
+
 function sameLine(
   a: CartItem,
   productId: string,
   color?: string,
-  size?: string
+  size?: string,
+  variants?: SelectedVariant[]
 ) {
-  return a.productId === productId && a.color === color && a.size === size;
+  return (
+    a.productId === productId &&
+    a.color === color &&
+    a.size === size &&
+    variantsKey(a.variants) === variantsKey(variants)
+  );
 }
 
 export const useCartStore = create<CartState>()(
@@ -41,12 +58,12 @@ export const useCartStore = create<CartState>()(
       addItem: (item) =>
         set((state) => {
           const existing = state.items.find((i) =>
-            sameLine(i, item.productId, item.color, item.size)
+            sameLine(i, item.productId, item.color, item.size, item.variants)
           );
           if (existing) {
             return {
               items: state.items.map((i) =>
-                sameLine(i, item.productId, item.color, item.size)
+                sameLine(i, item.productId, item.color, item.size, item.variants)
                   ? { ...i, quantity: Math.min(i.quantity + item.quantity, i.stock) }
                   : i
               ),
@@ -55,17 +72,17 @@ export const useCartStore = create<CartState>()(
           }
           return { items: [...state.items, item], isOpen: true };
         }),
-      removeItem: (productId, color, size) =>
+      removeItem: (productId, color, size, variants) =>
         set((state) => ({
           items: state.items.filter(
-            (i) => !sameLine(i, productId, color, size)
+            (i) => !sameLine(i, productId, color, size, variants)
           ),
         })),
-      updateQuantity: (productId, quantity, color, size) =>
+      updateQuantity: (productId, quantity, color, size, variants) =>
         set((state) => ({
           items: state.items
             .map((i) =>
-              sameLine(i, productId, color, size)
+              sameLine(i, productId, color, size, variants)
                 ? { ...i, quantity: Math.max(1, Math.min(quantity, i.stock)) }
                 : i
             )

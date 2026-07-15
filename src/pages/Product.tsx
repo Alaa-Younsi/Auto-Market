@@ -16,6 +16,8 @@ import { Button } from "@/components/ui/Button";
 import { TiltCard } from "@/components/ui/TiltCard";
 import { ProductCard } from "@/components/product/ProductCard";
 import { InlineCheckout } from "@/components/product/InlineCheckout";
+import { ProductVideo } from "@/components/product/ProductVideo";
+import type { SelectedVariant } from "@/types/db";
 
 export default function Product() {
   const { slug } = useParams<{ slug: string }>();
@@ -30,14 +32,15 @@ export default function Product() {
   const [activeImage, setActiveImage] = useState(0);
   const [color, setColor] = useState<string | undefined>();
   const [size, setSize] = useState<string | undefined>();
+  const [variantChoices, setVariantChoices] = useState<Record<string, string>>({});
   const [quantity, setQuantity] = useState(1);
-  const [showInlineCheckout, setShowInlineCheckout] = useState(false);
   const [selectionError, setSelectionError] = useState<string | null>(null);
   const [displayPrice, setDisplayPrice] = useState<number | null>(null);
   const [added, setAdded] = useState(false);
 
   const trackedId = useRef<string | null>(null);
   const addedTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const checkoutRef = useRef<HTMLDivElement | null>(null);
 
   // The price reads as "arriving" rather than "counting up from zero" — it
   // starts close to the real value, never at a number that could be
@@ -130,6 +133,16 @@ export default function Product() {
   const details = lang === "ar" ? product.details_ar : product.details_fr;
   const relatedFiltered = related.filter((p) => p.id !== product.id).slice(0, 4);
 
+  function selectedVariantsList(): SelectedVariant[] {
+    return product!.variants
+      .filter((group) => variantChoices[group.name_fr])
+      .map((group) => ({
+        name_fr: group.name_fr,
+        name_ar: group.name_ar,
+        value: variantChoices[group.name_fr],
+      }));
+  }
+
   function validateSelection(): boolean {
     if (product!.colors.length > 0 && !color) {
       setSelectionError(t("product_select_color"));
@@ -138,6 +151,14 @@ export default function Product() {
     if (product!.sizes.length > 0 && !size) {
       setSelectionError(t("product_select_size"));
       return false;
+    }
+    for (const group of product!.variants) {
+      if (!variantChoices[group.name_fr]) {
+        setSelectionError(
+          `${t("product_select_option_prefix")} ${lang === "ar" ? group.name_ar : group.name_fr}`
+        );
+        return false;
+      }
     }
     setSelectionError(null);
     return true;
@@ -154,6 +175,7 @@ export default function Product() {
       quantity,
       color,
       size,
+      variants: selectedVariantsList(),
       imageUrl: images[0]?.url ?? null,
       stock: product!.stock,
       offers: product!.quantity_offers,
@@ -166,7 +188,7 @@ export default function Product() {
 
   function handleBuyNow() {
     if (!validateSelection()) return;
-    setShowInlineCheckout(true);
+    checkoutRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   const stockLabel =
@@ -245,18 +267,7 @@ export default function Product() {
               <h2 className="mb-3 font-heading text-base font-bold text-ink">
                 {t("product_video_title")}
               </h2>
-              {/* preload="none" + poster: the video is the heaviest asset on the
-                  page and both breakpoints' <video> tags are in the DOM at once,
-                  so metadata preload would cost two requests on every view.
-                  Nothing downloads until the shopper presses play. */}
-              <video
-                src={product.video_url}
-                poster={images[0]?.url}
-                controls
-                playsInline
-                preload="none"
-                className="w-full rounded-2xl border border-line bg-panel-2"
-              />
+              <ProductVideo src={product.video_url} poster={images[0]?.url} />
             </div>
           )}
         </div>
@@ -350,6 +361,33 @@ export default function Product() {
             </div>
           )}
 
+          {product.variants.map((group) => (
+            <div key={group.name_fr} className="mt-4">
+              <p className="mb-2 text-sm font-semibold text-ink">
+                {lang === "ar" ? group.name_ar : group.name_fr}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {group.values.map((value) => (
+                  <button
+                    key={value}
+                    onClick={() => {
+                      setVariantChoices((prev) => ({ ...prev, [group.name_fr]: value }));
+                      setSelectionError(null);
+                    }}
+                    className={cn(
+                      "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors",
+                      variantChoices[group.name_fr] === value
+                        ? "border-brand bg-brand/10 text-brand"
+                        : "border-line text-muted hover:bg-panel-2"
+                    )}
+                  >
+                    {value}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+
           <div className="mt-5">
             <p className="mb-2 text-sm font-semibold text-ink">{t("product_quantity")}</p>
             <div className="flex w-fit items-center gap-3 rounded-xl border border-line px-3 py-2">
@@ -428,14 +466,7 @@ export default function Product() {
               <h2 className="mb-3 font-heading text-base font-bold text-ink">
                 {t("product_video_title")}
               </h2>
-              <video
-                src={product.video_url}
-                poster={images[0]?.url}
-                controls
-                playsInline
-                preload="none"
-                className="w-full rounded-2xl border border-line bg-panel-2"
-              />
+              <ProductVideo src={product.video_url} poster={images[0]?.url} />
             </div>
           )}
 
@@ -455,14 +486,18 @@ export default function Product() {
             </div>
           )}
 
-          {showInlineCheckout && (
-            <div className="mt-8 rounded-2xl border border-line bg-panel p-5">
-              <h2 className="mb-4 font-heading text-base font-bold text-ink">
-                {t("checkout_title")}
-              </h2>
-              <InlineCheckout product={product} quantity={quantity} color={color} size={size} />
-            </div>
-          )}
+          <div ref={checkoutRef} className="mt-8 scroll-mt-20 rounded-2xl border border-line bg-panel p-5">
+            <h2 className="mb-4 font-heading text-base font-bold text-ink">
+              {t("checkout_title")}
+            </h2>
+            <InlineCheckout
+              product={product}
+              quantity={quantity}
+              color={color}
+              size={size}
+              variants={selectedVariantsList()}
+            />
+          </div>
         </div>
       </div>
 

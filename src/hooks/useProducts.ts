@@ -11,6 +11,7 @@ function normalizeProduct(row: Product): Product {
     ...row,
     video_url: row.video_url ?? null,
     quantity_offers: sanitizeOffers(row.quantity_offers),
+    variants: row.variants ?? [],
   };
 }
 

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import type { MotionValue } from "framer-motion";
 import { HeroArt } from "./HeroArt";
 import { HeroBadges } from "./HeroBadges";
@@ -31,6 +31,11 @@ export function HeroScene({ sideOffset, scrollProgress }: HeroSceneProps) {
   const webglSupport = useWebglSupport();
   const { isCompact, saveData } = useMediaFlags();
   const [paintColor, setPaintColor] = useState<string>(PAINT_SWATCHES[0].hex);
+  const containerRef = useRef<HTMLDivElement>(null);
+  // Scrolled well past the hero, the canvas would otherwise keep rendering
+  // every frame off-screen — pure wasted GPU/CPU that competes with scroll
+  // compositing site-wide. Default true so the intro plays immediately.
+  const [isNearViewport, setIsNearViewport] = useState(true);
 
   // The 3D scene is ~270 KB of JS plus the model. On Data Saver or a 2G-class
   // connection that is the whole page budget, so those visitors get the 2D art.
@@ -50,8 +55,20 @@ export function HeroScene({ sideOffset, scrollProgress }: HeroSceneProps) {
     return () => link.remove();
   }, [webglSupported]);
 
+  useEffect(() => {
+    if (!webglSupported) return;
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsNearViewport(entry.isIntersecting),
+      { rootMargin: "200px 0px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [webglSupported]);
+
   return (
-    <div className="relative h-full w-full">
+    <div ref={containerRef} className="relative h-full w-full">
       {webglSupported ? (
         <SceneErrorBoundary fallback={<HeroArtFallback />}>
           {/* Fallback is deliberately empty: flashing the 2D art for the
@@ -62,6 +79,7 @@ export function HeroScene({ sideOffset, scrollProgress }: HeroSceneProps) {
               sideOffset={sideOffset}
               scrollProgress={scrollProgress}
               paintColor={paintColor}
+              active={isNearViewport}
             />
           </Suspense>
         </SceneErrorBoundary>

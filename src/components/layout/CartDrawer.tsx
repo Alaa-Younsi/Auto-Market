@@ -43,7 +43,7 @@ export function CartDrawer() {
             <AnimatePresence initial={false}>
               {items.map((item) => (
                 <motion.div
-                  key={`${item.productId}-${item.color}-${item.size}`}
+                  key={`${item.productId}-${item.color}-${item.size}-${(item.variants ?? []).map((v) => v.value).join(",")}`}
                   layout={!prefersReducedMotion}
                   initial={prefersReducedMotion ? false : { opacity: 0, x: 40 }}
                   animate={{ opacity: 1, x: 0, height: "auto" }}
@@ -65,9 +65,17 @@ export function CartDrawer() {
                       <p className="text-sm font-semibold text-ink">
                         {lang === "ar" ? item.nameAr : item.nameFr}
                       </p>
-                      {(item.color || item.size) && (
+                      {(item.color || item.size || (item.variants?.length ?? 0) > 0) && (
                         <p className="text-xs text-muted">
-                          {[item.color, item.size].filter(Boolean).join(" · ")}
+                          {[
+                            item.color,
+                            item.size,
+                            ...(item.variants ?? []).map((v) =>
+                              lang === "ar" ? `${v.name_ar}: ${v.value}` : `${v.name_fr}: ${v.value}`
+                            ),
+                          ]
+                            .filter(Boolean)
+                            .join(" · ")}
                         </p>
                       )}
                     </div>
@@ -76,7 +84,7 @@ export function CartDrawer() {
                         <button
                           className="p-1.5 text-muted hover:text-ink"
                           onClick={() =>
-                            updateQuantity(item.productId, item.quantity - 1, item.color, item.size)
+                            updateQuantity(item.productId, item.quantity - 1, item.color, item.size, item.variants)
                           }
                         >
                           <Minus size={14} />
@@ -97,7 +105,7 @@ export function CartDrawer() {
                         <button
                           className="p-1.5 text-muted hover:text-ink"
                           onClick={() =>
-                            updateQuantity(item.productId, item.quantity + 1, item.color, item.size)
+                            updateQuantity(item.productId, item.quantity + 1, item.color, item.size, item.variants)
                           }
                         >
                           <Plus size={14} />
@@ -110,7 +118,7 @@ export function CartDrawer() {
                   </div>
                   <button
                     className="self-start p-1 text-muted hover:text-red-500"
-                    onClick={() => removeItem(item.productId, item.color, item.size)}
+                    onClick={() => removeItem(item.productId, item.color, item.size, item.variants)}
                     aria-label={t("cart_remove")}
                   >
                     <Trash2 size={16} />

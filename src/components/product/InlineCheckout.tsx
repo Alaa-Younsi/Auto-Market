@@ -15,16 +15,17 @@ import { lineDiscount } from "@/lib/offers";
 import { trackInitiateCheckout, trackPurchase } from "@/lib/pixel";
 import { CheckoutFields } from "./CheckoutFields";
 import { Button } from "@/components/ui/Button";
-import type { Product } from "@/types/db";
+import type { Product, SelectedVariant } from "@/types/db";
 
 interface InlineCheckoutProps {
   product: Product;
   quantity: number;
   color?: string;
   size?: string;
+  variants?: SelectedVariant[];
 }
 
-export function InlineCheckout({ product, quantity, color, size }: InlineCheckoutProps) {
+export function InlineCheckout({ product, quantity, color, size, variants }: InlineCheckoutProps) {
   const { t, lang } = useLanguage();
   const navigate = useNavigate();
   const { data: deliveryPrices = [] } = useDeliveryPrices();
@@ -67,11 +68,27 @@ export function InlineCheckout({ product, quantity, color, size }: InlineCheckou
 
   async function onSubmit(values: CheckoutFormValues) {
     if (isSpam(values.website)) return;
+    if (product.colors.length > 0 && !color) {
+      setErrorMsg(t("product_select_color"));
+      return;
+    }
+    if (product.sizes.length > 0 && !size) {
+      setErrorMsg(t("product_select_size"));
+      return;
+    }
+    for (const group of product.variants) {
+      if (!variants?.some((v) => v.name_fr === group.name_fr && v.value)) {
+        setErrorMsg(
+          `${t("product_select_option_prefix")} ${lang === "ar" ? group.name_ar : group.name_fr}`
+        );
+        return;
+      }
+    }
     setErrorMsg(null);
     setSubmitting(true);
     try {
       const orderNumber = await placeOrder(
-        [{ product_id: product.id, quantity, color, size }],
+        [{ product_id: product.id, quantity, color, size, variants }],
         {
           customer_name: values.customer_name,
           customer_phone: values.customer_phone,

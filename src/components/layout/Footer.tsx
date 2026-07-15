@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Mail, MapPin, Phone } from "lucide-react";
+import { MapPin, Phone } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { RoadDivider } from "@/components/effects/RoadDivider";
 import { FacebookIcon, InstagramIcon, TikTokIcon } from "@/components/ui/SocialIcons";
@@ -14,7 +14,7 @@ export function Footer() {
         <RoadDivider />
       </div>
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-3">
           <div>
             <Link to="/" className="mb-3 flex items-center gap-2">
               <BrandMark className="shadow-none" />
@@ -34,14 +34,18 @@ export function Footer() {
                 <FacebookIcon size={16} />
               </a>
               <a
-                href="#"
+                href="https://www.instagram.com/automarket.shop_/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="rounded-full border border-line p-2 text-muted transition-colors hover:border-brand hover:text-brand"
                 aria-label="Instagram"
               >
                 <InstagramIcon size={16} />
               </a>
               <a
-                href="#"
+                href="https://www.tiktok.com/@automarket.shop_"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="rounded-full border border-line p-2 text-muted transition-colors hover:border-brand hover:text-brand"
                 aria-label="TikTok"
               >
@@ -70,24 +74,11 @@ export function Footer() {
 
           <div>
             <h3 className="mb-3 font-heading text-sm font-bold text-ink">
-              {t("footer_help")}
-            </h3>
-            <ul className="space-y-2 text-sm text-muted">
-              <li>{t("footer_faq")}</li>
-              <li>{t("footer_delivery_info")}</li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="mb-3 font-heading text-sm font-bold text-ink">
               {t("footer_contact")}
             </h3>
             <ul className="space-y-2.5 text-sm text-muted">
               <li className="flex items-center gap-2">
                 <Phone size={14} className="text-brand" /> +213 555 00 00 00
-              </li>
-              <li className="flex items-center gap-2">
-                <Mail size={14} className="text-brand" /> contact@automarket.dz
               </li>
               <li className="flex items-center gap-2">
                 <MapPin size={14} className="text-brand" /> Algérie
@@ -96,11 +87,19 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-line pt-6 text-xs text-muted sm:flex-row">
-          <p>
+        <div className="mt-10 flex flex-col items-center gap-3 border-t border-line pt-6 text-xs text-muted sm:grid sm:grid-cols-3">
+          <p className="sm:justify-self-start">
             © {new Date().getFullYear()} {t("brand_name")}. {t("footer_rights")}
           </p>
-          <Link to="/admin/login" className="transition-colors hover:text-brand">
+          <a
+            href="https://alaayounsi.vercel.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transition-colors hover:text-brand sm:justify-self-center"
+          >
+            {t("footer_credit")}
+          </a>
+          <Link to="/admin/login" className="transition-colors hover:text-brand sm:justify-self-end">
             {t("footer_admin")}
           </Link>
         </div>

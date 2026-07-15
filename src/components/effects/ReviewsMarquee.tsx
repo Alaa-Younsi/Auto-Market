@@ -20,7 +20,13 @@ function ReviewCard({ review }: { review: ClientReview }) {
       <p className="mt-3 text-sm leading-relaxed text-ink">"{review.review_text}"</p>
       <div className="mt-4 flex items-center gap-2">
         {review.image_url ? (
-          <img src={review.image_url} alt="" className="h-9 w-9 rounded-full object-cover" />
+          <img
+            src={review.image_url}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="h-9 w-9 rounded-full object-cover"
+          />
         ) : (
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand/10 text-sm font-bold text-brand">
             {review.client_name.charAt(0)}

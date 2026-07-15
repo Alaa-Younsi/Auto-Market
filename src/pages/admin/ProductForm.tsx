@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
-import type { ProductImage, QuantityOffer } from "@/types/db";
+import type { ProductImage, ProductVariantGroup, QuantityOffer } from "@/types/db";
 import type { TranslationKey } from "@/i18n/translations";
 
 interface FormState {
@@ -142,6 +142,136 @@ function ChipListEditor({
         </div>
       )}
     </Field>
+  );
+}
+
+function VariantValueChips({
+  values,
+  onChange,
+}: {
+  values: string[];
+  onChange: (next: string[]) => void;
+}) {
+  const { t } = useLanguage();
+  const [draft, setDraft] = useState("");
+
+  function add() {
+    const v = draft.trim();
+    if (!v || values.includes(v)) return;
+    onChange([...values, v]);
+    setDraft("");
+  }
+
+  return (
+    <div>
+      <div className="flex gap-2">
+        <Input
+          placeholder={t("admin_variant_value_placeholder")}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              add();
+            }
+          }}
+        />
+        <Button type="button" variant="secondary" size="sm" onClick={add} className="shrink-0">
+          <Plus size={15} />
+          {t("admin_variant_add")}
+        </Button>
+      </div>
+      {values.length > 0 && (
+        <div className="mt-2.5 flex flex-wrap gap-2">
+          {values.map((v) => (
+            <span
+              key={v}
+              className="fx-pop inline-flex items-center gap-1.5 rounded-full border border-brand/30 bg-brand/10 px-3 py-1 text-sm font-medium text-brand"
+            >
+              {v}
+              <button
+                type="button"
+                onClick={() => onChange(values.filter((x) => x !== v))}
+                className="rounded-full p-0.5 hover:bg-brand/20"
+                aria-label={`Remove ${v}`}
+              >
+                <X size={12} />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CustomVariantsEditor({
+  groups,
+  onChange,
+}: {
+  groups: ProductVariantGroup[];
+  onChange: (next: ProductVariantGroup[]) => void;
+}) {
+  const { t } = useLanguage();
+
+  function updateGroup(i: number, patch: Partial<ProductVariantGroup>) {
+    onChange(groups.map((g, idx) => (idx === i ? { ...g, ...patch } : g)));
+  }
+
+  function removeGroup(i: number) {
+    onChange(groups.filter((_, idx) => idx !== i));
+  }
+
+  return (
+    <div className="space-y-4">
+      {groups.length === 0 && <p className="text-sm text-muted">{t("admin_variant_group_none")}</p>}
+
+      {groups.map((group, i) => (
+        <div key={i} className="space-y-3 rounded-xl border border-line bg-panel-2/50 p-3">
+          <div className="flex items-start gap-2">
+            <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2">
+              <Field label={t("admin_variant_group_name_fr")}>
+                <Input
+                  value={group.name_fr}
+                  onChange={(e) => updateGroup(i, { name_fr: e.target.value })}
+                />
+              </Field>
+              <Field label={t("admin_variant_group_name_ar")}>
+                <Input
+                  dir="rtl"
+                  value={group.name_ar}
+                  onChange={(e) => updateGroup(i, { name_ar: e.target.value })}
+                />
+              </Field>
+            </div>
+            <button
+              type="button"
+              onClick={() => removeGroup(i)}
+              className="mt-7 shrink-0 rounded-lg p-2 text-muted hover:bg-panel-2 hover:text-red-500"
+              aria-label={t("admin_confirm_delete")}
+            >
+              <Trash2 size={15} />
+            </button>
+          </div>
+          <Field label={t("admin_variant_group_values")}>
+            <VariantValueChips
+              values={group.values}
+              onChange={(values) => updateGroup(i, { values })}
+            />
+          </Field>
+        </div>
+      ))}
+
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => onChange([...groups, { name_fr: "", name_ar: "", values: [] }])}
+      >
+        <Plus size={15} />
+        {t("admin_variant_group_add")}
+      </Button>
+    </div>
   );
 }
 
@@ -278,6 +408,7 @@ export default function AdminProductForm() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [colors, setColors] = useState<string[]>([]);
   const [sizes, setSizes] = useState<string[]>([]);
+  const [variantGroups, setVariantGroups] = useState<ProductVariantGroup[]>([]);
   const [offers, setOffers] = useState<QuantityOffer[]>([]);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [images, setImages] = useState<ProductImage[]>([]);
@@ -311,6 +442,7 @@ export default function AdminProductForm() {
         });
         setColors(data.colors ?? []);
         setSizes(data.sizes ?? []);
+        setVariantGroups(data.variants ?? []);
         setOffers(sanitizeOffers(data.quantity_offers));
         setVideoUrl(data.video_url ?? null);
         setImages(data.product_images ?? []);
@@ -386,6 +518,7 @@ export default function AdminProductForm() {
         stock: Number(form.stock),
         colors,
         sizes,
+        variants: variantGroups.filter((g) => g.name_fr.trim() && g.values.length > 0),
         quantity_offers: sanitizeOffers(offers),
         video_url: videoUrl,
         featured: form.featured,
@@ -532,6 +665,12 @@ export default function AdminProductForm() {
               values={sizes}
               onChange={setSizes}
             />
+            <div className="border-t border-line pt-4">
+              <p className="mb-3 text-sm font-semibold text-ink">
+                {t("admin_variant_group_title")}
+              </p>
+              <CustomVariantsEditor groups={variantGroups} onChange={setVariantGroups} />
+            </div>
           </BentoPanel>
 
           <BentoPanel className="space-y-4 p-5">

@@ -16,9 +16,12 @@ interface HeroCar3DProps {
   sideOffset: number;
   scrollProgress: MotionValue<number> | null;
   paintColor: string;
+  /** False once the scene has scrolled well out of view — stops the render
+      loop entirely so it's not burning GPU/CPU off-screen. */
+  active: boolean;
 }
 
-export function HeroCar3D({ sideOffset, scrollProgress, paintColor }: HeroCar3DProps) {
+export function HeroCar3D({ sideOffset, scrollProgress, paintColor, active }: HeroCar3DProps) {
   const { theme } = useTheme();
   const { isMobile, isCompact, prefersReducedMotion } = useMediaFlags();
   const [lowQuality, setLowQuality] = useState(isMobile);
@@ -26,6 +29,7 @@ export function HeroCar3D({ sideOffset, scrollProgress, paintColor }: HeroCar3DP
   const fogColor = FOG_COLORS[theme];
   const animate = !prefersReducedMotion;
   const dprCap: [number, number] = lowQuality ? [1, 1] : [1, 2];
+  const frameloop = !active ? "never" : animate ? "always" : "demand";
 
   // Below `lg` the scene is a full-width strip with no copy overlapping it, so
   // there is no empty half to push the car into — centre it instead.
@@ -41,7 +45,7 @@ export function HeroCar3D({ sideOffset, scrollProgress, paintColor }: HeroCar3DP
       dpr={dprCap}
       camera={{ position: CAMERA_POSITION, fov: CAMERA_FOV }}
       gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
-      frameloop={animate ? "always" : "demand"}
+      frameloop={frameloop}
       onCreated={({ gl }) => {
         gl.toneMapping = THREE.ACESFilmicToneMapping;
         gl.toneMappingExposure = 1.05;

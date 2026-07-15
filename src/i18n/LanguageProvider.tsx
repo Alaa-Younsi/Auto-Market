@@ -23,10 +23,10 @@ const LanguageContext = createContext<LanguageContextValue | null>(null);
 const STORAGE_KEY = "auto-market-lang";
 
 function getInitialLang(): Lang {
-  if (typeof window === "undefined") return "fr";
+  if (typeof window === "undefined") return "ar";
   const stored = window.localStorage.getItem(STORAGE_KEY);
   if (stored === "fr" || stored === "ar") return stored;
-  return "fr";
+  return "ar";
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {

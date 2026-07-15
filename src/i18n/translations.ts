@@ -68,12 +68,10 @@ export const translations = {
     // Footer
     footer_about: "Auto Market est votre boutique de pièces et accessoires automobiles en Algérie, avec paiement à la livraison.",
     footer_links: "Liens rapides",
-    footer_help: "Aide",
     footer_contact: "Contact",
-    footer_faq: "Questions fréquentes",
-    footer_delivery_info: "Infos livraison",
     footer_rights: "Tous droits réservés.",
     footer_admin: "Administration",
+    footer_credit: "Site créé par Alaa Younsi",
 
     // Shop
     shop_title: "Boutique",
@@ -103,6 +101,7 @@ export const translations = {
     product_related: "Produits similaires",
     product_select_color: "Veuillez choisir une couleur",
     product_select_size: "Veuillez choisir une taille",
+    product_select_option_prefix: "Veuillez choisir une option pour",
 
     // Cart
     cart_title: "Mon panier",
@@ -218,6 +217,13 @@ export const translations = {
     admin_variant_add: "Ajouter",
     admin_variant_color_placeholder: "Ex : Noir",
     admin_variant_size_placeholder: "Ex : M ou H7",
+    admin_variant_group_title: "Variantes personnalisées",
+    admin_variant_group_none: "Aucune variante personnalisée.",
+    admin_variant_group_name_fr: "Nom (Français)",
+    admin_variant_group_name_ar: "Nom (Arabe)",
+    admin_variant_group_values: "Valeurs",
+    admin_variant_group_add: "Ajouter une variante",
+    admin_variant_value_placeholder: "Ex : Cuir",
     admin_product_offers: "Offres quantité",
     admin_offer_none: "Aucune offre. Ajoutez par ex. « 2 achetés, 1 offert ».",
     admin_offer_type_free: "X achetés, Y offerts",
@@ -255,6 +261,17 @@ export const translations = {
     admin_order_detail_title: "Détail de la commande",
     admin_order_items: "Articles commandés",
     admin_order_update_status: "Mettre à jour le statut",
+    admin_export_orders: "Exporter en Excel",
+    admin_delete_all_orders: "Supprimer tout",
+    admin_delete_all_title: "Supprimer toutes les commandes ?",
+    admin_delete_all_body_pre: "Cette action supprimera définitivement",
+    admin_delete_all_body_post:
+      "commande(s) ainsi que leurs articles associés. Cette action est irréversible.",
+    admin_delete_all_download_first: "Télécharger avant de supprimer",
+    admin_delete_all_confirm_button: "Supprimer définitivement",
+    admin_delete_all_cancel: "Annuler",
+    admin_delete_all_deleting: "Suppression...",
+    admin_orders_empty: "Aucune commande.",
 
     // Admin - delivery
     admin_delivery_title: "Tarifs de livraison",
@@ -351,12 +368,10 @@ export const translations = {
     // Footer
     footer_about: "أوتو ماركت هو متجرك لقطع غيار وإكسسوارات السيارات في الجزائر، مع الدفع عند الاستلام.",
     footer_links: "روابط سريعة",
-    footer_help: "المساعدة",
     footer_contact: "اتصل بنا",
-    footer_faq: "الأسئلة الشائعة",
-    footer_delivery_info: "معلومات التوصيل",
     footer_rights: "جميع الحقوق محفوظة.",
     footer_admin: "الإدارة",
+    footer_credit: "الموقع من إنشاء Alaa Younsi",
 
     // Shop
     shop_title: "المتجر",
@@ -386,6 +401,7 @@ export const translations = {
     product_related: "منتجات مشابهة",
     product_select_color: "الرجاء اختيار لون",
     product_select_size: "الرجاء اختيار مقاس",
+    product_select_option_prefix: "الرجاء اختيار خيار لـ",
 
     // Cart
     cart_title: "سلتي",
@@ -500,6 +516,13 @@ export const translations = {
     admin_variant_add: "إضافة",
     admin_variant_color_placeholder: "مثال: أسود",
     admin_variant_size_placeholder: "مثال: M أو H7",
+    admin_variant_group_title: "خيارات مخصصة",
+    admin_variant_group_none: "لا توجد خيارات مخصصة.",
+    admin_variant_group_name_fr: "الاسم (فرنسي)",
+    admin_variant_group_name_ar: "الاسم (عربي)",
+    admin_variant_group_values: "القيم",
+    admin_variant_group_add: "إضافة خيار",
+    admin_variant_value_placeholder: "مثال: جلد",
     admin_product_offers: "عروض الكمية",
     admin_offer_none: "لا توجد عروض. أضف مثلاً « اشترِ 2 واحصل على 1 مجانًا ».",
     admin_offer_type_free: "اشترِ X واحصل على Y مجانًا",
@@ -537,6 +560,16 @@ export const translations = {
     admin_order_detail_title: "تفاصيل الطلب",
     admin_order_items: "المنتجات المطلوبة",
     admin_order_update_status: "تحديث الحالة",
+    admin_export_orders: "تصدير إلى Excel",
+    admin_delete_all_orders: "حذف الكل",
+    admin_delete_all_title: "حذف جميع الطلبات؟",
+    admin_delete_all_body_pre: "سيؤدي هذا الإجراء إلى حذف",
+    admin_delete_all_body_post: "طلب (طلبات) وجميع عناصرها نهائيًا. لا يمكن التراجع عن هذا الإجراء.",
+    admin_delete_all_download_first: "تنزيل قبل الحذف",
+    admin_delete_all_confirm_button: "حذف نهائيًا",
+    admin_delete_all_cancel: "إلغاء",
+    admin_delete_all_deleting: "جارٍ الحذف...",
+    admin_orders_empty: "لا توجد طلبات.",
 
     // Admin - delivery
     admin_delivery_title: "أسعار التوصيل",

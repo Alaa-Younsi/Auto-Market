@@ -103,10 +103,17 @@ option {
 
 /* ---- fx utility classes ---- */
 
-.fx-sweep {
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
+/* Layered so Tailwind utilities (e.g. `absolute`) can override this default
+   `position: relative` — unlayered CSS always wins over layered rules
+   regardless of source order, which otherwise fights a consumer that needs
+   the element positioned absolutely (was breaking ProductCard's quick-add
+   button into a full-width block instead of a corner-anchored pill). */
+@layer components {
+  .fx-sweep {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
 }
 .fx-sweep::before {
   content: "";
