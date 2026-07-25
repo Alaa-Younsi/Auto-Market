@@ -82,11 +82,12 @@ bun run preview      # preview the production build
 - Place at least one real order end-to-end as an anonymous (not logged in)
   customer, through both the cart checkout and the product-page "buy now"
   flow, and confirm the order confirmation page shows the order recap.
-- Update the production domain in `index.html` (`canonical`, `og:url`,
-  `og:image`) and `scripts/generate-sitemap.mjs` (`DOMAIN` constant) —
-  currently placeholder `https://automarket.dz`.
-- Regenerate `public/og-image.png` if you change branding:
-  `powershell -File scripts/gen-og-image.ps1`.
+- Production domain is `https://www.auto-market.shop` — set in `index.html`
+  (`canonical`, `og:url`, `og:image`, JSON-LD), `src/hooks/useSeo.ts`,
+  `middleware.ts`, `scripts/generate-sitemap.mjs`, `public/robots.txt`, and
+  `src/pages/Product.tsx`. Update all of them together if the domain changes.
+- Regenerate `public/og-image.png` (crop of `public/bgimage.png`) if the hero
+  photo changes: `powershell -File scripts/gen-og-image.ps1`.
 
 ## Project structure
 

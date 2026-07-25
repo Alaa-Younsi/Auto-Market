@@ -8,7 +8,7 @@ interface SeoOptions {
   jsonLd?: Record<string, unknown>;
 }
 
-const SITE_URL = "https://automarket.dz";
+const SITE_URL = "https://www.auto-market.shop";
 const DEFAULT_IMAGE = `${SITE_URL}/og-image.png`;
 
 function upsertMeta(attr: "name" | "property", key: string, content: string) {

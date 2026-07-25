@@ -87,7 +87,7 @@ export default function Product() {
           brand: { "@type": "Brand", name: t("brand_name") },
           offers: {
             "@type": "Offer",
-            url: `https://automarket.dz/product/${product.slug}`,
+            url: `https://www.auto-market.shop/product/${product.slug}`,
             priceCurrency: "DZD",
             price: Number(product.price),
             availability:

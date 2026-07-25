@@ -19,7 +19,7 @@ export const config = {
 const CRAWLER =
   /facebookexternalhit|facebookcatalog|WhatsApp|Twitterbot|LinkedInBot|Slackbot|TelegramBot|Discordbot|Pinterest|redditbot|Instagram|SkypeUriPreview|vkShare|W3C_Validator|Googlebot|bingbot/i;
 
-const SITE_URL = "https://automarket.dz";
+const SITE_URL = "https://www.auto-market.shop";
 const FALLBACK_IMAGE = `${SITE_URL}/og-image.png`;
 
 function escapeHtml(value: string): string {

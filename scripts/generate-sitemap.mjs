@@ -1,7 +1,7 @@
 import { writeFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 
-const DOMAIN = "https://automarket.dz";
+const DOMAIN = "https://www.auto-market.shop";
 
 // Only routes the router actually serves — /track-order was listed here but no
 // such route exists, so the sitemap was advertising a 404 to Google.

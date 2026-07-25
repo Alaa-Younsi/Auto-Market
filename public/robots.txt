@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin
 Disallow: /checkout
 
-Sitemap: https://automarket.dz/sitemap.xml
+Sitemap: https://www.auto-market.shop/sitemap.xml
