@@ -8,6 +8,7 @@ import { useCartStore } from "@/store/cart";
 import { useMediaFlags } from "@/hooks/useMediaFlags";
 import { useSeo } from "@/hooks/useSeo";
 import { formatPrice } from "@/lib/format";
+import { Price } from "@/components/ui/Price";
 import { lineDiscount, offerLabel } from "@/lib/offers";
 import { trackAddToCart, trackViewContent } from "@/lib/pixel";
 import { cn } from "@/lib/utils";
@@ -282,13 +283,15 @@ export default function Product() {
           <h1 className="font-heading text-2xl font-extrabold text-ink sm:text-3xl">{name}</h1>
 
           <div className="mt-3 flex items-center gap-3">
-            <span className="font-heading text-2xl font-extrabold text-brand">
-              {formatPrice(displayPrice ?? product.price)}
-            </span>
+            <Price
+              value={displayPrice ?? product.price}
+              className="font-heading text-2xl font-extrabold text-brand"
+            />
             {product.compare_at_price != null && product.compare_at_price > product.price && (
-              <span className="text-sm text-muted line-through">
-                {formatPrice(product.compare_at_price)}
-              </span>
+              <Price
+                value={product.compare_at_price}
+                className="text-sm text-muted line-through"
+              />
             )}
             <Badge tone={product.stock === 0 ? "danger" : "accent"}>{stockLabel}</Badge>
           </div>
@@ -405,7 +408,7 @@ export default function Product() {
             {savings > 0 && (
               <p className="fx-pop mt-2 flex items-center gap-1.5 text-sm font-bold text-accent">
                 <Gift size={14} />
-                {t("product_you_save")} {formatPrice(savings)}
+                {t("product_you_save")} <Price value={savings} />
               </p>
             )}
           </div>

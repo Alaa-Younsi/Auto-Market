@@ -33,9 +33,14 @@ export function offerLabel(offer: QuantityOffer, lang: "fr" | "ar", formatPrice:
       ? `اشترِ ${offer.buy} واحصل على ${offer.get} مجانًا`
       : `Achetez ${offer.buy}, ${offer.get} offert${offer.get > 1 ? "s" : ""}`;
   }
+  // Wrap the price in a LTR isolate (U+2066…U+2069) so its digits + "DA"
+  // suffix keep their order inside the Arabic RTL label instead of the bidi
+  // algorithm flipping "3 000 DA" to "DA 000 3". Same reason the <Price>
+  // component forces dir="ltr" — this is the plain-string equivalent.
+  const price = `⁦${formatPrice(offer.price)}⁩`;
   return lang === "ar"
-    ? `${offer.qty} بـ ${formatPrice(offer.price)}`
-    : `${offer.qty} pour ${formatPrice(offer.price)}`;
+    ? `${offer.qty} بـ ${price}`
+    : `${offer.qty} pour ${price}`;
 }
 
 /** Parse the jsonb column defensively — admin data could be hand-edited. */

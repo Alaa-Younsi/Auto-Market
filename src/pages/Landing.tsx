@@ -71,8 +71,14 @@ export default function Landing() {
     <div>
       <ScrollRoad />
 
-      {/* Hero */}
-      <section ref={heroRef} className="relative overflow-hidden">
+      {/* Hero — fills the viewport (minus the sticky header) on first load so
+          nothing below it peeks above the fold; the rest reveals on scroll.
+          svh keeps it honest under mobile browser chrome; the vh line is the
+          fallback for engines without svh. */}
+      <section
+        ref={heroRef}
+        className="relative flex min-h-[calc(100vh-3.5rem)] min-h-[calc(100svh-3.5rem)] flex-col overflow-hidden"
+      >
         {/* Phone-only hero background image, behind the copy only. Stops exactly
             at the 3D strip's own top edge (h-[300px] below) — the canvas clear
             color matches --c-bg exactly in both themes, so its fade-to-bg scrim
@@ -102,7 +108,7 @@ export default function Landing() {
 
         {/* Copy. The wrapper is click-through so drags over the empty half of
             the hero reach OrbitControls; interactive children opt back in. */}
-        <div className="pointer-events-none relative z-10 mx-auto max-w-7xl px-4 pb-[330px] pt-8 sm:px-6 sm:pb-[370px] lg:px-8 lg:pb-24 lg:pt-10">
+        <div className="pointer-events-none relative z-10 mx-auto w-full max-w-7xl px-4 pb-[330px] pt-8 sm:px-6 sm:pb-[370px] lg:my-auto lg:px-8 lg:pb-24 lg:pt-10">
           <motion.div
             className="max-w-xl lg:max-w-[46%]"
             initial={{ x: lang === "ar" ? 24 : -24 }}

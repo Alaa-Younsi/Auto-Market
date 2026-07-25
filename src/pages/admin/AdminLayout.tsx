@@ -1,5 +1,5 @@
-import { Suspense, useState } from "react";
-import { Link, Navigate, NavLink, Outlet } from "react-router-dom";
+import { Suspense, useEffect, useState } from "react";
+import { Link, Navigate, NavLink, Outlet, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -111,7 +111,50 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 export default function AdminLayout() {
   const { session, loading } = useAuth();
   const { dir } = useLanguage();
+  const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Close the drawer whenever the route changes — a nav tap, a redirect, or the
+  // browser back button all change the path with no click on the drawer itself.
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
+
+  // While the drawer is open, lock the body with `position: fixed` at the
+  // current offset — NOT `overflow: hidden`, which on iOS Safari still lets the
+  // visual viewport rubber-band and drags the fixed drawer/backdrop out of sync
+  // with where taps land, the classic "drawer opens but the X and backdrop go
+  // dead" phone bug. Also close on Escape and when the viewport grows past the
+  // `md` breakpoint (where the drawer is hidden and would otherwise strand the
+  // scroll-lock on an invisible element).
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const scrollY = window.scrollY;
+    const { body } = document;
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.width = "100%";
+    body.style.overflow = "hidden";
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileOpen(false);
+    };
+    const onResize = () => {
+      if (window.innerWidth >= 768) setMobileOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("resize", onResize);
+
+    return () => {
+      body.style.position = "";
+      body.style.top = "";
+      body.style.width = "";
+      body.style.overflow = "";
+      window.scrollTo(0, scrollY);
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("resize", onResize);
+    };
+  }, [mobileOpen]);
 
   if (loading) {
     return <div className="flex min-h-screen items-center justify-center text-muted">…</div>;
@@ -153,19 +196,32 @@ export default function AdminLayout() {
         )}
       </AnimatePresence>
 
-      <div className="flex flex-1 flex-col">
-        <div className="flex items-center gap-3 border-b border-line bg-panel px-4 py-3 md:hidden">
-          <button onClick={() => setMobileOpen(true)} className="text-ink">
+      {/* min-w-0 is essential: without it this flex column keeps its default
+          `min-width: auto` and refuses to shrink below its widest child, so a
+          wide `whitespace-nowrap` table stretches the whole column past the
+          phone viewport (horizontal overflow) instead of scrolling inside its
+          own `overflow-x-auto` panel. */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex items-center gap-2 border-b border-line bg-panel px-4 py-3 md:hidden">
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="-m-2 p-2 text-ink"
+            aria-label="Open menu"
+          >
             <Menu size={22} />
           </button>
           <span className="font-heading text-sm font-extrabold text-ink">Admin</span>
           {mobileOpen && (
-            <button onClick={() => setMobileOpen(false)} className="ms-auto text-ink">
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="-m-2 ms-auto p-2 text-ink"
+              aria-label="Close menu"
+            >
               <X size={20} />
             </button>
           )}
         </div>
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
+        <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
           {/* Own boundary so navigating between admin sub-pages only
               suspends the content area, not the sidebar shell above. */}
           <Suspense

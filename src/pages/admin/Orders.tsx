@@ -5,7 +5,8 @@ import { Download, Trash2 } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useOrders } from "@/hooks/useOrders";
 import { supabase } from "@/lib/supabase";
-import { formatPrice, formatDate } from "@/lib/format";
+import { formatDate } from "@/lib/format";
+import { Price } from "@/components/ui/Price";
 import { exportOrdersToExcel } from "@/lib/exportOrders";
 import { ORDER_STATUS_LABEL_KEY } from "@/lib/orderStatus";
 import { BentoPanel } from "@/components/ui/BentoPanel";
@@ -129,7 +130,7 @@ export default function AdminOrders() {
                 </td>
                 <td className="whitespace-nowrap px-4 py-3">{order.customer_name}</td>
                 <td className="hidden whitespace-nowrap px-4 py-3 sm:table-cell">{order.wilaya}</td>
-                <td className="whitespace-nowrap px-4 py-3 font-semibold">{formatPrice(order.total)}</td>
+                <td className="whitespace-nowrap px-4 py-3 font-semibold"><Price value={order.total} /></td>
                 <td className="whitespace-nowrap px-4 py-3">
                   <Badge tone={STATUS_TONE[order.status]}>
                     {t(ORDER_STATUS_LABEL_KEY[order.status])}

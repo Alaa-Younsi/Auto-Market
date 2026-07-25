@@ -6,7 +6,7 @@ import { useCartStore } from "@/store/cart";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useMediaFlags } from "@/hooks/useMediaFlags";
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
-import { formatPrice } from "@/lib/format";
+import { Price } from "@/components/ui/Price";
 
 const ROW_TRANSITION = { type: "spring", damping: 28, stiffness: 260 } as const;
 
@@ -111,9 +111,10 @@ export function CartDrawer() {
                           <Plus size={14} />
                         </button>
                       </div>
-                      <p className="text-sm font-bold text-brand">
-                        {formatPrice(item.price * item.quantity)}
-                      </p>
+                      <Price
+                        value={item.price * item.quantity}
+                        className="text-sm font-bold text-brand"
+                      />
                     </div>
                   </div>
                   <button
@@ -132,12 +133,12 @@ export function CartDrawer() {
             {discount > 0 && (
               <div className="mb-1.5 flex items-center justify-between text-sm">
                 <span className="text-muted">{t("cart_discount")}</span>
-                <span className="font-bold text-accent">-{formatPrice(discount)}</span>
+                <Price value={discount} prefix="-" className="font-bold text-accent" />
               </div>
             )}
             <div className="mb-4 flex items-center justify-between text-sm">
               <span className="text-muted">{t("cart_subtotal")}</span>
-              <span className="font-bold text-ink">{formatPrice(animatedTotal)}</span>
+              <Price value={animatedTotal} className="font-bold text-ink" />
             </div>
             <LinkButton to="/checkout" onClick={close} className="w-full" size="lg">
               {t("cart_checkout")}

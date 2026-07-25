@@ -5,6 +5,7 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import { useMediaFlags } from "@/hooks/useMediaFlags";
 import { useCartStore } from "@/store/cart";
 import { formatPrice } from "@/lib/format";
+import { Price } from "@/components/ui/Price";
 import { offerLabel } from "@/lib/offers";
 import { trackAddToCart } from "@/lib/pixel";
 import { Badge } from "@/components/ui/Badge";
@@ -111,13 +112,15 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
               {name}
             </h3>
             <div className="flex items-center gap-2">
-              <span className="font-heading text-base font-extrabold text-brand">
-                {formatPrice(product.price)}
-              </span>
+              <Price
+                value={product.price}
+                className="font-heading text-base font-extrabold text-brand"
+              />
               {hasDiscount && (
-                <span className="text-xs text-muted line-through">
-                  {formatPrice(product.compare_at_price as number)}
-                </span>
+                <Price
+                  value={product.compare_at_price as number}
+                  className="text-xs text-muted line-through"
+                />
               )}
             </div>
           </div>

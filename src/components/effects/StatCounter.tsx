@@ -27,7 +27,10 @@ export function StatCounter({ value, label, suffix = "", decimals = 0 }: StatCou
   return (
     <div ref={ref}>
       <span className="mb-2 block h-0.5 w-8 rounded-full bg-gradient-to-r from-brand to-accent" />
-      <p className="font-heading text-xl font-extrabold tabular-nums text-ink sm:text-2xl">
+      {/* dir="ltr" so a value + suffix like "1000+" or "4.9/5" keeps its
+          number-then-suffix order under the Arabic RTL layout instead of
+          the bidi algorithm flipping it to "+1000" / "5/4.9". */}
+      <p dir="ltr" className="font-heading text-xl font-extrabold tabular-nums text-ink sm:text-2xl rtl:text-end">
         {display.toFixed(decimals)}
         {suffix}
       </p>

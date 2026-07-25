@@ -13,7 +13,7 @@ import { useCartStore } from "@/store/cart";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/checkoutSchema";
 import { placeOrder } from "@/lib/placeOrder";
 import { orderErrorKey } from "@/lib/orderErrors";
-import { formatPrice } from "@/lib/format";
+import { Price } from "@/components/ui/Price";
 import { trackInitiateCheckout, trackPurchase } from "@/lib/pixel";
 import { CheckoutFields } from "@/components/product/CheckoutFields";
 import { Button } from "@/components/ui/Button";
@@ -192,7 +192,7 @@ export default function Checkout() {
                     {lang === "ar" ? item.nameAr : item.nameFr}
                   </p>
                   <p className="text-xs text-muted">
-                    {item.quantity} × {formatPrice(item.price)}
+                    {item.quantity} × <Price value={item.price} />
                   </p>
                 </div>
               </div>
@@ -202,12 +202,12 @@ export default function Checkout() {
           <div className="mt-4 space-y-1.5 border-t border-line pt-4 text-sm">
             <div className="flex justify-between text-muted">
               <span>{t("cart_subtotal")}</span>
-              <span>{formatPrice(subtotal)}</span>
+              <Price value={subtotal} />
             </div>
             {discount > 0 && (
               <div className="flex justify-between font-semibold text-accent">
                 <span>{t("cart_discount")}</span>
-                <span>-{formatPrice(discount)}</span>
+                <Price value={discount} prefix="-" />
               </div>
             )}
             <div className="flex justify-between text-muted">
@@ -218,12 +218,12 @@ export default function Checkout() {
                   ? "—"
                   : shippingEstimate === 0
                     ? t("cart_shipping_free")
-                    : formatPrice(shippingEstimate)}
+                    : <Price value={shippingEstimate} />}
               </span>
             </div>
             <div className="flex justify-between border-t border-line pt-2 font-bold text-ink">
               <span>{t("cart_total")}</span>
-              <span>{formatPrice(subtotal - discount + shippingEstimate)}</span>
+              <Price value={subtotal - discount + shippingEstimate} />
             </div>
           </div>
         </motion.aside>

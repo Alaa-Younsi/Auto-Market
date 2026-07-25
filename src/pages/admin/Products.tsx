@@ -5,7 +5,7 @@ import { Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useProducts } from "@/hooks/useProducts";
 import { supabase } from "@/lib/supabase";
-import { formatPrice } from "@/lib/format";
+import { Price } from "@/components/ui/Price";
 import { BentoPanel } from "@/components/ui/BentoPanel";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -83,10 +83,10 @@ export default function AdminProducts() {
                 <td className="px-4 py-2">
                   {lang === "ar" ? product.name_ar : product.name_fr}
                   <span className="block text-xs text-muted sm:hidden">
-                    {formatPrice(product.price)} · {product.stock} pcs
+                    <Price value={product.price} /> · {product.stock} pcs
                   </span>
                 </td>
-                <td className="hidden px-4 py-2 sm:table-cell">{formatPrice(product.price)}</td>
+                <td className="hidden px-4 py-2 sm:table-cell"><Price value={product.price} /></td>
                 <td className="hidden px-4 py-2 sm:table-cell">{product.stock}</td>
                 <td className="px-4 py-2">
                   <Badge tone={product.status === "active" ? "accent" : "muted"}>

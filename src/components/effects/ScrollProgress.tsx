@@ -51,10 +51,13 @@ export function ScrollProgress() {
         style={{ scaleX: progress }}
         className="absolute inset-x-0 bottom-0 h-0.5 origin-left bg-gradient-to-r from-brand to-accent rtl:origin-right"
       />
+      {/* The MiniCar's wheels sit at the very bottom of its SVG box, so pinning
+          the box's bottom to the top of the 2px bar lands the wheels right on
+          the line instead of the car dangling below it. */}
       <motion.div
         aria-hidden="true"
         style={{ x: carX }}
-        className="absolute bottom-[-4px] start-0 z-10 hidden md:block"
+        className="absolute bottom-[2px] start-0 z-10 hidden md:block"
       >
         <MiniCar size={16} className="text-brand drop-shadow-[0_0_4px_rgb(var(--c-brand)/0.6)]" />
       </motion.div>

@@ -5,7 +5,7 @@ import { CheckCircle2, Copy } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useSeo } from "@/hooks/useSeo";
 import { getOrderByNumber } from "@/lib/placeOrder";
-import { formatPrice } from "@/lib/format";
+import { Price } from "@/components/ui/Price";
 import { cn } from "@/lib/utils";
 import { LinkButton } from "@/components/ui/LinkButton";
 
@@ -88,16 +88,17 @@ export default function OrderConfirmation() {
                 <span className="text-ink">
                   {(lang === "ar" ? item.name_ar : item.name_fr)} × {item.quantity}
                 </span>
-                <span className="font-semibold text-ink">
-                  {formatPrice(item.price * item.quantity)}
-                </span>
+                <Price
+                  value={item.price * item.quantity}
+                  className="font-semibold text-ink"
+                />
               </div>
             ))}
           </div>
           {(order.discount ?? 0) > 0 && (
             <div className="mt-3 flex justify-between border-t border-line pt-3 text-sm font-semibold text-accent">
               <span>{t("cart_discount")}</span>
-              <span>-{formatPrice(order.discount ?? 0)}</span>
+              <Price value={order.discount ?? 0} prefix="-" />
             </div>
           )}
           <div className={cn(
@@ -105,11 +106,11 @@ export default function OrderConfirmation() {
             (order.discount ?? 0) > 0 ? "mt-1" : "mt-3 border-t border-line pt-3"
           )}>
             <span className="text-muted">{t("cart_shipping")}</span>
-            <span>{formatPrice(order.shipping)}</span>
+            <Price value={order.shipping} />
           </div>
           <div className="mt-1 flex justify-between text-base font-bold text-ink">
             <span>{t("cart_total")}</span>
-            <span className="text-brand">{formatPrice(order.total)}</span>
+            <Price value={order.total} className="text-brand" />
           </div>
         </div>
       )}

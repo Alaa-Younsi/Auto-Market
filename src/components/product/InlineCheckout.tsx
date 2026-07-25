@@ -10,7 +10,7 @@ import { resolveShipping, useStoreSettings } from "@/hooks/useStoreSettings";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/checkoutSchema";
 import { placeOrder } from "@/lib/placeOrder";
 import { orderErrorKey } from "@/lib/orderErrors";
-import { formatPrice } from "@/lib/format";
+import { Price } from "@/components/ui/Price";
 import { lineDiscount } from "@/lib/offers";
 import { trackInitiateCheckout, trackPurchase } from "@/lib/pixel";
 import { CheckoutFields } from "./CheckoutFields";
@@ -121,12 +121,12 @@ export function InlineCheckout({ product, quantity, color, size, variants }: Inl
       <div className="rounded-xl bg-panel-2 p-4 text-sm">
         <div className="flex justify-between text-muted">
           <span>{t("cart_subtotal")}</span>
-          <span>{formatPrice(subtotal)}</span>
+          <Price value={subtotal} />
         </div>
         {discount > 0 && (
           <div className="mt-1 flex justify-between font-semibold text-accent">
             <span>{t("cart_discount")}</span>
-            <span>-{formatPrice(discount)}</span>
+            <Price value={discount} prefix="-" />
           </div>
         )}
         <div className="mt-1 flex justify-between text-muted">
@@ -137,12 +137,12 @@ export function InlineCheckout({ product, quantity, color, size, variants }: Inl
               ? "—"
               : shippingEstimate === 0
                 ? t("cart_shipping_free")
-                : formatPrice(shippingEstimate)}
+                : <Price value={shippingEstimate} />}
           </span>
         </div>
         <div className="mt-2 flex justify-between border-t border-line pt-2 font-bold text-ink">
           <span>{t("cart_total")}</span>
-          <span>{formatPrice(subtotal - discount + shippingEstimate)}</span>
+          <Price value={subtotal - discount + shippingEstimate} />
         </div>
       </div>
 

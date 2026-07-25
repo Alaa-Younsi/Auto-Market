@@ -1,11 +1,32 @@
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/favicon-64.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#2160eb" />
+
+    <!-- Set theme + language on <html> BEFORE first paint so the page never
+         flashes the wrong mode/direction while React boots. Defaults: dark
+         theme and Arabic (RTL); a prior explicit choice in localStorage wins. -->
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem("auto-market-theme");
+          document.documentElement.setAttribute(
+            "data-theme",
+            theme === "light" ? "light" : "dark"
+          );
+          var lang = localStorage.getItem("auto-market-lang");
+          lang = lang === "fr" ? "fr" : "ar";
+          document.documentElement.lang = lang;
+          document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+      })();
+    </script>
 
     <title>Auto Market — Pièces & accessoires auto, livrés chez vous</title>
     <meta

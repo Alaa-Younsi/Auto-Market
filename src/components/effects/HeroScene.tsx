@@ -36,10 +36,38 @@ export function HeroScene({ sideOffset, scrollProgress }: HeroSceneProps) {
   // every frame off-screen — pure wasted GPU/CPU that competes with scroll
   // compositing site-wide. Default true so the intro plays immediately.
   const [isNearViewport, setIsNearViewport] = useState(true);
+  // Mounting the Canvas synchronously creates a WebGL context and parses the
+  // GLB on the main thread, which is exactly what made first load feel laggy —
+  // it competes with the browser painting and hydrating the rest of the page.
+  // Hold it back until the browser is idle (page painted + interactive), then
+  // bring the car in. The GLB is already downloading via the preload below, so
+  // by the time we mount it's warm in cache and comes up fast.
+  const [deferredReady, setDeferredReady] = useState(false);
 
   // The 3D scene is ~270 KB of JS plus the model. On Data Saver or a 2G-class
   // connection that is the whole page budget, so those visitors get the 2D art.
   const webglSupported = webglSupport && !saveData;
+
+  useEffect(() => {
+    if (!webglSupported) return;
+    const w = window as Window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    let idleId = 0;
+    let timerId = 0;
+    if (typeof w.requestIdleCallback === "function") {
+      idleId = w.requestIdleCallback(() => setDeferredReady(true), { timeout: 1800 });
+    } else {
+      // Safari has no requestIdleCallback — a short timeout still lets the
+      // first paint land before the canvas work begins.
+      timerId = window.setTimeout(() => setDeferredReady(true), 700);
+    }
+    return () => {
+      if (idleId && w.cancelIdleCallback) w.cancelIdleCallback(idleId);
+      if (timerId) window.clearTimeout(timerId);
+    };
+  }, [webglSupported]);
 
   // Start the GLB download in parallel with the 3D chunk, but only on the page
   // that actually renders it and only when WebGL is there to use it.
@@ -70,19 +98,22 @@ export function HeroScene({ sideOffset, scrollProgress }: HeroSceneProps) {
   return (
     <div ref={containerRef} className="relative h-full w-full">
       {webglSupported ? (
-        <SceneErrorBoundary fallback={<HeroArtFallback />}>
-          {/* Fallback is deliberately empty: flashing the 2D art for the
-              second the 3D chunk takes to load reads as a glitch. The 2D car
-              only appears when WebGL is unavailable or the scene crashes. */}
-          <Suspense fallback={null}>
-            <HeroCar3D
-              sideOffset={sideOffset}
-              scrollProgress={scrollProgress}
-              paintColor={paintColor}
-              active={isNearViewport}
-            />
-          </Suspense>
-        </SceneErrorBoundary>
+        // Until the idle deferral fires, render nothing here (not the 2D art):
+        // flashing the 2D car for the moment before the 3D scene mounts reads
+        // as a glitch. The 2D car only appears when WebGL is unavailable or the
+        // scene crashes.
+        deferredReady && (
+          <SceneErrorBoundary fallback={<HeroArtFallback />}>
+            <Suspense fallback={null}>
+              <HeroCar3D
+                sideOffset={sideOffset}
+                scrollProgress={scrollProgress}
+                paintColor={paintColor}
+                active={isNearViewport}
+              />
+            </Suspense>
+          </SceneErrorBoundary>
+        )
       ) : (
         <HeroArtFallback />
       )}
