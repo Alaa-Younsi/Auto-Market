@@ -2,16 +2,19 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { sanitizeOffers } from "@/lib/offers";
 import { sanitizeSearchTerm } from "@/lib/utils";
+import { normalizeColors } from "@/lib/colors";
 import type { Product } from "@/types/db";
 
-/* Normalizes rows from PostgREST: offers jsonb parsed defensively, and the
-   column may not exist yet on a DB that hasn't run migration 0005. */
+/* Normalizes rows from PostgREST: offers jsonb parsed defensively, colors
+   may still be legacy plain strings, and some columns may not exist yet on
+   a DB that hasn't run the corresponding migration. */
 function normalizeProduct(row: Product): Product {
   return {
     ...row,
     video_url: row.video_url ?? null,
     quantity_offers: sanitizeOffers(row.quantity_offers),
     variants: row.variants ?? [],
+    colors: normalizeColors(row.colors),
   };
 }
 

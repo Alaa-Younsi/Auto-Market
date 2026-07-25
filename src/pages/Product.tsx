@@ -14,8 +14,8 @@ import { trackAddToCart, trackViewContent } from "@/lib/pixel";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { TiltCard } from "@/components/ui/TiltCard";
 import { ProductCard } from "@/components/product/ProductCard";
+import { Gallery, type GalleryImage } from "@/components/product/Gallery";
 import { InlineCheckout } from "@/components/product/InlineCheckout";
 import { ProductVideo } from "@/components/product/ProductVideo";
 import type { SelectedVariant } from "@/types/db";
@@ -134,6 +134,26 @@ export default function Product() {
   const details = lang === "ar" ? product.details_ar : product.details_fr;
   const relatedFiltered = related.filter((p) => p.id !== product.id).slice(0, 4);
 
+  // Real product photos come first (images[0] stays what gets snapshotted
+  // into the cart/order line — never a color photo); any color swatch photo
+  // not already duplicating a base image is appended after, deduped by URL.
+  const galleryImages: GalleryImage[] = (() => {
+    const base = images.map((img) => ({ key: img.id, url: img.url, alt: img.alt ?? undefined }));
+    const seen = new Set(base.map((g) => g.url));
+    const colorImages: GalleryImage[] = [];
+    for (const c of product.colors) {
+      if (c.image_url && !seen.has(c.image_url)) {
+        seen.add(c.image_url);
+        colorImages.push({
+          key: `color-${c.hex}-${c.label_fr}`,
+          url: c.image_url,
+          alt: lang === "ar" ? c.label_ar : c.label_fr,
+        });
+      }
+    }
+    return [...base, ...colorImages];
+  })();
+
   function selectedVariantsList(): SelectedVariant[] {
     return product!.variants
       .filter((group) => variantChoices[group.name_fr])
@@ -209,57 +229,12 @@ export default function Product() {
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
         {/* Gallery */}
         <div>
-          <TiltCard className="relative aspect-square overflow-hidden rounded-2xl border border-line bg-panel-2">
-            <AnimatePresence mode="popLayout" initial={false}>
-              {images[activeImage] ? (
-                <motion.img
-                  key={activeImage}
-                  src={images[activeImage].url}
-                  alt={name}
-                  width={800}
-                  height={800}
-                  /* The LCP element on this page — never lazy, and asked for
-                     ahead of the rest of the page's requests. */
-                  loading="eager"
-                  fetchPriority="high"
-                  decoding="async"
-                  initial={prefersReducedMotion ? false : { opacity: 0, scale: 1.04 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-muted">
-                  <ShoppingBag size={48} />
-                </div>
-              )}
-            </AnimatePresence>
-          </TiltCard>
-          {images.length > 1 && (
-            <div className="mt-3 flex gap-2">
-              {images.map((img, i) => (
-                <button
-                  key={img.id}
-                  onClick={() => setActiveImage(i)}
-                  className={cn(
-                    "h-16 w-16 overflow-hidden rounded-lg border-2 transition-colors",
-                    i === activeImage ? "border-brand" : "border-line"
-                  )}
-                >
-                  <img
-                    src={img.url}
-                    alt=""
-                    width={64}
-                    height={64}
-                    loading="lazy"
-                    decoding="async"
-                    className="h-full w-full object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-          )}
+          <Gallery
+            images={galleryImages}
+            activeIndex={activeImage}
+            onActiveChange={setActiveImage}
+            name={name}
+          />
 
           {/* Desktop: showcase video sits under the gallery. On mobile it
               renders below the buy buttons instead (see the info column). */}
@@ -318,23 +293,34 @@ export default function Product() {
             <div className="mt-5">
               <p className="mb-2 text-sm font-semibold text-ink">{t("product_color")}</p>
               <div className="flex flex-wrap gap-2">
-                {product.colors.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => {
-                      setColor(c);
-                      setSelectionError(null);
-                    }}
-                    className={cn(
-                      "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors",
-                      color === c
-                        ? "border-brand bg-brand/10 text-brand"
-                        : "border-line text-muted hover:bg-panel-2"
-                    )}
-                  >
-                    {c}
-                  </button>
-                ))}
+                {product.colors.map((c) => {
+                  const label = lang === "ar" ? c.label_ar : c.label_fr;
+                  return (
+                    <button
+                      key={`${c.hex}-${label}`}
+                      onClick={() => {
+                        setColor(label);
+                        setSelectionError(null);
+                        if (c.image_url) {
+                          const idx = galleryImages.findIndex((g) => g.url === c.image_url);
+                          if (idx >= 0) setActiveImage(idx);
+                        }
+                      }}
+                      className={cn(
+                        "flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors",
+                        color === label
+                          ? "border-brand bg-brand/10 text-brand"
+                          : "border-line text-muted hover:bg-panel-2"
+                      )}
+                    >
+                      <span
+                        className="h-4 w-4 shrink-0 rounded-full border border-line"
+                        style={{ backgroundColor: c.hex }}
+                      />
+                      {label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}

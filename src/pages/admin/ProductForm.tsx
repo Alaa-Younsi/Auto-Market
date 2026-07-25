@@ -6,13 +6,14 @@ import { useCategories } from "@/hooks/useCategories";
 import { supabase } from "@/lib/supabase";
 import { compressImage } from "@/lib/image";
 import { sanitizeOffers } from "@/lib/offers";
+import { normalizeColors } from "@/lib/colors";
 import { slugify } from "@/lib/utils";
 import { BentoPanel } from "@/components/ui/BentoPanel";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
-import type { ProductImage, ProductVariantGroup, QuantityOffer } from "@/types/db";
+import type { ProductColor, ProductImage, ProductVariantGroup, QuantityOffer } from "@/types/db";
 import type { TranslationKey } from "@/i18n/translations";
 
 interface FormState {
@@ -201,6 +202,128 @@ function VariantValueChips({
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function ColorVariantsEditor({
+  colors,
+  onChange,
+}: {
+  colors: ProductColor[];
+  onChange: (next: ProductColor[]) => void;
+}) {
+  const { t } = useLanguage();
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+
+  function update(i: number, patch: Partial<ProductColor>) {
+    onChange(colors.map((c, idx) => (idx === i ? { ...c, ...patch } : c)));
+  }
+
+  function remove(i: number) {
+    onChange(colors.filter((_, idx) => idx !== i));
+  }
+
+  async function handleImageUpload(i: number, e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingIndex(i);
+    try {
+      const optimized = await compressImage(file);
+      const path = `colors/${crypto.randomUUID()}-${optimized.name}`;
+      const { error } = await supabase.storage
+        .from("product-images")
+        .upload(path, optimized, { cacheControl: "31536000", contentType: optimized.type });
+      if (error) throw error;
+      const { data } = supabase.storage.from("product-images").getPublicUrl(path);
+      update(i, { image_url: data.publicUrl });
+    } finally {
+      setUploadingIndex(null);
+      e.target.value = "";
+    }
+  }
+
+  return (
+    <div className="space-y-3">
+      {colors.length === 0 && <p className="text-sm text-muted">{t("admin_variant_color_none")}</p>}
+
+      {colors.map((c, i) => (
+        <div
+          key={i}
+          className="flex flex-wrap items-end gap-3 rounded-xl border border-line bg-panel-2/50 p-3"
+        >
+          <div className="min-w-32 flex-1">
+            <label className="mb-1.5 block text-xs font-semibold text-muted">
+              {t("admin_variant_color_label_fr")}
+            </label>
+            <Input value={c.label_fr} onChange={(e) => update(i, { label_fr: e.target.value })} />
+          </div>
+          <div className="min-w-32 flex-1">
+            <label className="mb-1.5 block text-xs font-semibold text-muted">
+              {t("admin_variant_color_label_ar")}
+            </label>
+            <Input dir="rtl" value={c.label_ar} onChange={(e) => update(i, { label_ar: e.target.value })} />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-semibold text-muted">
+              {t("admin_variant_color_hex")}
+            </label>
+            <input
+              type="color"
+              value={c.hex}
+              onChange={(e) => update(i, { hex: e.target.value })}
+              className="h-10 w-14 cursor-pointer rounded-lg border border-line bg-panel p-1"
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-semibold text-muted">
+              {t("admin_variant_color_image")}
+            </label>
+            {c.image_url ? (
+              <div className="relative h-10 w-10 overflow-hidden rounded-lg border border-line">
+                <img src={c.image_url} alt="" className="h-full w-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => update(i, { image_url: null })}
+                  className="absolute end-0 top-0 rounded-full bg-black/60 p-0.5 text-white"
+                  aria-label={t("admin_remove")}
+                >
+                  <X size={10} />
+                </button>
+              </div>
+            ) : (
+              <label className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg border border-dashed border-line text-muted hover:border-brand hover:text-brand">
+                <Upload size={14} />
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  disabled={uploadingIndex === i}
+                  onChange={(e) => handleImageUpload(i, e)}
+                />
+              </label>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => remove(i)}
+            className="mb-1 rounded-lg p-2 text-muted hover:bg-panel-2 hover:text-red-500"
+            aria-label={t("admin_confirm_delete")}
+          >
+            <Trash2 size={15} />
+          </button>
+        </div>
+      ))}
+
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => onChange([...colors, { label_fr: "", label_ar: "", hex: "#111111", image_url: null }])}
+      >
+        <Plus size={15} />
+        {t("admin_variant_color_add")}
+      </Button>
     </div>
   );
 }
@@ -406,7 +529,7 @@ export default function AdminProductForm() {
 
   const { data: categories = [] } = useCategories();
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
-  const [colors, setColors] = useState<string[]>([]);
+  const [colors, setColors] = useState<ProductColor[]>([]);
   const [sizes, setSizes] = useState<string[]>([]);
   const [variantGroups, setVariantGroups] = useState<ProductVariantGroup[]>([]);
   const [offers, setOffers] = useState<QuantityOffer[]>([]);
@@ -440,7 +563,7 @@ export default function AdminProductForm() {
           featured: data.featured,
           status: data.status,
         });
-        setColors(data.colors ?? []);
+        setColors(normalizeColors(data.colors));
         setSizes(data.sizes ?? []);
         setVariantGroups(data.variants ?? []);
         setOffers(sanitizeOffers(data.quantity_offers));
@@ -653,12 +776,9 @@ export default function AdminProductForm() {
 
           <BentoPanel className="space-y-4 p-5">
             <SectionTitle>{t("admin_product_variants")}</SectionTitle>
-            <ChipListEditor
-              labelKey="admin_variant_colors"
-              placeholderKey="admin_variant_color_placeholder"
-              values={colors}
-              onChange={setColors}
-            />
+            <Field label={t("admin_variant_colors")}>
+              <ColorVariantsEditor colors={colors} onChange={setColors} />
+            </Field>
             <ChipListEditor
               labelKey="admin_variant_sizes"
               placeholderKey="admin_variant_size_placeholder"

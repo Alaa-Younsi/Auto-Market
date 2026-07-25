@@ -33,7 +33,9 @@ select * from (values
     array['9 قطع', 'جلد صناعي قابل للغسل', 'متوافق مع الوسائد الهوائية الجانبية'],
     7900::numeric, 9500::numeric,
     (select id from cat where slug = 'interieur'),
-    25, '["Noir","Beige","Rouge"]'::jsonb, '[]'::jsonb, true, 'active',
+    25,
+    '[{"label_fr":"Noir","label_ar":"أسود","hex":"#111111"},{"label_fr":"Beige","label_ar":"بيج","hex":"#d9c9a3"},{"label_fr":"Rouge","label_ar":"أحمر","hex":"#c0392b"}]'::jsonb,
+    '[]'::jsonb, true, 'active',
     '[]'::jsonb
   ),
   (
@@ -72,7 +74,9 @@ select * from (values
     array['حواف عالية', 'مطاط بدون رائحة', 'قابلة للغسل بالماء'],
     3200::numeric, null,
     (select id from cat where slug = 'interieur'),
-    50, '["Noir","Gris"]'::jsonb, '[]'::jsonb, false, 'active',
+    50,
+    '[{"label_fr":"Noir","label_ar":"أسود","hex":"#111111"},{"label_fr":"Gris","label_ar":"رمادي","hex":"#8a8a8a"}]'::jsonb,
+    '[]'::jsonb, false, 'active',
     '[{"type":"free","buy":3,"get":1}]'::jsonb
   ),
   (

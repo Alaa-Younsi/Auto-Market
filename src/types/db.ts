@@ -41,6 +41,15 @@ export interface ProductVariantGroup {
   values: string[];
 }
 
+/** A color swatch. `image_url` is optional — when set, picking this swatch
+    on the product page jumps the gallery to that photo. */
+export interface ProductColor {
+  label_fr: string;
+  label_ar: string;
+  hex: string;
+  image_url?: string | null;
+}
+
 /** A shopper's pick for one custom variant group — snapshotted onto the order
     line the same way color/size are, so it stays readable if the product's
     variants are edited or removed later. */
@@ -64,7 +73,7 @@ export interface Product {
   category_id: string | null;
   stock: number;
   style_code: string | null;
-  colors: string[];
+  colors: ProductColor[];
   sizes: string[];
   variants: ProductVariantGroup[];
   featured: boolean;
