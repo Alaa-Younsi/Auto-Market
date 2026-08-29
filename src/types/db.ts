@@ -1,9 +1,4 @@
-export type OrderStatus =
-  | "pending"
-  | "confirmed"
-  | "shipped"
-  | "delivered"
-  | "cancelled";
+export type OrderStatus = "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
 
 export type DeliveryType = "home" | "office";
 
@@ -34,11 +29,21 @@ export type QuantityOffer =
   | { type: "free"; buy: number; get: number }
   | { type: "price"; qty: number; price: number };
 
+/** One option inside a custom variant group. `image_url` is optional — when
+    set, picking this option on the product page swaps the main gallery image,
+    exactly like a colour swatch photo. Stored in the `products.variants` jsonb;
+    no migration — rows saved before this carried `values` as plain strings and
+    are normalised on read (see `src/lib/variants.ts`). */
+export interface ProductVariantValue {
+  value: string;
+  image_url?: string | null;
+}
+
 /** A custom variant axis beyond the built-in color/size, e.g. "Matériau" / "مادة". */
 export interface ProductVariantGroup {
   name_fr: string;
   name_ar: string;
-  values: string[];
+  values: ProductVariantValue[];
 }
 
 /** A color swatch. `image_url` is optional — when set, picking this swatch

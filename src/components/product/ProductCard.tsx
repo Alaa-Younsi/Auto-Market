@@ -9,6 +9,7 @@ import { Price } from "@/components/ui/Price";
 import { offerLabel } from "@/lib/offers";
 import { trackAddToCart } from "@/lib/pixel";
 import { Badge } from "@/components/ui/Badge";
+import { SmartImage } from "@/components/ui/SmartImage";
 import { TiltCard } from "@/components/ui/TiltCard";
 import type { Product } from "@/types/db";
 
@@ -19,8 +20,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
 
   const image = product.product_images?.[0]?.url ?? null;
   const name = lang === "ar" ? product.name_ar : product.name_fr;
-  const hasDiscount =
-    product.compare_at_price != null && product.compare_at_price > product.price;
+  const hasDiscount = product.compare_at_price != null && product.compare_at_price > product.price;
   const discountPct = hasDiscount
     ? Math.round(100 - (product.price / (product.compare_at_price as number)) * 100)
     : 0;
@@ -43,8 +43,15 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
 
   return (
     <motion.div
-      initial={prefersReducedMotion ? false : { x: dir === "rtl" ? 56 : -56, rotate: dir === "rtl" ? 2 : -2, opacity: 0 }}
-      whileInView={{ x: 0, rotate: 0, opacity: 1 }}
+      // Position/rotation only — never gate visibility on a whileInView
+      // opacity transition: a dropped IntersectionObserver callback would
+      // leave the card stuck invisible. Opacity stays at its CSS default of 1.
+      initial={
+        prefersReducedMotion
+          ? false
+          : { x: dir === "rtl" ? 56 : -56, rotate: dir === "rtl" ? 2 : -2 }
+      }
+      whileInView={{ x: 0, rotate: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{
         type: "spring",
@@ -63,15 +70,16 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
               over the product photo as the card lifts. */}
           <div className="fx-sweep relative aspect-square overflow-hidden bg-panel-2">
             {image ? (
-              <img
-                src={image}
-                alt={name}
-                width={800}
-                height={800}
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                loading="lazy"
-                decoding="async"
-              />
+              <div className="h-full w-full transition-transform duration-500 group-hover:scale-110">
+                <SmartImage
+                  src={image}
+                  alt={name}
+                  width={800}
+                  height={800}
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 300px"
+                  className="h-full w-full object-cover"
+                />
+              </div>
             ) : (
               <div className="flex h-full w-full items-center justify-center text-muted">
                 <ShoppingBag size={32} />
@@ -85,7 +93,10 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
                 </Badge>
               )}
               {product.quantity_offers.length > 0 && (
-                <Badge tone="accent" className="flex items-center gap-1 bg-accent text-white border-transparent">
+                <Badge
+                  tone="accent"
+                  className="flex items-center gap-1 bg-accent text-white border-transparent"
+                >
                   <Gift size={11} />
                   {offerLabel(product.quantity_offers[0], lang, formatPrice)}
                 </Badge>
@@ -108,9 +119,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
                 {lang === "ar" ? product.category.name_ar : product.category.name_fr}
               </p>
             )}
-            <h3 className="mb-2 line-clamp-1 font-heading text-sm font-bold text-ink">
-              {name}
-            </h3>
+            <h3 className="mb-2 line-clamp-1 font-heading text-sm font-bold text-ink">{name}</h3>
             <div className="flex items-center gap-2">
               <Price
                 value={product.price}

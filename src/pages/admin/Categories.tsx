@@ -4,10 +4,13 @@ import { Pencil, Plus, Trash2, Upload } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useCategories } from "@/hooks/useCategories";
 import { supabase } from "@/lib/supabase";
+import { compressImage } from "@/lib/image";
+import { invalidateTaxonomyCaches } from "@/lib/queryCache";
 import { slugify } from "@/lib/utils";
 import { BentoPanel } from "@/components/ui/BentoPanel";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { SmartImage } from "@/components/ui/SmartImage";
 import type { Category } from "@/types/db";
 
 const EMPTY_FORM = { name_fr: "", name_ar: "", sort_order: 0, image_url: null as string | null };
@@ -44,10 +47,11 @@ export default function AdminCategories() {
     if (!file) return;
     setUploading(true);
     try {
-      const path = `categories/${crypto.randomUUID()}-${file.name}`;
+      const optimized = await compressImage(file);
+      const path = `categories/${crypto.randomUUID()}-${optimized.name}`;
       const { error: uploadError } = await supabase.storage
         .from("product-images")
-        .upload(path, file);
+        .upload(path, optimized, { cacheControl: "31536000", contentType: optimized.type });
       if (uploadError) throw uploadError;
       const { data: publicUrl } = supabase.storage.from("product-images").getPublicUrl(path);
       setForm((f) => ({ ...f, image_url: publicUrl.publicUrl }));
@@ -83,7 +87,9 @@ export default function AdminCategories() {
         });
         if (saveError) throw saveError;
       }
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      // Listings embed category:categories(*), so a taxonomy edit must bust the
+      // product caches too, not just ["categories"].
+      invalidateTaxonomyCaches(queryClient);
       setShowForm(false);
     } catch {
       setError(t("admin_save_error"));
@@ -92,8 +98,12 @@ export default function AdminCategories() {
 
   async function handleDelete(id: string) {
     if (!confirm(t("admin_confirm_delete"))) return;
-    await supabase.from("categories").delete().eq("id", id);
-    queryClient.invalidateQueries({ queryKey: ["categories"] });
+    const { error: delError } = await supabase.from("categories").delete().eq("id", id);
+    if (delError) {
+      setError(t("admin_delete_error"));
+      return;
+    }
+    invalidateTaxonomyCaches(queryClient);
   }
 
   return (
@@ -113,7 +123,12 @@ export default function AdminCategories() {
           <div className="mb-4 flex items-center gap-3">
             <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-line bg-panel-2">
               {form.image_url && (
-                <img src={form.image_url} alt="" className="h-full w-full object-cover" />
+                <SmartImage
+                  src={form.image_url}
+                  alt=""
+                  sizes="64px"
+                  className="h-full w-full object-cover"
+                />
               )}
             </div>
             <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-line px-3 py-2 text-xs font-semibold text-muted hover:border-brand hover:text-brand">
@@ -175,7 +190,12 @@ export default function AdminCategories() {
                 <td className="px-4 py-2">
                   <div className="h-10 w-10 overflow-hidden rounded-lg bg-panel-2">
                     {cat.image_url && (
-                      <img src={cat.image_url} alt="" className="h-full w-full object-cover" />
+                      <SmartImage
+                        src={cat.image_url}
+                        alt=""
+                        sizes="40px"
+                        className="h-full w-full object-cover"
+                      />
                     )}
                   </div>
                 </td>

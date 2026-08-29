@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { Film, Plus, Trash2, Upload, X } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useCategories } from "@/hooks/useCategories";
@@ -7,13 +8,22 @@ import { supabase } from "@/lib/supabase";
 import { compressImage } from "@/lib/image";
 import { sanitizeOffers } from "@/lib/offers";
 import { normalizeColors } from "@/lib/colors";
+import { normalizeVariantGroups } from "@/lib/variants";
 import { slugify } from "@/lib/utils";
 import { BentoPanel } from "@/components/ui/BentoPanel";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
-import type { ProductColor, ProductImage, ProductVariantGroup, QuantityOffer } from "@/types/db";
+import { SmartImage } from "@/components/ui/SmartImage";
+import { invalidateProductCaches } from "@/lib/queryCache";
+import type {
+  ProductColor,
+  ProductImage,
+  ProductVariantGroup,
+  ProductVariantValue,
+  QuantityOffer,
+} from "@/types/db";
 import type { TranslationKey } from "@/i18n/translations";
 
 interface FormState {
@@ -146,21 +156,53 @@ function ChipListEditor({
   );
 }
 
+async function uploadProductImage(file: File, prefix: string): Promise<string> {
+  const optimized = await compressImage(file);
+  const path = `${prefix}/${crypto.randomUUID()}-${optimized.name}`;
+  const { error } = await supabase.storage
+    .from("product-images")
+    .upload(path, optimized, { cacheControl: "31536000", contentType: optimized.type });
+  if (error) throw error;
+  return supabase.storage.from("product-images").getPublicUrl(path).data.publicUrl;
+}
+
+/**
+ * The options inside one custom variant group. Each option is a value string
+ * plus an OPTIONAL photo — when set, picking that option on the product page
+ * swaps the main gallery image (same as a colour swatch photo).
+ */
 function VariantValueChips({
   values,
   onChange,
 }: {
-  values: string[];
-  onChange: (next: string[]) => void;
+  values: ProductVariantValue[];
+  onChange: (next: ProductVariantValue[]) => void;
 }) {
   const { t } = useLanguage();
   const [draft, setDraft] = useState("");
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
 
   function add() {
     const v = draft.trim();
-    if (!v || values.includes(v)) return;
-    onChange([...values, v]);
+    if (!v || values.some((x) => x.value === v)) return;
+    onChange([...values, { value: v, image_url: null }]);
     setDraft("");
+  }
+
+  function update(i: number, patch: Partial<ProductVariantValue>) {
+    onChange(values.map((x, idx) => (idx === i ? { ...x, ...patch } : x)));
+  }
+
+  async function handleImageUpload(i: number, e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingIndex(i);
+    try {
+      update(i, { image_url: await uploadProductImage(file, "variants") });
+    } finally {
+      setUploadingIndex(null);
+      e.target.value = "";
+    }
   }
 
   return (
@@ -183,22 +225,46 @@ function VariantValueChips({
         </Button>
       </div>
       {values.length > 0 && (
-        <div className="mt-2.5 flex flex-wrap gap-2">
-          {values.map((v) => (
-            <span
-              key={v}
-              className="fx-pop inline-flex items-center gap-1.5 rounded-full border border-brand/30 bg-brand/10 px-3 py-1 text-sm font-medium text-brand"
+        <div className="mt-2.5 space-y-2">
+          {values.map((opt, i) => (
+            <div
+              key={opt.value}
+              className="flex items-center gap-3 rounded-xl border border-line bg-panel px-3 py-2"
             >
-              {v}
+              {opt.image_url ? (
+                <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-lg border border-line">
+                  <img src={opt.image_url} alt="" className="h-full w-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => update(i, { image_url: null })}
+                    className="absolute end-0 top-0 rounded-full bg-black/60 p-0.5 text-white"
+                    aria-label={t("admin_remove")}
+                  >
+                    <X size={9} />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-dashed border-line text-muted hover:border-brand hover:text-brand">
+                  <Upload size={13} />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={uploadingIndex === i}
+                    onChange={(e) => handleImageUpload(i, e)}
+                  />
+                </label>
+              )}
+              <span className="flex-1 text-sm font-medium text-ink">{opt.value}</span>
               <button
                 type="button"
-                onClick={() => onChange(values.filter((x) => x !== v))}
-                className="rounded-full p-0.5 hover:bg-brand/20"
-                aria-label={`Remove ${v}`}
+                onClick={() => onChange(values.filter((_, idx) => idx !== i))}
+                className="rounded-lg p-1.5 text-muted hover:bg-panel-2 hover:text-red-500"
+                aria-label={`Remove ${opt.value}`}
               >
-                <X size={12} />
+                <X size={13} />
               </button>
-            </span>
+            </div>
           ))}
         </div>
       )}
@@ -262,7 +328,11 @@ function ColorVariantsEditor({
             <label className="mb-1.5 block text-xs font-semibold text-muted">
               {t("admin_variant_color_label_ar")}
             </label>
-            <Input dir="rtl" value={c.label_ar} onChange={(e) => update(i, { label_ar: e.target.value })} />
+            <Input
+              dir="rtl"
+              value={c.label_ar}
+              onChange={(e) => update(i, { label_ar: e.target.value })}
+            />
           </div>
           <div>
             <label className="mb-1.5 block text-xs font-semibold text-muted">
@@ -281,7 +351,12 @@ function ColorVariantsEditor({
             </label>
             {c.image_url ? (
               <div className="relative h-10 w-10 overflow-hidden rounded-lg border border-line">
-                <img src={c.image_url} alt="" className="h-full w-full object-cover" />
+                <SmartImage
+                  src={c.image_url}
+                  alt=""
+                  sizes="40px"
+                  className="h-full w-full object-cover"
+                />
                 <button
                   type="button"
                   onClick={() => update(i, { image_url: null })}
@@ -319,7 +394,9 @@ function ColorVariantsEditor({
         type="button"
         variant="outline"
         size="sm"
-        onClick={() => onChange([...colors, { label_fr: "", label_ar: "", hex: "#111111", image_url: null }])}
+        onClick={() =>
+          onChange([...colors, { label_fr: "", label_ar: "", hex: "#111111", image_url: null }])
+        }
       >
         <Plus size={15} />
         {t("admin_variant_color_add")}
@@ -525,6 +602,7 @@ export default function AdminProductForm() {
   const { t } = useLanguage();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const isNew = !id || id === "new";
 
   const { data: categories = [] } = useCategories();
@@ -539,6 +617,7 @@ export default function AdminProductForm() {
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => {
     if (isNew) return;
@@ -547,8 +626,13 @@ export default function AdminProductForm() {
       .select("*, product_images(*)")
       .eq("id", id)
       .single()
-      .then(({ data }) => {
-        if (!data) return;
+      .then(({ data, error: loadError }) => {
+        // A failed load must BLOCK the form — falling through to blank defaults
+        // means the next Save writes those blanks over a real product.
+        if (loadError || !data) {
+          setLoadFailed(true);
+          return;
+        }
         setForm({
           name_fr: data.name_fr,
           name_ar: data.name_ar,
@@ -565,7 +649,7 @@ export default function AdminProductForm() {
         });
         setColors(normalizeColors(data.colors));
         setSizes(data.sizes ?? []);
-        setVariantGroups(data.variants ?? []);
+        setVariantGroups(normalizeVariantGroups(data.variants));
         setOffers(sanitizeOffers(data.quantity_offers));
         setVideoUrl(data.video_url ?? null);
         setImages(data.product_images ?? []);
@@ -589,7 +673,13 @@ export default function AdminProductForm() {
       const { data: publicUrl } = supabase.storage.from("product-images").getPublicUrl(path);
       setImages((prev) => [
         ...prev,
-        { id: crypto.randomUUID(), product_id: id ?? "", url: publicUrl.publicUrl, alt: null, sort_order: prev.length },
+        {
+          id: crypto.randomUUID(),
+          product_id: id ?? "",
+          url: publicUrl.publicUrl,
+          alt: null,
+          sort_order: prev.length,
+        },
       ]);
     } catch {
       setError(t("admin_save_error"));
@@ -633,15 +723,23 @@ export default function AdminProductForm() {
         name_ar: form.name_ar,
         description_fr: form.description_fr || null,
         description_ar: form.description_ar || null,
-        details_fr: form.details_fr.split("\n").map((s) => s.trim()).filter(Boolean),
-        details_ar: form.details_ar.split("\n").map((s) => s.trim()).filter(Boolean),
+        details_fr: form.details_fr
+          .split("\n")
+          .map((s) => s.trim())
+          .filter(Boolean),
+        details_ar: form.details_ar
+          .split("\n")
+          .map((s) => s.trim())
+          .filter(Boolean),
         price: Number(form.price),
         compare_at_price: form.compare_at_price ? Number(form.compare_at_price) : null,
         category_id: form.category_id || null,
         stock: Number(form.stock),
         colors,
         sizes,
-        variants: variantGroups.filter((g) => g.name_fr.trim() && g.values.length > 0),
+        variants: variantGroups
+          .map((g) => ({ ...g, values: g.values.filter((v) => v.value.trim()) }))
+          .filter((g) => g.name_fr.trim() && g.values.length > 0),
         quantity_offers: sanitizeOffers(offers),
         video_url: videoUrl,
         featured: form.featured,
@@ -662,10 +760,17 @@ export default function AdminProductForm() {
         if (error) throw error;
       }
 
-      // Sync images: delete removed, insert new
-      await supabase.from("product_images").delete().eq("product_id", productId);
+      // Sync images as a delete-then-insert pair — BOTH legs must be checked.
+      // If the insert fails after the delete succeeded, the gallery is now
+      // empty in the DB: report it and stay on the form, don't navigate away.
+      const { error: delError } = await supabase
+        .from("product_images")
+        .delete()
+        .eq("product_id", productId);
+      if (delError) throw delError;
+
       if (images.length > 0) {
-        await supabase.from("product_images").insert(
+        const { error: insError } = await supabase.from("product_images").insert(
           images.map((img, i) => ({
             product_id: productId,
             url: img.url,
@@ -673,14 +778,35 @@ export default function AdminProductForm() {
             sort_order: i,
           }))
         );
+        if (insError) throw insError;
       }
 
+      // One product write touches four+ cache keys; the storefront serves a
+      // stale price for the rest of the session without this.
+      invalidateProductCaches(queryClient);
       navigate("/admin/products");
     } catch {
       setError(t("admin_save_error"));
     } finally {
       setSaving(false);
     }
+  }
+
+  if (loadFailed) {
+    return (
+      <div className="mx-auto max-w-md py-16 text-center">
+        <p className="text-sm text-red-500">{t("admin_load_error")}</p>
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          className="mt-4"
+          onClick={() => navigate("/admin/products")}
+        >
+          {t("admin_cancel")}
+        </Button>
+      </div>
+    );
   }
 
   return (
@@ -804,8 +930,16 @@ export default function AdminProductForm() {
             <Field label={t("admin_product_images")}>
               <div className="flex flex-wrap gap-3">
                 {images.map((img) => (
-                  <div key={img.id} className="relative h-20 w-20 overflow-hidden rounded-lg border border-line">
-                    <img src={img.url} alt="" className="h-full w-full object-cover" />
+                  <div
+                    key={img.id}
+                    className="relative h-20 w-20 overflow-hidden rounded-lg border border-line"
+                  >
+                    <SmartImage
+                      src={img.url}
+                      alt=""
+                      sizes="80px"
+                      className="h-full w-full object-cover"
+                    />
                     <button
                       onClick={() => removeImage(img.id)}
                       className="absolute end-1 top-1 rounded-full bg-black/60 p-1 text-white"
@@ -816,8 +950,16 @@ export default function AdminProductForm() {
                 ))}
                 <label className="flex h-20 w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-line text-muted hover:border-brand hover:text-brand">
                   <Upload size={16} />
-                  <span className="text-[10px]">{uploading ? "..." : t("admin_product_upload")}</span>
-                  <input type="file" accept="image/*" className="hidden" onChange={handleUpload} disabled={uploading} />
+                  <span className="text-[10px]">
+                    {uploading ? "..." : t("admin_product_upload")}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleUpload}
+                    disabled={uploading}
+                  />
                 </label>
               </div>
             </Field>
@@ -831,7 +973,12 @@ export default function AdminProductForm() {
                     preload="metadata"
                     className="max-h-64 w-full rounded-xl border border-line bg-panel-2"
                   />
-                  <Button type="button" variant="secondary" size="sm" onClick={() => setVideoUrl(null)}>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setVideoUrl(null)}
+                  >
                     <Trash2 size={14} />
                     {t("admin_remove")}
                   </Button>
@@ -881,7 +1028,9 @@ export default function AdminProductForm() {
             <Field label={t("admin_product_status")}>
               <Select
                 value={form.status}
-                onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as "active" | "draft" }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, status: e.target.value as "active" | "draft" }))
+                }
               >
                 <option value="draft">{t("admin_product_status_draft")}</option>
                 <option value="active">{t("admin_product_status_active")}</option>

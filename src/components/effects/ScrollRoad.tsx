@@ -45,19 +45,17 @@ export function ScrollRoad() {
             "repeating-linear-gradient(to bottom, rgb(var(--c-ink) / 0.18) 0 10px, transparent 10px 22px)",
         }}
       />
+      {/* Filled portion of the rail. Brand-blue, not brand→green: a solid
+          neon-green stripe down the page edge at full scroll read as a glitch. */}
       <motion.div
-        className="absolute inset-x-0 top-0 origin-top rounded-full bg-gradient-to-b from-brand to-accent"
+        className="absolute inset-x-0 top-0 origin-top rounded-full bg-gradient-to-b from-brand/90 to-brand-light/80 shadow-[0_0_8px_-1px_rgb(var(--c-brand)/0.6)]"
         style={{ scaleY: smoothed, height: "100%" }}
       />
-      <motion.div
-        aria-hidden="true"
-        style={{ y: carY }}
-        className="absolute -start-[11px] top-0"
-      >
+      <motion.div aria-hidden="true" style={{ y: carY }} className="absolute -start-[11px] top-0">
         <MiniCar
-          size={20}
+          size={22}
           mirrorRtl={false}
-          className="rotate-90 text-brand drop-shadow-[0_0_5px_rgb(var(--c-brand)/0.65)]"
+          className="rotate-90 text-brand drop-shadow-[0_0_5px_rgb(var(--c-brand)/0.7)]"
         />
       </motion.div>
     </div>

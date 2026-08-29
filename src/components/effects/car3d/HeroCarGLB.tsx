@@ -123,12 +123,9 @@ export function HeroCarGLB({
       object.receiveShadow = true;
 
       const current = object.material;
-      const swap = (material: THREE.Material): THREE.Material =>
-        mats[material.name] ?? material;
+      const swap = (material: THREE.Material): THREE.Material => mats[material.name] ?? material;
 
-      object.material = Array.isArray(current)
-        ? current.map(swap)
-        : swap(current);
+      object.material = Array.isArray(current) ? current.map(swap) : swap(current);
     });
 
     return { car: clone, materials: mats };
@@ -144,7 +141,9 @@ export function HeroCarGLB({
 
   useEffect(
     () => () => {
-      Object.values(materials).forEach((material) => material.dispose());
+      Object.values(materials).forEach((material) => {
+        material.dispose();
+      });
       glowTexture.dispose();
     },
     [materials, glowTexture]
@@ -173,7 +172,7 @@ export function HeroCarGLB({
     }
 
     if (!instantPaint) {
-      materials[PAINT_MATERIAL].color.lerp(targetPaint.current, 1 - Math.pow(0.0001, delta));
+      materials[PAINT_MATERIAL].color.lerp(targetPaint.current, 1 - 0.0001 ** delta);
     }
 
     if (groupRef.current) {

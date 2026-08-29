@@ -3,7 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import { OrbitControls, PerformanceMonitor, Sparkles } from "@react-three/drei";
 import type { MotionValue } from "framer-motion";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
-import * as THREE from "three";
+import type * as THREE from "three";
 import { CameraIntro } from "./CameraIntro";
 import { CameraRig } from "./CameraRig";
 import { ExhaustTrails } from "./ExhaustTrails";

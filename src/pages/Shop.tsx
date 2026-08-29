@@ -71,7 +71,9 @@ export default function Shop() {
                 onClick={() => updateParam("category", "")}
                 className={cn(
                   "rounded-lg px-3 py-2 text-start text-sm transition-colors",
-                  !categoryId ? "bg-brand/10 font-semibold text-brand" : "text-muted hover:bg-panel-2"
+                  !categoryId
+                    ? "bg-brand/10 font-semibold text-brand"
+                    : "text-muted hover:bg-panel-2"
                 )}
               >
                 {t("shop_filter_all")}

@@ -13,7 +13,8 @@ interface DrawerProps {
 
 export function Drawer({ open, onClose, title, children, side = "end" }: DrawerProps) {
   const { dir } = useLanguage();
-  const physicalSide = side === "end" ? (dir === "rtl" ? "left" : "right") : dir === "rtl" ? "right" : "left";
+  const physicalSide =
+    side === "end" ? (dir === "rtl" ? "left" : "right") : dir === "rtl" ? "right" : "left";
   const offscreenX = physicalSide === "left" ? "-100%" : "100%";
 
   return (

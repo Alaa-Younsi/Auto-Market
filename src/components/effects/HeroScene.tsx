@@ -7,9 +7,7 @@ import { SceneErrorBoundary } from "./SceneErrorBoundary";
 import { useWebglSupport } from "@/hooks/useWebglSupport";
 import { useMediaFlags } from "@/hooks/useMediaFlags";
 
-const HeroCar3D = lazy(() =>
-  import("./HeroCar3D").then((mod) => ({ default: mod.HeroCar3D }))
-);
+const HeroCar3D = lazy(() => import("./HeroCar3D").then((mod) => ({ default: mod.HeroCar3D })));
 
 interface HeroSceneProps {
   sideOffset: number;

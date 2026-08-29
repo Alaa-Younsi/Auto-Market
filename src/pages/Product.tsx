@@ -12,13 +12,13 @@ import { Price } from "@/components/ui/Price";
 import { lineDiscount, offerLabel } from "@/lib/offers";
 import { trackAddToCart, trackViewContent } from "@/lib/pixel";
 import { cn } from "@/lib/utils";
+import { selectedVariantsFromChoices } from "@/lib/variants";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ProductCard } from "@/components/product/ProductCard";
 import { Gallery, type GalleryImage } from "@/components/product/Gallery";
 import { InlineCheckout } from "@/components/product/InlineCheckout";
 import { ProductVideo } from "@/components/product/ProductVideo";
-import type { SelectedVariant } from "@/types/db";
 
 export default function Product() {
   const { slug } = useParams<{ slug: string }>();
@@ -28,7 +28,7 @@ export default function Product() {
     categoryId: product?.category_id ?? undefined,
   });
   const addItem = useCartStore((s) => s.addItem);
-  const { prefersReducedMotion } = useMediaFlags();
+  const { prefersReducedMotion, isDesktop } = useMediaFlags();
 
   const [activeImage, setActiveImage] = useState(0);
   const [color, setColor] = useState<string | undefined>();
@@ -69,7 +69,7 @@ export default function Product() {
   const seoName = product ? (lang === "ar" ? product.name_ar : product.name_fr) : null;
   const seoImage = product?.product_images?.[0]?.url;
   const seoDescription = product
-    ? (lang === "ar" ? product.description_ar : product.description_fr) ?? undefined
+    ? ((lang === "ar" ? product.description_ar : product.description_fr) ?? undefined)
     : undefined;
 
   useSeo({
@@ -91,9 +91,7 @@ export default function Product() {
             priceCurrency: "DZD",
             price: Number(product.price),
             availability:
-              product.stock > 0
-                ? "https://schema.org/InStock"
-                : "https://schema.org/OutOfStock",
+              product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
           },
         }
       : undefined,
@@ -135,54 +133,65 @@ export default function Product() {
   const relatedFiltered = related.filter((p) => p.id !== product.id).slice(0, 4);
 
   // Real product photos come first (images[0] stays what gets snapshotted
-  // into the cart/order line — never a color photo); any color swatch photo
-  // not already duplicating a base image is appended after, deduped by URL.
+  // into the cart/order line — never a variant photo); any colour-swatch or
+  // custom-variant-option photo not already duplicating a base image is
+  // appended after, deduped by URL. Picking that option jumps the gallery to it.
   const galleryImages: GalleryImage[] = (() => {
     const base = images.map((img) => ({ key: img.id, url: img.url, alt: img.alt ?? undefined }));
     const seen = new Set(base.map((g) => g.url));
-    const colorImages: GalleryImage[] = [];
+    const extra: GalleryImage[] = [];
     for (const c of product.colors) {
       if (c.image_url && !seen.has(c.image_url)) {
         seen.add(c.image_url);
-        colorImages.push({
+        extra.push({
           key: `color-${c.hex}-${c.label_fr}`,
           url: c.image_url,
           alt: lang === "ar" ? c.label_ar : c.label_fr,
         });
       }
     }
-    return [...base, ...colorImages];
-  })();
-
-  function selectedVariantsList(): SelectedVariant[] {
-    return product!.variants
-      .filter((group) => variantChoices[group.name_fr])
-      .map((group) => ({
-        name_fr: group.name_fr,
-        name_ar: group.name_ar,
-        value: variantChoices[group.name_fr],
-      }));
-  }
-
-  function validateSelection(): boolean {
-    if (product!.colors.length > 0 && !color) {
-      setSelectionError(t("product_select_color"));
-      return false;
-    }
-    if (product!.sizes.length > 0 && !size) {
-      setSelectionError(t("product_select_size"));
-      return false;
-    }
-    for (const group of product!.variants) {
-      if (!variantChoices[group.name_fr]) {
-        setSelectionError(
-          `${t("product_select_option_prefix")} ${lang === "ar" ? group.name_ar : group.name_fr}`
-        );
-        return false;
+    for (const group of product.variants) {
+      for (const opt of group.values) {
+        if (opt.image_url && !seen.has(opt.image_url)) {
+          seen.add(opt.image_url);
+          extra.push({
+            key: `variant-${group.name_fr}-${opt.value}`,
+            url: opt.image_url,
+            alt: `${lang === "ar" ? group.name_ar : group.name_fr} — ${opt.value}`,
+          });
+        }
       }
     }
-    setSelectionError(null);
-    return true;
+    return [...base, ...extra];
+  })();
+
+  function jumpGalleryTo(url: string | null | undefined) {
+    if (!url) return;
+    const idx = galleryImages.findIndex((g) => g.url === url);
+    if (idx >= 0) setActiveImage(idx);
+  }
+
+  const selectedVariants = selectedVariantsFromChoices(product.variants, variantChoices);
+
+  // Every axis the product defines must be picked before checkout. The buttons
+  // are disabled until then; the RPC is still the hard guard server-side.
+  const missingSelections: string[] = [];
+  if (product.colors.length > 0 && !color) missingSelections.push(t("product_color"));
+  if (product.sizes.length > 0 && !size) missingSelections.push(t("product_size"));
+  for (const group of product.variants) {
+    if (!variantChoices[group.name_fr]) {
+      missingSelections.push(lang === "ar" ? group.name_ar : group.name_fr);
+    }
+  }
+  const selectionComplete = missingSelections.length === 0;
+
+  function validateSelection(): boolean {
+    if (selectionComplete) {
+      setSelectionError(null);
+      return true;
+    }
+    setSelectionError(`${t("product_choose_prefix")} ${missingSelections.join(", ")}`);
+    return false;
   }
 
   function handleAddToCart() {
@@ -196,7 +205,7 @@ export default function Product() {
       quantity,
       color,
       size,
-      variants: selectedVariantsList(),
+      variants: selectedVariants,
       imageUrl: images[0]?.url ?? null,
       stock: product!.stock,
       offers: product!.quantity_offers,
@@ -237,9 +246,12 @@ export default function Product() {
           />
 
           {/* Desktop: showcase video sits under the gallery. On mobile it
-              renders below the buy buttons instead (see the info column). */}
-          {product.video_url && (
-            <div className="mt-6 hidden lg:block">
+              renders below the buy buttons instead (see the info column).
+              Conditional MOUNT, not `hidden lg:block` — an autoplaying <video>
+              downloads in full even while hidden, so a CSS-only split fetched
+              it twice per product view. */}
+          {product.video_url && isDesktop && (
+            <div className="mt-6">
               <h2 className="mb-3 font-heading text-base font-bold text-ink">
                 {t("product_video_title")}
               </h2>
@@ -263,10 +275,7 @@ export default function Product() {
               className="font-heading text-2xl font-extrabold text-brand"
             />
             {product.compare_at_price != null && product.compare_at_price > product.price && (
-              <Price
-                value={product.compare_at_price}
-                className="text-sm text-muted line-through"
-              />
+              <Price value={product.compare_at_price} className="text-sm text-muted line-through" />
             )}
             <Badge tone={product.stock === 0 ? "danger" : "accent"}>{stockLabel}</Badge>
           </div>
@@ -285,9 +294,7 @@ export default function Product() {
             </div>
           )}
 
-          {description && (
-            <p className="mt-4 text-sm leading-relaxed text-muted">{description}</p>
-          )}
+          {description && <p className="mt-4 text-sm leading-relaxed text-muted">{description}</p>}
 
           {product.colors.length > 0 && (
             <div className="mt-5">
@@ -301,10 +308,7 @@ export default function Product() {
                       onClick={() => {
                         setColor(label);
                         setSelectionError(null);
-                        if (c.image_url) {
-                          const idx = galleryImages.findIndex((g) => g.url === c.image_url);
-                          if (idx >= 0) setActiveImage(idx);
-                        }
+                        jumpGalleryTo(c.image_url);
                       }}
                       className={cn(
                         "flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors",
@@ -356,21 +360,34 @@ export default function Product() {
                 {lang === "ar" ? group.name_ar : group.name_fr}
               </p>
               <div className="flex flex-wrap gap-2">
-                {group.values.map((value) => (
+                {group.values.map((opt) => (
                   <button
-                    key={value}
+                    key={opt.value}
                     onClick={() => {
-                      setVariantChoices((prev) => ({ ...prev, [group.name_fr]: value }));
+                      setVariantChoices((prev) => ({ ...prev, [group.name_fr]: opt.value }));
                       setSelectionError(null);
+                      jumpGalleryTo(opt.image_url);
                     }}
                     className={cn(
-                      "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors",
-                      variantChoices[group.name_fr] === value
+                      "flex items-center gap-2 rounded-full border py-1.5 pe-4 text-sm font-medium transition-colors",
+                      opt.image_url ? "ps-1.5" : "ps-4",
+                      variantChoices[group.name_fr] === opt.value
                         ? "border-brand bg-brand/10 text-brand"
                         : "border-line text-muted hover:bg-panel-2"
                     )}
                   >
-                    {value}
+                    {opt.image_url && (
+                      <img
+                        src={opt.image_url}
+                        alt=""
+                        width={24}
+                        height={24}
+                        loading="lazy"
+                        decoding="async"
+                        className="h-6 w-6 shrink-0 rounded-full border border-line object-cover"
+                      />
+                    )}
+                    {opt.value}
                   </button>
                 ))}
               </div>
@@ -380,7 +397,10 @@ export default function Product() {
           <div className="mt-5">
             <p className="mb-2 text-sm font-semibold text-ink">{t("product_quantity")}</p>
             <div className="flex w-fit items-center gap-3 rounded-xl border border-line px-3 py-2">
-              <button onClick={() => setQuantity((q) => Math.max(1, q - 1))} className="text-muted hover:text-ink">
+              <button
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                className="text-muted hover:text-ink"
+              >
                 <Minus size={16} />
               </button>
               <span className="w-6 text-center text-sm font-semibold">{quantity}</span>
@@ -399,16 +419,21 @@ export default function Product() {
             )}
           </div>
 
-          {selectionError && (
-            <p className="mt-3 text-sm text-red-500">{selectionError}</p>
+          {selectionError && <p className="mt-3 text-sm text-red-500">{selectionError}</p>}
+
+          {product.stock !== 0 && !selectionComplete && (
+            <p className="mt-3 text-sm font-medium text-muted">
+              {t("product_choose_prefix")}{" "}
+              <span className="text-ink">{missingSelections.join(", ")}</span>
+            </p>
           )}
 
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row">
             <Button
               variant="secondary"
               size="lg"
               className="flex-1"
-              disabled={product.stock === 0}
+              disabled={product.stock === 0 || !selectionComplete}
               onClick={handleAddToCart}
             >
               <AnimatePresence mode="wait" initial={false}>
@@ -443,15 +468,15 @@ export default function Product() {
               variant="accent"
               size="lg"
               className="flex-1"
-              disabled={product.stock === 0}
+              disabled={product.stock === 0 || !selectionComplete}
               onClick={handleBuyNow}
             >
               {t("product_buy_now")}
             </Button>
           </div>
 
-          {product.video_url && (
-            <div className="mt-6 lg:hidden">
+          {product.video_url && !isDesktop && (
+            <div className="mt-6">
               <h2 className="mb-3 font-heading text-base font-bold text-ink">
                 {t("product_video_title")}
               </h2>
@@ -475,7 +500,10 @@ export default function Product() {
             </div>
           )}
 
-          <div ref={checkoutRef} className="mt-8 scroll-mt-20 rounded-2xl border border-line bg-panel p-5">
+          <div
+            ref={checkoutRef}
+            className="mt-8 scroll-mt-20 rounded-2xl border border-line bg-panel p-5"
+          >
             <h2 className="mb-4 font-heading text-base font-bold text-ink">
               {t("checkout_title")}
             </h2>
@@ -484,7 +512,7 @@ export default function Product() {
               quantity={quantity}
               color={color}
               size={size}
-              variants={selectedVariantsList()}
+              variants={selectedVariants}
             />
           </div>
         </div>

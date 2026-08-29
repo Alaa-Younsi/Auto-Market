@@ -45,7 +45,9 @@ body {
   background-color: rgb(var(--c-bg));
   color: rgb(var(--c-ink));
   font-family: "Inter", "Cairo", sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 html[dir="rtl"] body {
@@ -148,12 +150,15 @@ option {
 }
 
 .fx-lift {
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 0.35s ease, border-color 0.35s ease;
+  transition:
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.35s ease,
+    border-color 0.35s ease;
 }
 .fx-lift:hover {
   transform: translateY(-6px);
-  box-shadow: 0 0 0 1px rgb(var(--c-brand) / 0.25),
+  box-shadow:
+    0 0 0 1px rgb(var(--c-brand) / 0.25),
     0 20px 40px -16px rgb(var(--c-brand) / 0.35);
   border-color: rgb(var(--c-brand) / 0.4);
 }
@@ -258,18 +263,67 @@ html[dir="rtl"] .fx-road-runner {
   }
 }
 
-/* A small car silhouette driving the same span as the runner above. */
+/* The road itself for a RoadDivider: a thin rail with moving centre markings,
+   a soft brand glow beneath, and both ends faded into the page. */
+.fx-road-strip {
+  position: absolute;
+  inset-inline: 1rem;
+  top: 50%;
+  height: 2px;
+  transform: translateY(-50%);
+  background: rgb(var(--c-line));
+  border-radius: 2px;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+}
+@media (min-width: 640px) {
+  .fx-road-strip {
+    inset-inline: 1.5rem;
+  }
+}
+@media (min-width: 1024px) {
+  .fx-road-strip {
+    inset-inline: 2rem;
+  }
+}
+.fx-road-strip::before {
+  content: "";
+  position: absolute;
+  inset: -4px 0;
+  background: rgb(var(--c-brand) / 0.14);
+  filter: blur(4px);
+}
+.fx-road-strip::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    rgb(var(--c-brand) / 0.55) 0 14px,
+    transparent 14px 46px
+  );
+  animation: road-dash 1.5s linear infinite;
+}
+html[dir="rtl"] .fx-road-strip::after {
+  animation-name: road-dash-rtl;
+}
+
+/* A small car silhouette driving the length of a divider. `.fx-mini-car` is the
+   horizontal lane (linear travel); the `.fx-mini-bob` child adds the vertical
+   suspension movement so the car isn't gliding flat, and carries the headlight
+   bloom + speed smear. */
 .fx-mini-car {
   position: absolute;
   left: 0;
   animation: fx-mini-drive 8s linear infinite;
+  will-change: transform;
 }
 @keyframes fx-mini-drive {
   from {
-    transform: translateX(-64px);
+    transform: translateX(-80px);
   }
   to {
-    transform: translateX(calc(min(100vw, 80rem) + 64px));
+    transform: translateX(calc(min(100vw, 80rem) + 80px));
   }
 }
 html[dir="rtl"] .fx-mini-car {
@@ -279,10 +333,79 @@ html[dir="rtl"] .fx-mini-car {
 }
 @keyframes fx-mini-drive-rtl {
   from {
-    transform: translateX(64px);
+    transform: translateX(80px);
   }
   to {
-    transform: translateX(calc(-1 * (min(100vw, 80rem) + 64px)));
+    transform: translateX(calc(-1 * (min(100vw, 80rem) + 80px)));
+  }
+}
+
+.fx-mini-bob {
+  position: relative;
+  animation: fx-mini-bob 1.1s ease-in-out infinite;
+}
+@keyframes fx-mini-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-0.5deg);
+  }
+  35% {
+    transform: translateY(-1.3px) rotate(0.4deg);
+  }
+  60% {
+    transform: translateY(0.4px) rotate(-0.25deg);
+  }
+  82% {
+    transform: translateY(-0.8px) rotate(0.35deg);
+  }
+}
+
+/* Headlight bloom off the nose of the car (front = inline-end, so it flips in
+   RTL). Kept dim and diffuse so it reads as a glow, not a floating orb. */
+.fx-mini-glow {
+  position: absolute;
+  top: 60%;
+  inset-inline-end: -16%;
+  width: 36%;
+  height: 46%;
+  transform: translateY(-50%);
+  background: radial-gradient(
+    ellipse at var(--glow-anchor, left),
+    rgb(var(--c-green) / 0.34),
+    transparent 70%
+  );
+  filter: blur(2.5px);
+  pointer-events: none;
+}
+html[dir="rtl"] .fx-mini-glow {
+  --glow-anchor: right;
+}
+
+/* Speed smear trailing the car — a symmetric brand-tinted blur that pulses,
+   with two fainter offset lines for a "speed lines" read. */
+.fx-mini-streak {
+  position: absolute;
+  top: 58%;
+  inset-inline-start: -40%;
+  width: 46%;
+  height: 1px;
+  transform: translateY(-50%);
+  background: linear-gradient(90deg, transparent, rgb(var(--c-brand) / 0.6), transparent);
+  box-shadow:
+    0 3px 0 -0.5px rgb(var(--c-brand) / 0.24),
+    0 -3px 0 -0.5px rgb(var(--c-brand) / 0.2);
+  animation: fx-mini-streak 0.4s linear infinite;
+  pointer-events: none;
+}
+@keyframes fx-mini-streak {
+  0%,
+  100% {
+    opacity: 0.22;
+    transform: translateY(-50%) scaleX(0.65);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(-50%) scaleX(1);
   }
 }
 
@@ -300,12 +423,7 @@ html[dir="rtl"] .fx-mini-car {
   top: -30%;
   bottom: -30%;
   width: 14%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgb(255 255 255 / 0.18),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.18), transparent);
   filter: blur(2px);
   animation: beam 8s linear infinite;
 }
@@ -364,10 +482,7 @@ html[dir="rtl"] .fx-streak {
 
 /* Chequered flag, for the end of the race (order placed). */
 .fx-checker {
-  background-image: repeating-conic-gradient(
-    rgb(var(--c-ink) / 0.14) 0% 25%,
-    transparent 0% 50%
-  );
+  background-image: repeating-conic-gradient(rgb(var(--c-ink) / 0.14) 0% 25%, transparent 0% 50%);
   background-size: 14px 14px;
 }
 
@@ -428,7 +543,9 @@ html[dir="rtl"] .fx-streak {
       rgb(var(--c-green) / 0.6) 93%,
       transparent
     );
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     opacity: 0;

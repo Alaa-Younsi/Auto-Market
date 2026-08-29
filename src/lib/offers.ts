@@ -14,7 +14,12 @@ export function lineTotal(price: number, quantity: number, offers?: QuantityOffe
     if (offer.type === "free" && offer.buy > 0 && offer.get > 0) {
       const group = offer.buy + offer.get;
       candidate = (quantity - Math.floor(quantity / group) * offer.get) * unit;
-    } else if (offer.type === "price" && offer.qty > 1 && offer.price >= 0 && quantity >= offer.qty) {
+    } else if (
+      offer.type === "price" &&
+      offer.qty > 1 &&
+      offer.price >= 0 &&
+      quantity >= offer.qty
+    ) {
       candidate = Math.floor(quantity / offer.qty) * offer.price + (quantity % offer.qty) * unit;
     }
     if (candidate !== null && candidate < best) best = candidate;
@@ -27,7 +32,11 @@ export function lineDiscount(price: number, quantity: number, offers?: QuantityO
 }
 
 /** Human label for an offer badge, e.g. "Achetez 2, 1 offert" / "2 pour 3 000 DA". */
-export function offerLabel(offer: QuantityOffer, lang: "fr" | "ar", formatPrice: (n: number) => string): string {
+export function offerLabel(
+  offer: QuantityOffer,
+  lang: "fr" | "ar",
+  formatPrice: (n: number) => string
+): string {
   if (offer.type === "free") {
     return lang === "ar"
       ? `اشترِ ${offer.buy} واحصل على ${offer.get} مجانًا`
@@ -38,9 +47,7 @@ export function offerLabel(offer: QuantityOffer, lang: "fr" | "ar", formatPrice:
   // algorithm flipping "3 000 DA" to "DA 000 3". Same reason the <Price>
   // component forces dir="ltr" — this is the plain-string equivalent.
   const price = `⁦${formatPrice(offer.price)}⁩`;
-  return lang === "ar"
-    ? `${offer.qty} بـ ${price}`
-    : `${offer.qty} pour ${price}`;
+  return lang === "ar" ? `${offer.qty} بـ ${price}` : `${offer.qty} pour ${price}`;
 }
 
 /** Parse the jsonb column defensively — admin data could be hand-edited. */

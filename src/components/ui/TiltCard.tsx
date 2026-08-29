@@ -1,4 +1,4 @@
-import type { PointerEvent, ReactNode } from "react";
+import type { CSSProperties, PointerEvent, ReactNode } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useMediaFlags } from "@/hooks/useMediaFlags";
 
@@ -8,6 +8,7 @@ const SPRING = { stiffness: 260, damping: 24, mass: 0.6 };
 interface TiltCardProps {
   children: ReactNode;
   className?: string;
+  style?: CSSProperties;
 }
 
 /**
@@ -15,7 +16,7 @@ interface TiltCardProps {
  * Falls back to a plain wrapper on touch/reduced-motion, where there is no
  * hover to track and the transform would only fight the scroll.
  */
-export function TiltCard({ children, className }: TiltCardProps) {
+export function TiltCard({ children, className, style }: TiltCardProps) {
   const { enableHeavyEffects } = useMediaFlags();
 
   const pointerX = useMotionValue(0);
@@ -31,7 +32,11 @@ export function TiltCard({ children, className }: TiltCardProps) {
   );
 
   if (!enableHeavyEffects) {
-    return <div className={className}>{children}</div>;
+    return (
+      <div className={className} style={style}>
+        {children}
+      </div>
+    );
   }
 
   const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
@@ -50,7 +55,7 @@ export function TiltCard({ children, className }: TiltCardProps) {
       className={className}
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
-      style={{ rotateX, rotateY, transformPerspective: 900 }}
+      style={{ ...style, rotateX, rotateY, transformPerspective: 900 }}
     >
       {children}
     </motion.div>

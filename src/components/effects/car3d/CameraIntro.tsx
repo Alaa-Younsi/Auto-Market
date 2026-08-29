@@ -1,7 +1,13 @@
 import { useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { CAMERA_POSITION, CAMERA_TARGET, INTRO_CONTROL, INTRO_DURATION, INTRO_START } from "./constants";
+import {
+  CAMERA_POSITION,
+  CAMERA_TARGET,
+  INTRO_CONTROL,
+  INTRO_DURATION,
+  INTRO_START,
+} from "./constants";
 
 interface CameraIntroProps {
   active: boolean;
@@ -20,11 +26,12 @@ export function CameraIntro({ active, onComplete }: CameraIntroProps) {
   const done = useRef(false);
 
   const curve = useMemo(
-    () => new THREE.QuadraticBezierCurve3(
-      new THREE.Vector3(...INTRO_START),
-      new THREE.Vector3(...INTRO_CONTROL),
-      new THREE.Vector3(...CAMERA_POSITION)
-    ),
+    () =>
+      new THREE.QuadraticBezierCurve3(
+        new THREE.Vector3(...INTRO_START),
+        new THREE.Vector3(...INTRO_CONTROL),
+        new THREE.Vector3(...CAMERA_POSITION)
+      ),
     []
   );
 

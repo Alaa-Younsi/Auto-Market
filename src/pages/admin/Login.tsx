@@ -37,9 +37,7 @@ export default function AdminLogin() {
       <BentoPanel className="w-full max-w-sm p-7">
         <div className="mb-6 text-center">
           <BrandMark className="mx-auto mb-3 h-12 w-12 rounded-2xl" />
-          <h1 className="font-heading text-lg font-extrabold text-ink">
-            {t("admin_login_title")}
-          </h1>
+          <h1 className="font-heading text-lg font-extrabold text-ink">{t("admin_login_title")}</h1>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

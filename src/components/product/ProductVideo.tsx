@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { responsiveSrcSet } from "@/lib/image";
 
 interface ProductVideoProps {
   src: string;
@@ -10,10 +11,10 @@ interface ProductVideoProps {
  * Autoplaying showcase reel: muted (required for unprompted autoplay),
  * looping, and controls-free so the shopper can't pause or scrub it.
  *
- * The <video> tag itself isn't mounted until the container scrolls near the
- * viewport — it's the heaviest asset on the page, and both the desktop and
- * mobile breakpoints of this block exist in the DOM at once, so downloading
- * eagerly would fetch it twice as often as it's actually watched.
+ * The <video> tag isn't mounted until the container scrolls near the viewport
+ * (it's the heaviest asset on the page), and `preload="none"` keeps bytes from
+ * moving until an actual play. Product.tsx also mounts only ONE of the
+ * desktop/mobile pair, so the clip is never fetched twice per view.
  */
 export function ProductVideo({ src, poster, className }: ProductVideoProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -47,7 +48,7 @@ export function ProductVideo({ src, poster, className }: ProductVideoProps) {
           playsInline
           disablePictureInPicture
           disableRemotePlayback
-          preload="auto"
+          preload="none"
           onContextMenu={(e) => e.preventDefault()}
           className="w-full rounded-2xl border border-line bg-panel-2"
         />
@@ -55,6 +56,8 @@ export function ProductVideo({ src, poster, className }: ProductVideoProps) {
         poster && (
           <img
             src={poster}
+            srcSet={responsiveSrcSet(poster)}
+            sizes="(max-width: 1024px) 100vw, 512px"
             alt=""
             loading="lazy"
             decoding="async"

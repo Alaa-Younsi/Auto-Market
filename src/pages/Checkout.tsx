@@ -14,6 +14,7 @@ import { checkoutSchema, type CheckoutFormValues } from "@/lib/checkoutSchema";
 import { placeOrder } from "@/lib/placeOrder";
 import { orderErrorKey } from "@/lib/orderErrors";
 import { Price } from "@/components/ui/Price";
+import { SmartImage } from "@/components/ui/SmartImage";
 import { trackInitiateCheckout, trackPurchase } from "@/lib/pixel";
 import { CheckoutFields } from "@/components/product/CheckoutFields";
 import { Button } from "@/components/ui/Button";
@@ -24,9 +25,11 @@ const containerVariants: Variants = {
   visible: { transition: { staggerChildren: 0.08 } },
 };
 
+// Position only — no opacity. This is the checkout form; a stalled rAF frame
+// must never leave a paying customer looking at an invisible form.
 const itemVariants: Variants = {
-  hidden: { y: 16, opacity: 0 },
-  visible: { y: 0, opacity: 1, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } },
+  hidden: { y: 16 },
+  visible: { y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } },
 };
 
 export default function Checkout() {
@@ -58,11 +61,11 @@ export default function Checkout() {
     defaultValues: { delivery_type: "home" },
   });
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: fire once on mount only — a "has fired" ref guards re-runs
   useEffect(() => {
     if (hasTrackedInitiate.current || items.length === 0) return;
     hasTrackedInitiate.current = true;
     trackInitiateCheckout("cart", subtotal);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const selectedWilaya = watch("wilaya");
@@ -128,9 +131,7 @@ export default function Checkout() {
           onSubmit={handleSubmit(onSubmit)}
           className="space-y-5"
         >
-          <h2 className="font-heading text-lg font-bold text-ink">
-            {t("checkout_customer_info")}
-          </h2>
+          <h2 className="font-heading text-lg font-bold text-ink">{t("checkout_customer_info")}</h2>
           <CheckoutFields
             register={register}
             errors={errors}
@@ -184,7 +185,12 @@ export default function Checkout() {
               >
                 <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-panel-2">
                   {item.imageUrl && (
-                    <img src={item.imageUrl} alt="" className="h-full w-full object-cover" />
+                    <SmartImage
+                      src={item.imageUrl}
+                      alt=""
+                      sizes="56px"
+                      className="h-full w-full object-cover"
+                    />
                   )}
                 </div>
                 <div className="flex-1">
@@ -213,12 +219,20 @@ export default function Checkout() {
             <div className="flex justify-between text-muted">
               <span>{t("cart_shipping")}</span>
               {/* No wilaya picked yet = unknown, not free. */}
-              <span className={wilayaFee !== undefined && shippingEstimate === 0 ? "font-semibold text-accent" : undefined}>
-                {wilayaFee === undefined
-                  ? "—"
-                  : shippingEstimate === 0
-                    ? t("cart_shipping_free")
-                    : <Price value={shippingEstimate} />}
+              <span
+                className={
+                  wilayaFee !== undefined && shippingEstimate === 0
+                    ? "font-semibold text-accent"
+                    : undefined
+                }
+              >
+                {wilayaFee === undefined ? (
+                  "—"
+                ) : shippingEstimate === 0 ? (
+                  t("cart_shipping_free")
+                ) : (
+                  <Price value={shippingEstimate} />
+                )}
               </span>
             </div>
             <div className="flex justify-between border-t border-line pt-2 font-bold text-ink">

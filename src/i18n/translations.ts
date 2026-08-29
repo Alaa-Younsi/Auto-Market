@@ -66,7 +66,8 @@ export const translations = {
     cta_banner_button: "Commander maintenant",
 
     // Footer
-    footer_about: "Auto Market est votre boutique de pièces et accessoires automobiles en Algérie, avec paiement à la livraison.",
+    footer_about:
+      "Auto Market est votre boutique de pièces et accessoires automobiles en Algérie, avec paiement à la livraison.",
     footer_links: "Liens rapides",
     footer_contact: "Contact",
     footer_rights: "Tous droits réservés.",
@@ -102,6 +103,7 @@ export const translations = {
     product_select_color: "Veuillez choisir une couleur",
     product_select_size: "Veuillez choisir une taille",
     product_select_option_prefix: "Veuillez choisir une option pour",
+    product_choose_prefix: "À choisir :",
 
     // Cart
     cart_title: "Mon panier",
@@ -178,6 +180,8 @@ export const translations = {
     admin_add: "Ajouter",
     admin_confirm_delete: "Confirmer la suppression ?",
     admin_save_error: "Échec de l'enregistrement. Réessayez.",
+    admin_load_error: "Impossible de charger cet élément. Rechargez la page.",
+    admin_delete_error: "Échec de la suppression. Réessayez.",
     admin_search_placeholder: "Rechercher...",
 
     // Admin - dashboard
@@ -371,7 +375,8 @@ export const translations = {
     cta_banner_button: "اطلب الآن",
 
     // Footer
-    footer_about: "أوتو ماركت هو متجرك لقطع غيار وإكسسوارات السيارات في الجزائر، مع الدفع عند الاستلام.",
+    footer_about:
+      "أوتو ماركت هو متجرك لقطع غيار وإكسسوارات السيارات في الجزائر، مع الدفع عند الاستلام.",
     footer_links: "روابط سريعة",
     footer_contact: "اتصل بنا",
     footer_rights: "جميع الحقوق محفوظة.",
@@ -407,6 +412,7 @@ export const translations = {
     product_select_color: "الرجاء اختيار لون",
     product_select_size: "الرجاء اختيار مقاس",
     product_select_option_prefix: "الرجاء اختيار خيار لـ",
+    product_choose_prefix: "يجب اختيار:",
 
     // Cart
     cart_title: "سلتي",
@@ -482,6 +488,8 @@ export const translations = {
     admin_add: "إضافة",
     admin_confirm_delete: "تأكيد الحذف؟",
     admin_save_error: "فشل الحفظ. حاول مرة أخرى.",
+    admin_load_error: "تعذّر تحميل هذا العنصر. أعد تحميل الصفحة.",
+    admin_delete_error: "فشل الحذف. حاول مرة أخرى.",
     admin_search_placeholder: "بحث...",
 
     // Admin - dashboard

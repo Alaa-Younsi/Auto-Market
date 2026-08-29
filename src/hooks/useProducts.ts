@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { sanitizeOffers } from "@/lib/offers";
 import { sanitizeSearchTerm } from "@/lib/utils";
 import { normalizeColors } from "@/lib/colors";
+import { normalizeVariantGroups } from "@/lib/variants";
 import type { Product } from "@/types/db";
 
 /* Normalizes rows from PostgREST: offers jsonb parsed defensively, colors
@@ -13,7 +14,7 @@ function normalizeProduct(row: Product): Product {
     ...row,
     video_url: row.video_url ?? null,
     quantity_offers: sanitizeOffers(row.quantity_offers),
-    variants: row.variants ?? [],
+    variants: normalizeVariantGroups(row.variants),
     colors: normalizeColors(row.colors),
   };
 }
@@ -32,9 +33,7 @@ export function useProducts(options: UseProductsOptions = {}) {
   return useQuery({
     queryKey: ["products", categoryId, search, sort, featuredOnly, includeAll],
     queryFn: async (): Promise<Product[]> => {
-      let query = supabase
-        .from("products")
-        .select("*, product_images(*), category:categories(*)");
+      let query = supabase.from("products").select("*, product_images(*), category:categories(*)");
 
       if (!includeAll) {
         query = query.eq("status", "active");
@@ -45,7 +44,7 @@ export function useProducts(options: UseProductsOptions = {}) {
       if (featuredOnly) {
         query = query.eq("featured", true);
       }
-      if (search && search.trim()) {
+      if (search?.trim()) {
         const safe = sanitizeSearchTerm(search.trim());
         if (safe) {
           query = query.or(`name_fr.ilike.%${safe}%,name_ar.ilike.%${safe}%`);

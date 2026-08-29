@@ -1,7 +1,10 @@
+import { type SyntheticEvent, useState } from "react";
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import { ShoppingBag } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useMediaFlags } from "@/hooks/useMediaFlags";
+import { responsiveSrcSet } from "@/lib/image";
+import { SmartImage } from "@/components/ui/SmartImage";
 import { TiltCard } from "@/components/ui/TiltCard";
 import { cn } from "@/lib/utils";
 
@@ -19,18 +22,35 @@ interface GalleryProps {
 }
 
 const SWIPE_THRESHOLD = 60;
+// Keep the frame within a sane band so a panorama or a very tall photo can't
+// blow out the page layout.
+const MIN_RATIO = 0.62;
+const MAX_RATIO = 1.5;
 
 /**
  * Domain-agnostic product gallery: owns no state of its own, so a color
  * swatch, a thumbnail click, and a swipe all drive the same index from the
  * parent. Main image crossfades; a horizontal drag on it also advances/goes
  * back, snapping back rather than translating — the crossfade is the
- * transition.
+ * transition. The frame's aspect ratio follows the FIRST image's natural
+ * width:height (clamped) so portrait/landscape photos aren't force-cropped
+ * into a square; later images still `object-cover` into that frame.
  */
 export function Gallery({ images, activeIndex, onActiveChange, name }: GalleryProps) {
   const { dir } = useLanguage();
   const { prefersReducedMotion } = useMediaFlags();
   const image = images[activeIndex];
+
+  // Frame ratio is learned from the first image the moment it loads (no extra
+  // request — read off the rendered <img>). Null until then → square.
+  const [frameRatio, setFrameRatio] = useState<number | null>(null);
+  function handleMainLoad(e: SyntheticEvent<HTMLImageElement>) {
+    if (activeIndex !== 0) return;
+    const el = e.currentTarget;
+    if (!el.naturalWidth || !el.naturalHeight) return;
+    const raw = el.naturalWidth / el.naturalHeight;
+    setFrameRatio(Math.min(MAX_RATIO, Math.max(MIN_RATIO, raw)));
+  }
 
   function goTo(index: number) {
     const count = images.length;
@@ -46,17 +66,27 @@ export function Gallery({ images, activeIndex, onActiveChange, name }: GalleryPr
 
   return (
     <div>
-      <TiltCard className="relative aspect-square overflow-hidden rounded-2xl border border-line bg-panel-2">
+      <TiltCard
+        style={frameRatio ? { aspectRatio: frameRatio } : undefined}
+        className={cn(
+          "relative overflow-hidden rounded-2xl border border-line bg-panel-2",
+          !frameRatio && "aspect-square"
+        )}
+      >
         <AnimatePresence mode="wait" initial={false}>
           {image ? (
             <motion.img
               key={image.key}
               src={image.url}
+              srcSet={responsiveSrcSet(image.url)}
+              sizes="(max-width: 1024px) 100vw, 512px"
               alt={image.alt || name}
               width={800}
               height={800}
               /* The LCP element on this page — never lazy, and asked for
-                 ahead of the rest of the page's requests. */
+                 ahead of the rest of the page's requests. This one keeps its
+                 own <img> (it drives the crossfade + drag itself, so it can't
+                 share SmartImage's fade state) but still gets the srcset. */
               loading="eager"
               fetchPriority="high"
               decoding="async"
@@ -65,6 +95,7 @@ export function Gallery({ images, activeIndex, onActiveChange, name }: GalleryPr
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.25}
               onDragEnd={handleDragEnd}
+              onLoad={handleMainLoad}
               initial={prefersReducedMotion ? false : { opacity: 0, scale: 1.04 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={prefersReducedMotion ? { opacity: 1 } : { opacity: 0 }}
@@ -91,13 +122,12 @@ export function Gallery({ images, activeIndex, onActiveChange, name }: GalleryPr
                 i === activeIndex ? "border-brand" : "border-line"
               )}
             >
-              <img
+              <SmartImage
                 src={img.url}
                 alt=""
                 width={64}
                 height={64}
-                loading="lazy"
-                decoding="async"
+                sizes="64px"
                 className="h-full w-full object-cover"
               />
             </button>

@@ -7,6 +7,7 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import { useMediaFlags } from "@/hooks/useMediaFlags";
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 import { Price } from "@/components/ui/Price";
+import { SmartImage } from "@/components/ui/SmartImage";
 
 const ROW_TRANSITION = { type: "spring", damping: 28, stiffness: 260 } as const;
 
@@ -57,7 +58,12 @@ export function CartDrawer() {
                 >
                   <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-panel-2">
                     {item.imageUrl && (
-                      <img src={item.imageUrl} alt="" className="h-full w-full object-cover" />
+                      <SmartImage
+                        src={item.imageUrl}
+                        alt=""
+                        sizes="80px"
+                        className="h-full w-full object-cover"
+                      />
                     )}
                   </div>
                   <div className="flex flex-1 flex-col justify-between">
@@ -71,7 +77,9 @@ export function CartDrawer() {
                             item.color,
                             item.size,
                             ...(item.variants ?? []).map((v) =>
-                              lang === "ar" ? `${v.name_ar}: ${v.value}` : `${v.name_fr}: ${v.value}`
+                              lang === "ar"
+                                ? `${v.name_ar}: ${v.value}`
+                                : `${v.name_fr}: ${v.value}`
                             ),
                           ]
                             .filter(Boolean)
@@ -84,7 +92,13 @@ export function CartDrawer() {
                         <button
                           className="p-1.5 text-muted hover:text-ink"
                           onClick={() =>
-                            updateQuantity(item.productId, item.quantity - 1, item.color, item.size, item.variants)
+                            updateQuantity(
+                              item.productId,
+                              item.quantity - 1,
+                              item.color,
+                              item.size,
+                              item.variants
+                            )
                           }
                         >
                           <Minus size={14} />
@@ -105,7 +119,13 @@ export function CartDrawer() {
                         <button
                           className="p-1.5 text-muted hover:text-ink"
                           onClick={() =>
-                            updateQuantity(item.productId, item.quantity + 1, item.color, item.size, item.variants)
+                            updateQuantity(
+                              item.productId,
+                              item.quantity + 1,
+                              item.color,
+                              item.size,
+                              item.variants
+                            )
                           }
                         >
                           <Plus size={14} />

@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { MapPin, Phone } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { RoadDivider } from "@/components/effects/RoadDivider";
-import { FacebookIcon, InstagramIcon, TikTokIcon } from "@/components/ui/SocialIcons";
+import { InstagramIcon, TikTokIcon } from "@/components/ui/SocialIcons";
 import { BrandMark } from "@/components/ui/BrandMark";
 
 export function Footer() {
@@ -22,17 +22,8 @@ export function Footer() {
                 {t("brand_name")}
               </span>
             </Link>
-            <p className="max-w-xs text-sm leading-relaxed text-muted">
-              {t("footer_about")}
-            </p>
+            <p className="max-w-xs text-sm leading-relaxed text-muted">{t("footer_about")}</p>
             <div className="mt-4 flex gap-2">
-              <a
-                href="#"
-                className="rounded-full border border-line p-2 text-muted transition-colors hover:border-brand hover:text-brand"
-                aria-label="Facebook"
-              >
-                <FacebookIcon size={16} />
-              </a>
               <a
                 href="https://www.instagram.com/automarket.shop_/"
                 target="_blank"
@@ -55,9 +46,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="mb-3 font-heading text-sm font-bold text-ink">
-              {t("footer_links")}
-            </h3>
+            <h3 className="mb-3 font-heading text-sm font-bold text-ink">{t("footer_links")}</h3>
             <ul className="space-y-2 text-sm text-muted">
               <li>
                 <Link to="/" className="transition-colors hover:text-brand">
@@ -73,9 +62,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="mb-3 font-heading text-sm font-bold text-ink">
-              {t("footer_contact")}
-            </h3>
+            <h3 className="mb-3 font-heading text-sm font-bold text-ink">{t("footer_contact")}</h3>
             <ul className="space-y-2.5 text-sm text-muted">
               <li className="flex items-center gap-2">
                 <Phone size={14} className="text-brand" /> +213 555 00 00 00
@@ -95,13 +82,10 @@ export function Footer() {
             href="https://alaayounsi.vercel.app/"
             target="_blank"
             rel="noopener noreferrer"
-            className="transition-colors hover:text-brand sm:justify-self-center"
+            className="transition-colors hover:text-brand sm:col-span-2 sm:justify-self-end"
           >
             {t("footer_credit")}
           </a>
-          <Link to="/admin/login" className="transition-colors hover:text-brand sm:justify-self-end">
-            {t("footer_admin")}
-          </Link>
         </div>
       </div>
     </footer>

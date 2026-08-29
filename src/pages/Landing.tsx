@@ -1,13 +1,6 @@
 import { useRef } from "react";
 import { motion, useScroll } from "framer-motion";
-import {
-  BadgeCheck,
-  ChevronRight,
-  Headset,
-  Sparkles,
-  Truck,
-  Wallet,
-} from "lucide-react";
+import { BadgeCheck, ChevronRight, Headset, Sparkles, Truck, Wallet } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useCategories } from "@/hooks/useCategories";
 import { useMediaFlags } from "@/hooks/useMediaFlags";
@@ -84,7 +77,10 @@ export default function Landing() {
             color matches --c-bg exactly in both themes, so its fade-to-bg scrim
             still blends seamlessly into it without the image showing through
             the strip's rounded corners. */}
-        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 bottom-[300px] sm:hidden">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 bottom-[300px] sm:hidden"
+        >
           <img src="/bgimage.png" alt="" className="h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-bg via-bg/75 to-bg/30" />
         </div>
@@ -288,12 +284,8 @@ export default function Landing() {
               transition={{ duration: 0.5, delay: i * 0.1 }}
             >
               <BentoPanel glow className="fx-lift h-full p-6">
-                <span className="fx-gradient-text font-heading text-3xl font-black">
-                  {step.n}
-                </span>
-                <h3 className="mt-3 font-heading text-base font-bold text-ink">
-                  {step.title}
-                </h3>
+                <span className="fx-gradient-text font-heading text-3xl font-black">{step.n}</span>
+                <h3 className="mt-3 font-heading text-base font-bold text-ink">{step.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted">{step.desc}</p>
               </BentoPanel>
             </motion.div>

@@ -50,10 +50,13 @@ export function ExhaustTrails({ speedRef, active }: ExhaustTrailsProps) {
     return { positions: pos, geometry: geo, material: mat };
   }, []);
 
-  useEffect(() => () => {
-    geometry.dispose();
-    material.dispose();
-  }, [geometry, material]);
+  useEffect(
+    () => () => {
+      geometry.dispose();
+      material.dispose();
+    },
+    [geometry, material]
+  );
 
   useFrame((_, delta) => {
     if (!active || !pointsRef.current) return;
@@ -81,7 +84,5 @@ export function ExhaustTrails({ speedRef, active }: ExhaustTrailsProps) {
     attr.needsUpdate = true;
   });
 
-  return (
-    <points ref={pointsRef} geometry={geometry} material={material} frustumCulled={false} />
-  );
+  return <points ref={pointsRef} geometry={geometry} material={material} frustumCulled={false} />;
 }

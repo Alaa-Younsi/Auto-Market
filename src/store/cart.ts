@@ -9,7 +9,12 @@ interface CartState {
   open: () => void;
   close: () => void;
   addItem: (item: CartItem) => void;
-  removeItem: (productId: string, color?: string, size?: string, variants?: SelectedVariant[]) => void;
+  removeItem: (
+    productId: string,
+    color?: string,
+    size?: string,
+    variants?: SelectedVariant[]
+  ) => void;
   updateQuantity: (
     productId: string,
     quantity: number,
@@ -74,9 +79,7 @@ export const useCartStore = create<CartState>()(
         }),
       removeItem: (productId, color, size, variants) =>
         set((state) => ({
-          items: state.items.filter(
-            (i) => !sameLine(i, productId, color, size, variants)
-          ),
+          items: state.items.filter((i) => !sameLine(i, productId, color, size, variants)),
         })),
       updateQuantity: (productId, quantity, color, size, variants) =>
         set((state) => ({
@@ -89,15 +92,10 @@ export const useCartStore = create<CartState>()(
             .filter((i) => i.quantity > 0),
         })),
       clear: () => set({ items: [] }),
-      subtotal: () =>
-        get().items.reduce((sum, i) => sum + i.price * i.quantity, 0),
+      subtotal: () => get().items.reduce((sum, i) => sum + i.price * i.quantity, 0),
       discount: () =>
-        get().items.reduce(
-          (sum, i) => sum + lineDiscount(i.price, i.quantity, i.offers),
-          0
-        ),
-      totalQuantity: () =>
-        get().items.reduce((sum, i) => sum + i.quantity, 0),
+        get().items.reduce((sum, i) => sum + lineDiscount(i.price, i.quantity, i.offers), 0),
+      totalQuantity: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
     }),
     { name: "auto-market-cart" }
   )

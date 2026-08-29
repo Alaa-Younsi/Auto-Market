@@ -53,8 +53,12 @@ export default function AdminProducts() {
             <tr className="border-b border-line text-start text-xs text-muted">
               <th className="px-4 py-3 text-start font-semibold"></th>
               <th className="px-4 py-3 text-start font-semibold">{t("admin_product_name")}</th>
-              <th className="hidden px-4 py-3 text-start font-semibold sm:table-cell">{t("admin_product_price")}</th>
-              <th className="hidden px-4 py-3 text-start font-semibold sm:table-cell">{t("admin_product_stock")}</th>
+              <th className="hidden px-4 py-3 text-start font-semibold sm:table-cell">
+                {t("admin_product_price")}
+              </th>
+              <th className="hidden px-4 py-3 text-start font-semibold sm:table-cell">
+                {t("admin_product_stock")}
+              </th>
               <th className="px-4 py-3 text-start font-semibold">{t("admin_product_status")}</th>
               <th className="px-4 py-3 text-end font-semibold"></th>
             </tr>
@@ -86,7 +90,9 @@ export default function AdminProducts() {
                     <Price value={product.price} /> · {product.stock} pcs
                   </span>
                 </td>
-                <td className="hidden px-4 py-2 sm:table-cell"><Price value={product.price} /></td>
+                <td className="hidden px-4 py-2 sm:table-cell">
+                  <Price value={product.price} />
+                </td>
                 <td className="hidden px-4 py-2 sm:table-cell">{product.stock}</td>
                 <td className="px-4 py-2">
                   <Badge tone={product.status === "active" ? "accent" : "muted"}>

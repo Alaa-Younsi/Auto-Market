@@ -15,7 +15,7 @@ export function StarRating({ value, size = 16, animated = false }: StarRatingPro
   const playAnimated = animated && !prefersReducedMotion;
 
   return (
-    <div className="flex items-center gap-0.5" aria-label={`${value} / 5`}>
+    <div className="flex items-center gap-0.5" role="img" aria-label={`${value} / 5`}>
       {Array.from({ length: 5 }).map((_, i) => {
         const star = (
           <Star

@@ -35,13 +35,7 @@ export function CheckoutFields({
       {/* Honeypot: real users never see or fill this */}
       <div className="hidden" aria-hidden="true">
         <label htmlFor="website">Website</label>
-        <input
-          id="website"
-          type="text"
-          tabIndex={-1}
-          autoComplete="off"
-          {...register("website")}
-        />
+        <input id="website" type="text" tabIndex={-1} autoComplete="off" {...register("website")} />
       </div>
 
       <Input
@@ -65,11 +59,7 @@ export function CheckoutFields({
             </option>
           ))}
         </Select>
-        <Input
-          placeholder={t("checkout_city")}
-          error={errText("city")}
-          {...register("city")}
-        />
+        <Input placeholder={t("checkout_city")} error={errText("city")} {...register("city")} />
       </div>
 
       <div>

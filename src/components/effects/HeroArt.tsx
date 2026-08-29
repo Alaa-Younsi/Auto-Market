@@ -17,11 +17,7 @@ export function HeroArt() {
       <div className="absolute h-[70%] w-[70%] rounded-full border border-line" />
 
       {/* Dot grid backdrop */}
-      <svg
-        className="absolute h-full w-full opacity-40"
-        viewBox="0 0 400 400"
-        aria-hidden="true"
-      >
+      <svg className="absolute h-full w-full opacity-40" viewBox="0 0 400 400" aria-hidden="true">
         <defs>
           <pattern id="dotgrid" width="18" height="18" patternUnits="userSpaceOnUse">
             <circle cx="1.5" cy="1.5" r="1.5" fill="rgb(var(--c-brand) / 0.25)" />
@@ -36,7 +32,10 @@ export function HeroArt() {
         animate={enableHeavyEffects ? { y: [0, -14, 0] } : undefined}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
       >
-        <svg viewBox="0 0 640 300" className="w-full drop-shadow-[0_30px_40px_rgba(33,96,235,0.35)]">
+        <svg
+          viewBox="0 0 640 300"
+          className="w-full drop-shadow-[0_30px_40px_rgba(33,96,235,0.35)]"
+        >
           <defs>
             <linearGradient id="carBody" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%" stopColor="rgb(var(--c-brand-light))" />
@@ -77,11 +76,7 @@ export function HeroArt() {
           />
 
           {/* windows */}
-          <path
-            d="M240 82 L228 112 L340 112 L336 66 Z"
-            fill="url(#carGlass)"
-            opacity="0.9"
-          />
+          <path d="M240 82 L228 112 L340 112 L336 66 Z" fill="url(#carGlass)" opacity="0.9" />
           <path
             d="M352 68 L356 112 L470 112 L438 92 C418 78 386 68 352 68 Z"
             fill="url(#carGlass)"

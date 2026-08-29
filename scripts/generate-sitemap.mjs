@@ -8,9 +8,7 @@ const DOMAIN = "https://www.auto-market.shop";
 const STATIC_ROUTES = ["/", "/shop"];
 
 function buildXml(urls) {
-  const entries = urls
-    .map((url) => `  <url><loc>${DOMAIN}${url}</loc></url>`)
-    .join("\n");
+  const entries = urls.map((url) => `  <url><loc>${DOMAIN}${url}</loc></url>`).join("\n");
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries}\n</urlset>\n`;
 }
 
@@ -23,16 +21,16 @@ async function main() {
   if (supabaseUrl && supabaseAnonKey) {
     try {
       const supabase = createClient(supabaseUrl, supabaseAnonKey);
-      const { data, error } = await supabase
-        .from("products")
-        .select("slug")
-        .eq("status", "active");
+      const { data, error } = await supabase.from("products").select("slug").eq("status", "active");
       if (error) throw error;
       for (const product of data ?? []) {
         urls.push(`/product/${product.slug}`);
       }
     } catch (err) {
-      console.warn("generate-sitemap: could not fetch products, writing static routes only.", err.message);
+      console.warn(
+        "generate-sitemap: could not fetch products, writing static routes only.",
+        err.message
+      );
     }
   } else {
     console.warn("generate-sitemap: Supabase env vars not set, writing static routes only.");

@@ -36,14 +36,7 @@ export function CameraRig({ sideOffset, scrollProgress }: CameraRigProps) {
     const { width, height } = size;
     // A positive x samples further right of the virtual frame, which slides the
     // subject left — hence the negation.
-    camera.setViewOffset(
-      width,
-      height,
-      -sideOffset * width * VIEW_OFFSET_RATIO,
-      0,
-      width,
-      height
-    );
+    camera.setViewOffset(width, height, -sideOffset * width * VIEW_OFFSET_RATIO, 0, width, height);
     invalidate();
 
     return () => {

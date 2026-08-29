@@ -63,12 +63,7 @@ export function Road({ moving, speedRef, fogColor, lowQuality }: RoadProps) {
   return (
     <>
       <fog attach="fog" args={[fogColor, 8, 26]} />
-      <mesh
-        ref={meshRef}
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, 0, 0]}
-        receiveShadow
-      >
+      <mesh ref={meshRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
         <planeGeometry args={[9, 60]} />
         {lowQuality ? (
           <meshStandardMaterial map={texture} roughness={0.95} metalness={0} />

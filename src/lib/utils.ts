@@ -9,7 +9,7 @@ export function sanitizeSearchTerm(term: string): string {
     .slice(0, 100);
 }
 
-const DIACRITICS_PATTERN = new RegExp("[\\u0300-\\u036f]", "g");
+const DIACRITICS_PATTERN = /[\u0300-\u036f]/g;
 
 export function slugify(input: string): string {
   return input

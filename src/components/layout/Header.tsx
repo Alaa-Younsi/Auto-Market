@@ -48,9 +48,7 @@ export function Header() {
       <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
         <Link to="/" className="flex shrink-0 items-center gap-2">
           <BrandMark />
-          <span className="font-heading text-lg font-extrabold text-ink">
-            {t("brand_name")}
-          </span>
+          <span className="font-heading text-lg font-extrabold text-ink">{t("brand_name")}</span>
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
@@ -157,7 +155,10 @@ export function Header() {
                   placeholder={t("nav_search_placeholder")}
                   className="w-full rounded-full border border-line bg-panel-2 py-2 ps-10 pe-4 text-sm outline-none"
                 />
-                <Search size={16} className="absolute start-3.5 top-1/2 -translate-y-1/2 text-muted" />
+                <Search
+                  size={16}
+                  className="absolute start-3.5 top-1/2 -translate-y-1/2 text-muted"
+                />
               </form>
               {navLinks.map((link) => (
                 <NavLink

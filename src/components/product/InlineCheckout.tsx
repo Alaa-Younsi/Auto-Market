@@ -66,23 +66,23 @@ export function InlineCheckout({ product, quantity, color, size, variants }: Inl
   const discount = lineDiscount(product.price, quantity, product.quantity_offers);
   const shippingEstimate = resolveShipping(wilayaFee, subtotal - discount, storeSettings);
 
+  // Same required-selection rule as the main product actions — the "Buy now"
+  // submit is disabled until every axis is chosen.
+  const missingSelections: string[] = [];
+  if (product.colors.length > 0 && !color) missingSelections.push(t("product_color"));
+  if (product.sizes.length > 0 && !size) missingSelections.push(t("product_size"));
+  for (const group of product.variants) {
+    if (!variants?.some((v) => v.name_fr === group.name_fr && v.value)) {
+      missingSelections.push(lang === "ar" ? group.name_ar : group.name_fr);
+    }
+  }
+  const selectionComplete = missingSelections.length === 0;
+
   async function onSubmit(values: CheckoutFormValues) {
     if (isSpam(values.website)) return;
-    if (product.colors.length > 0 && !color) {
-      setErrorMsg(t("product_select_color"));
+    if (!selectionComplete) {
+      setErrorMsg(`${t("product_choose_prefix")} ${missingSelections.join(", ")}`);
       return;
-    }
-    if (product.sizes.length > 0 && !size) {
-      setErrorMsg(t("product_select_size"));
-      return;
-    }
-    for (const group of product.variants) {
-      if (!variants?.some((v) => v.name_fr === group.name_fr && v.value)) {
-        setErrorMsg(
-          `${t("product_select_option_prefix")} ${lang === "ar" ? group.name_ar : group.name_fr}`
-        );
-        return;
-      }
     }
     setErrorMsg(null);
     setSubmitting(true);
@@ -132,12 +132,20 @@ export function InlineCheckout({ product, quantity, color, size, variants }: Inl
         <div className="mt-1 flex justify-between text-muted">
           <span>{t("cart_shipping")}</span>
           {/* No wilaya picked yet = unknown, not free. */}
-          <span className={wilayaFee !== undefined && shippingEstimate === 0 ? "font-semibold text-accent" : undefined}>
-            {wilayaFee === undefined
-              ? "—"
-              : shippingEstimate === 0
-                ? t("cart_shipping_free")
-                : <Price value={shippingEstimate} />}
+          <span
+            className={
+              wilayaFee !== undefined && shippingEstimate === 0
+                ? "font-semibold text-accent"
+                : undefined
+            }
+          >
+            {wilayaFee === undefined ? (
+              "—"
+            ) : shippingEstimate === 0 ? (
+              t("cart_shipping_free")
+            ) : (
+              <Price value={shippingEstimate} />
+            )}
           </span>
         </div>
         <div className="mt-2 flex justify-between border-t border-line pt-2 font-bold text-ink">
@@ -159,9 +167,22 @@ export function InlineCheckout({ product, quantity, color, size, variants }: Inl
         )}
       </AnimatePresence>
 
+      {!selectionComplete && (
+        <p className="text-center text-xs font-medium text-muted">
+          {t("product_choose_prefix")}{" "}
+          <span className="text-ink">{missingSelections.join(", ")}</span>
+        </p>
+      )}
+
       <p className="text-center text-xs text-muted">{t("checkout_payment_notice")}</p>
 
-      <Button type="submit" variant="accent" size="lg" className="w-full" disabled={submitting}>
+      <Button
+        type="submit"
+        variant="accent"
+        size="lg"
+        className="w-full"
+        disabled={submitting || !selectionComplete}
+      >
         {submitting ? t("checkout_submitting") : t("product_buy_now")}
       </Button>
     </form>

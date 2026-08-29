@@ -86,12 +86,9 @@ export default function OrderConfirmation() {
             {order.items.map((item, i) => (
               <div key={i} className="flex justify-between py-2 text-sm">
                 <span className="text-ink">
-                  {(lang === "ar" ? item.name_ar : item.name_fr)} × {item.quantity}
+                  {lang === "ar" ? item.name_ar : item.name_fr} × {item.quantity}
                 </span>
-                <Price
-                  value={item.price * item.quantity}
-                  className="font-semibold text-ink"
-                />
+                <Price value={item.price * item.quantity} className="font-semibold text-ink" />
               </div>
             ))}
           </div>
@@ -101,10 +98,12 @@ export default function OrderConfirmation() {
               <Price value={order.discount ?? 0} prefix="-" />
             </div>
           )}
-          <div className={cn(
-            "flex justify-between text-sm",
-            (order.discount ?? 0) > 0 ? "mt-1" : "mt-3 border-t border-line pt-3"
-          )}>
+          <div
+            className={cn(
+              "flex justify-between text-sm",
+              (order.discount ?? 0) > 0 ? "mt-1" : "mt-3 border-t border-line pt-3"
+            )}
+          >
             <span className="text-muted">{t("cart_shipping")}</span>
             <Price value={order.shipping} />
           </div>

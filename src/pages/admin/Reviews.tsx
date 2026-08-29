@@ -4,12 +4,14 @@ import { Plus, Trash2, Upload } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useReviews } from "@/hooks/useReviews";
 import { supabase } from "@/lib/supabase";
+import { compressImage } from "@/lib/image";
 import { cn } from "@/lib/utils";
 import { BentoPanel } from "@/components/ui/BentoPanel";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
+import { SmartImage } from "@/components/ui/SmartImage";
 import { StarRating } from "@/components/ui/StarRating";
 
 const EMPTY_FORM = {
@@ -33,10 +35,11 @@ export default function AdminReviews() {
     if (!file) return;
     setUploading(true);
     try {
-      const path = `reviews/${crypto.randomUUID()}-${file.name}`;
+      const optimized = await compressImage(file);
+      const path = `reviews/${crypto.randomUUID()}-${optimized.name}`;
       const { error: uploadError } = await supabase.storage
         .from("product-images")
-        .upload(path, file);
+        .upload(path, optimized, { cacheControl: "31536000", contentType: optimized.type });
       if (uploadError) throw uploadError;
       const { data: publicUrl } = supabase.storage.from("product-images").getPublicUrl(path);
       setForm((f) => ({ ...f, image_url: publicUrl.publicUrl }));
@@ -67,13 +70,24 @@ export default function AdminReviews() {
   }
 
   async function toggleActive(id: string, active: boolean) {
-    await supabase.from("client_reviews").update({ active: !active }).eq("id", id);
+    const { error: updError } = await supabase
+      .from("client_reviews")
+      .update({ active: !active })
+      .eq("id", id);
+    if (updError) {
+      setError(t("admin_save_error"));
+      return;
+    }
     queryClient.invalidateQueries({ queryKey: ["reviews"] });
   }
 
   async function handleDelete(id: string) {
     if (!confirm(t("admin_confirm_delete"))) return;
-    await supabase.from("client_reviews").delete().eq("id", id);
+    const { error: delError } = await supabase.from("client_reviews").delete().eq("id", id);
+    if (delError) {
+      setError(t("admin_delete_error"));
+      return;
+    }
     queryClient.invalidateQueries({ queryKey: ["reviews"] });
   }
 
@@ -94,7 +108,12 @@ export default function AdminReviews() {
           <div className="flex items-center gap-3">
             <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full border border-line bg-panel-2">
               {form.image_url && (
-                <img src={form.image_url} alt="" className="h-full w-full object-cover" />
+                <SmartImage
+                  src={form.image_url}
+                  alt=""
+                  sizes="56px"
+                  className="h-full w-full object-cover"
+                />
               )}
             </div>
             <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-line px-3 py-2 text-xs font-semibold text-muted hover:border-brand hover:text-brand">
@@ -139,17 +158,15 @@ export default function AdminReviews() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {reviews.map((review) => (
-          <BentoPanel
-            key={review.id}
-            className={cn("p-5", !review.active && "opacity-50")}
-          >
+          <BentoPanel key={review.id} className={cn("p-5", !review.active && "opacity-50")}>
             <StarRating value={review.stars} />
             <p className="mt-2 text-sm text-ink">"{review.review_text}"</p>
             <div className="mt-2 flex items-center gap-2">
               {review.image_url ? (
-                <img
+                <SmartImage
                   src={review.image_url}
                   alt=""
+                  sizes="28px"
                   className="h-7 w-7 rounded-full object-cover"
                 />
               ) : (

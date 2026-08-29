@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 type Theme = "light" | "dark";
 
@@ -39,8 +32,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     () => ({
       theme,
       setTheme: setThemeState,
-      toggleTheme: () =>
-        setThemeState((prev) => (prev === "light" ? "dark" : "light")),
+      toggleTheme: () => setThemeState((prev) => (prev === "light" ? "dark" : "light")),
     }),
     [theme]
   );

@@ -63,8 +63,7 @@ export function DeleteAllOrdersModal({
               </div>
 
               <p className="mt-4 text-sm leading-relaxed text-muted">
-                {t("admin_delete_all_body_pre")}{" "}
-                <span className="font-bold text-ink">{count}</span>{" "}
+                {t("admin_delete_all_body_pre")} <span className="font-bold text-ink">{count}</span>{" "}
                 {t("admin_delete_all_body_post")}
               </p>
 

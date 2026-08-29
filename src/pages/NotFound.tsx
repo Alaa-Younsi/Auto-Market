@@ -26,8 +26,12 @@ export default function NotFound() {
       <div aria-hidden="true" className="relative h-10 w-full overflow-hidden">
         <div className="absolute top-1/2 h-px w-full -translate-y-1/2 bg-line" />
         <div className="fx-road-dash absolute top-1/2 h-px w-full -translate-y-1/2" />
-        <div className="fx-mini-car top-2.5 text-muted" style={{ animationDelay: "-11s" }}>
-          <MiniCar size={48} />
+        <div className="fx-mini-car top-1.5 text-muted" style={{ animationDelay: "-11s" }}>
+          <span className="fx-mini-bob block">
+            <span className="fx-mini-streak" />
+            <span className="fx-mini-glow" />
+            <MiniCar size={48} />
+          </span>
         </div>
       </div>
     </div>

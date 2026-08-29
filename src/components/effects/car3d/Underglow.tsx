@@ -33,8 +33,7 @@ export function Underglow({ active }: { active: boolean }) {
 
   useFrame((state) => {
     if (!active || !materialRef.current) return;
-    materialRef.current.opacity =
-      0.47 + Math.sin(state.clock.elapsedTime * 1.6) * 0.13;
+    materialRef.current.opacity = 0.47 + Math.sin(state.clock.elapsedTime * 1.6) * 0.13;
   });
 
   return (

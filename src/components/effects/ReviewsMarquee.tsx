@@ -11,11 +11,7 @@ interface ReviewsMarqueeProps {
 function ReviewCard({ review }: { review: ClientReview }) {
   const { dir } = useLanguage();
   return (
-    <BentoPanel
-      glow
-      dir={dir}
-      className="fx-lift h-full w-[300px] shrink-0 p-6 sm:w-[340px]"
-    >
+    <BentoPanel glow dir={dir} className="fx-lift h-full w-[300px] shrink-0 p-6 sm:w-[340px]">
       <StarRating value={review.stars} animated />
       <p className="mt-3 text-sm leading-relaxed text-ink">"{review.review_text}"</p>
       <div className="mt-4 flex items-center gap-2">

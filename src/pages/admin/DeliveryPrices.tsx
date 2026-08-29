@@ -13,12 +13,24 @@ export default function AdminDeliveryPrices() {
   const queryClient = useQueryClient();
   const { data: prices = [] } = useDeliveryPrices({ activeOnly: false });
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  async function updateRow(id: string, patch: Record<string, unknown>) {
+  /**
+   * The price cells are `defaultValue` + `onBlur`, so a refused write would
+   * otherwise leave the typed number on screen looking saved. `revert` restores
+   * the input's value from the query data when the write fails.
+   */
+  async function updateRow(id: string, patch: Record<string, unknown>, revert?: () => void) {
     setSavingId(id);
-    await supabase.from("delivery_prices").update(patch).eq("id", id);
-    await queryClient.invalidateQueries({ queryKey: ["delivery-prices"] });
+    setError(null);
+    const { error: updError } = await supabase.from("delivery_prices").update(patch).eq("id", id);
     setSavingId(null);
+    if (updError) {
+      setError(t("admin_save_error"));
+      revert?.();
+      return;
+    }
+    await queryClient.invalidateQueries({ queryKey: ["delivery-prices"] });
   }
 
   return (
@@ -26,6 +38,8 @@ export default function AdminDeliveryPrices() {
       <h1 className="mb-6 font-heading text-2xl font-extrabold text-ink">
         {t("admin_delivery_title")}
       </h1>
+
+      {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
 
       {/* min-w keeps the columns at a usable size on a phone: without it the
           table crushes the price cells until the digits are clipped. The panel
@@ -50,10 +64,7 @@ export default function AdminDeliveryPrices() {
             {prices.map((row) => (
               <tr
                 key={row.id}
-                className={cn(
-                  "border-b border-line last:border-0",
-                  !row.active && "opacity-50"
-                )}
+                className={cn("border-b border-line last:border-0", !row.active && "opacity-50")}
               >
                 <td className="whitespace-nowrap px-4 py-2 font-medium">{row.wilaya}</td>
                 <td className="px-4 py-2">
@@ -62,7 +73,12 @@ export default function AdminDeliveryPrices() {
                     defaultValue={row.home_price}
                     className="fx-no-spin"
                     disabled={savingId === row.id}
-                    onBlur={(e) => updateRow(row.id, { home_price: Number(e.target.value) })}
+                    onBlur={(e) => {
+                      const el = e.currentTarget;
+                      updateRow(row.id, { home_price: Number(el.value) }, () => {
+                        el.value = String(row.home_price);
+                      });
+                    }}
                   />
                 </td>
                 <td className="px-4 py-2">
@@ -71,7 +87,12 @@ export default function AdminDeliveryPrices() {
                     defaultValue={row.office_price}
                     className="fx-no-spin"
                     disabled={savingId === row.id}
-                    onBlur={(e) => updateRow(row.id, { office_price: Number(e.target.value) })}
+                    onBlur={(e) => {
+                      const el = e.currentTarget;
+                      updateRow(row.id, { office_price: Number(el.value) }, () => {
+                        el.value = String(row.office_price);
+                      });
+                    }}
                   />
                 </td>
                 <td className="px-4 py-2">

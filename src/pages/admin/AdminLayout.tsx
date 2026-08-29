@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { Link, Navigate, NavLink, Outlet, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -45,15 +45,17 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const { signOut } = useAuth();
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex items-center gap-2 px-5 py-5">
+    // overflow-hidden on the shell + the scrollbar on the nav list ALONE keeps
+    // the wordmark and the footer (back / language / theme / sign-out) pinned
+    // once the nav overflows a laptop. min-h-0 is the whole trick: without it a
+    // flex child won't shrink below its content and the footer is pushed off.
+    <div className="flex h-full flex-col overflow-hidden">
+      <div className="flex shrink-0 items-center gap-2 px-5 py-5">
         <BrandMark className="shadow-none" />
-        <span className="font-heading text-base font-extrabold text-ink">
-          {t("brand_name")}
-        </span>
+        <span className="font-heading text-base font-extrabold text-ink">{t("brand_name")}</span>
       </div>
 
-      <nav className="flex-1 space-y-1 px-3">
+      <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3">
         {NAV_ITEMS.map((item) => (
           <NavLink
             key={item.to}
@@ -73,7 +75,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         ))}
       </nav>
 
-      <div className="space-y-1 border-t border-line px-3 py-4">
+      <div className="shrink-0 space-y-1 border-t border-line px-3 py-4">
         <Link
           to="/"
           onClick={onNavigate}
@@ -113,11 +115,20 @@ export default function AdminLayout() {
   const { dir } = useLanguage();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const mainRef = useRef<HTMLElement>(null);
 
   // Close the drawer whenever the route changes — a nav tap, a redirect, or the
   // browser back button all change the path with no click on the drawer itself.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: pathname is the trigger
   useEffect(() => {
     setMobileOpen(false);
+  }, [location.pathname]);
+
+  // The scrolling element is <main>, not the window, so a global <ScrollToTop />
+  // can't reach it — reset it here or every admin route change lands mid-page.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: pathname is the trigger
+  useEffect(() => {
+    mainRef.current?.scrollTo(0, 0);
   }, [location.pathname]);
 
   // While the drawer is open, lock the body with `position: fixed` at the
@@ -157,7 +168,7 @@ export default function AdminLayout() {
   }, [mobileOpen]);
 
   if (loading) {
-    return <div className="flex min-h-screen items-center justify-center text-muted">…</div>;
+    return <div className="flex h-dvh items-center justify-center text-muted">…</div>;
   }
 
   if (!session) {
@@ -167,8 +178,11 @@ export default function AdminLayout() {
   const offscreenX = dir === "rtl" ? "100%" : "-100%";
 
   return (
-    <div className="flex min-h-screen bg-bg">
-      <aside className="hidden w-64 shrink-0 border-e border-line bg-panel md:block">
+    // Pin the shell to the viewport (h-dvh + overflow-hidden), NOT min-h-screen:
+    // with min-h-screen the window scrolls and a 300-row orders table drags the
+    // sidebar up out of view. Pinned, the sidebar and <main> each own a scroll.
+    <div className="flex h-dvh overflow-hidden bg-bg">
+      <aside className="hidden h-full w-64 shrink-0 overflow-hidden border-e border-line bg-panel md:block">
         <SidebarContent />
       </aside>
 
@@ -201,8 +215,8 @@ export default function AdminLayout() {
           wide `whitespace-nowrap` table stretches the whole column past the
           phone viewport (horizontal overflow) instead of scrolling inside its
           own `overflow-x-auto` panel. */}
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex items-center gap-2 border-b border-line bg-panel px-4 py-3 md:hidden">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <div className="flex shrink-0 items-center gap-2 border-b border-line bg-panel px-4 py-3 md:hidden">
           <button
             onClick={() => setMobileOpen(true)}
             className="-m-2 p-2 text-ink"
@@ -221,7 +235,7 @@ export default function AdminLayout() {
             </button>
           )}
         </div>
-        <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
+        <main ref={mainRef} className="min-w-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           {/* Own boundary so navigating between admin sub-pages only
               suspends the content area, not the sidebar shell above. */}
           <Suspense

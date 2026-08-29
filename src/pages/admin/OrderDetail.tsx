@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLanguage } from "@/i18n/LanguageProvider";
@@ -5,6 +6,7 @@ import { useOrder } from "@/hooks/useOrders";
 import { supabase } from "@/lib/supabase";
 import { formatDate } from "@/lib/format";
 import { Price } from "@/components/ui/Price";
+import { SmartImage } from "@/components/ui/SmartImage";
 import { BentoPanel } from "@/components/ui/BentoPanel";
 import { Select } from "@/components/ui/Select";
 import type { OrderStatus } from "@/types/db";
@@ -14,10 +16,19 @@ export default function AdminOrderDetail() {
   const { t, lang } = useLanguage();
   const queryClient = useQueryClient();
   const { data, isLoading } = useOrder(id);
+  const [error, setError] = useState<string | null>(null);
 
   async function updateStatus(newStatus: OrderStatus) {
     if (!id) return;
-    await supabase.from("orders").update({ status: newStatus }).eq("id", id);
+    setError(null);
+    const { error: updError } = await supabase
+      .from("orders")
+      .update({ status: newStatus })
+      .eq("id", id);
+    if (updError) {
+      setError(t("admin_save_error"));
+      return;
+    }
     queryClient.invalidateQueries({ queryKey: ["order", id] });
     queryClient.invalidateQueries({ queryKey: ["orders"] });
   }
@@ -41,15 +52,18 @@ export default function AdminOrderDetail() {
             <span className="text-xs text-muted">{formatDate(order.created_at, lang)}</span>
           </div>
 
-          <h2 className="mb-3 font-heading text-sm font-bold text-ink">
-            {t("admin_order_items")}
-          </h2>
+          <h2 className="mb-3 font-heading text-sm font-bold text-ink">{t("admin_order_items")}</h2>
           <div className="divide-y divide-line">
             {items.map((item) => (
               <div key={item.id} className="flex items-center gap-3 py-3">
                 <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-panel-2">
                   {item.image_url && (
-                    <img src={item.image_url} alt="" className="h-full w-full object-cover" />
+                    <SmartImage
+                      src={item.image_url}
+                      alt=""
+                      sizes="48px"
+                      className="h-full w-full object-cover"
+                    />
                   )}
                 </div>
                 <div className="flex-1">
@@ -120,13 +134,17 @@ export default function AdminOrderDetail() {
             <h2 className="font-heading text-sm font-bold text-ink">
               {t("admin_order_update_status")}
             </h2>
-            <Select value={order.status} onChange={(e) => updateStatus(e.target.value as OrderStatus)}>
+            <Select
+              value={order.status}
+              onChange={(e) => updateStatus(e.target.value as OrderStatus)}
+            >
               <option value="pending">{t("track_status_pending")}</option>
               <option value="confirmed">{t("track_status_confirmed")}</option>
               <option value="shipped">{t("track_status_shipped")}</option>
               <option value="delivered">{t("track_status_delivered")}</option>
               <option value="cancelled">{t("track_status_cancelled")}</option>
             </Select>
+            {error && <p className="text-sm text-red-500">{error}</p>}
           </BentoPanel>
         </div>
       </div>

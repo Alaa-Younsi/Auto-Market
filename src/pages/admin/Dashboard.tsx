@@ -62,10 +62,18 @@ export default function AdminDashboard() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-line text-start text-xs text-muted">
-                <th className="whitespace-nowrap px-4 py-3 text-start font-semibold">{t("admin_order_number")}</th>
-                <th className="whitespace-nowrap px-4 py-3 text-start font-semibold">{t("admin_order_customer")}</th>
-                <th className="whitespace-nowrap px-4 py-3 text-start font-semibold">{t("admin_order_total")}</th>
-                <th className="whitespace-nowrap px-4 py-3 text-start font-semibold">{t("admin_order_status")}</th>
+                <th className="whitespace-nowrap px-4 py-3 text-start font-semibold">
+                  {t("admin_order_number")}
+                </th>
+                <th className="whitespace-nowrap px-4 py-3 text-start font-semibold">
+                  {t("admin_order_customer")}
+                </th>
+                <th className="whitespace-nowrap px-4 py-3 text-start font-semibold">
+                  {t("admin_order_total")}
+                </th>
+                <th className="whitespace-nowrap px-4 py-3 text-start font-semibold">
+                  {t("admin_order_status")}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -80,7 +88,9 @@ export default function AdminDashboard() {
                     </Link>
                   </td>
                   <td className="whitespace-nowrap px-4 py-3">{order.customer_name}</td>
-                  <td className="whitespace-nowrap px-4 py-3 font-semibold"><Price value={order.total} /></td>
+                  <td className="whitespace-nowrap px-4 py-3 font-semibold">
+                    <Price value={order.total} />
+                  </td>
                   <td className="whitespace-nowrap px-4 py-3">
                     <Badge tone="brand">{t(ORDER_STATUS_LABEL_KEY[order.status])}</Badge>
                   </td>

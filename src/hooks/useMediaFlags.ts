@@ -4,6 +4,10 @@ interface MediaFlags {
   isMobile: boolean;
   /** Below Tailwind's `lg`, where the hero collapses to a stacked layout. */
   isCompact: boolean;
+  /** `lg` and up. Use to conditionally MOUNT one of a desktop/mobile pair —
+      an autoplaying <video> downloads in full even while `hidden`, so
+      `hidden lg:block` + `lg:hidden` fetches it twice per product view. */
+  isDesktop: boolean;
   prefersReducedMotion: boolean;
   enableHeavyEffects: boolean;
   /** Data Saver on, or a 2G-class connection: skip megabyte-scale extras. */
@@ -62,6 +66,7 @@ export function useMediaFlags(): MediaFlags {
   return {
     isMobile,
     isCompact,
+    isDesktop: !isCompact,
     prefersReducedMotion,
     enableHeavyEffects: !isMobile && !prefersReducedMotion,
     saveData: detectSaveData(),
