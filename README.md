@@ -1,109 +1,206 @@
+<div align="center">
+
+<img src="public/logo.png" alt="Auto Market logo" width="88" height="88" />
+
 # Auto Market
 
-Cash-on-delivery e-commerce store for car parts & accessories in Algeria.
-Bun + Vite + React + TypeScript storefront, FR/AR RTL i18n, Supabase backend
-(products, orders, wilaya-based delivery, reviews), server-side pricing via a
-Postgres RPC, and a matching admin dashboard.
+**A bilingual, cash-on-delivery e-commerce platform for car parts & accessories in Algeria.**
 
-## Stack
+[**www.auto-market.shop**](https://www.auto-market.shop)
 
-- Bun + Vite + React 19 + TypeScript (strict)
-- Tailwind CSS (theming via CSS variables, `data-theme` attribute — blue/white/green)
-- Zustand (cart), TanStack Query (data fetching)
-- react-hook-form + zod (forms)
-- Supabase (Postgres, Auth, Storage)
-- Framer Motion (animations)
+![React](https://img.shields.io/badge/React_19-20232A?logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript_strict-3178C6?logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?logo=tailwindcss&logoColor=white)
+![Three.js](https://img.shields.io/badge/Three.js-000000?logo=threedotjs&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?logo=supabase&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000?logo=vercel&logoColor=white)
+![License](https://img.shields.io/badge/license-All_rights_reserved-red)
 
-## Getting started
+</div>
 
-```bash
-bun install
-cp .env.example .env   # then fill in your Supabase project URL + anon key
-bun run dev
-```
+---
 
-## Supabase setup (do this before anything works)
+<p align="center">
+  <img src="docs/screenshots/desktop-home.webp" alt="Auto Market home page on desktop — dark theme, French, interactive 3D car hero" width="100%" />
+</p>
 
-1. Create a Supabase project.
-2. Copy `.env.example` to `.env` and fill in `VITE_SUPABASE_URL` and
-   `VITE_SUPABASE_ANON_KEY` from your project's API settings.
-3. Run the SQL migrations in `supabase/migrations/` **in order** (0001 → 0004),
-   via the SQL editor in the Supabase dashboard or the Supabase CLI.
-   - `0001_init.sql` — schema + seed categories + seed all 58 wilayas' delivery prices
-   - `0002_rls.sql` — row-level security policies
-   - `0003_functions.sql` — `place_order` and `get_order_by_number` RPCs
-     (all pricing/stock is validated server-side here — the frontend never
-     sends a trusted price)
-   - `0004_storage.sql` — creates the `product-images` public storage bucket
-     (skip if you'd rather create it by hand in the dashboard)
-4. Create your admin user in **Authentication → Users** (email/password).
-   This is the only way into `/admin`.
-5. **Disable public sign-up** in **Authentication → Settings**. The RLS
-   policies grant any `authenticated` session full admin access (there's no
-   separate admin-role table in this pattern) — if sign-up is left open,
-   anyone with the anon key (which ships in the frontend bundle) can
-   self-register into admin access. This is the single most important step
-   before going live.
-6. Add real products, delivery prices, and reviews through `/admin` — not
-   raw SQL — so you're exercising the same CRUD forms customers' orders will
-   depend on.
+## Overview
 
-## Scripts
+Auto Market is a production storefront and back office built for the Algerian
+market, where most online shoppers pay cash when the parcel arrives. The whole
+purchase flow is designed around that reality: no account, no card, just a
+name, a phone number and a wilaya — and the order is in.
 
-```bash
-bun run dev         # start dev server
-bun run typecheck   # tsc --noEmit
-bun run lint        # eslint, zero warnings allowed
-bun run build        # typecheck + sitemap generation + production build
-bun run preview      # preview the production build
-```
+- **Storefront** — landing page, searchable catalogue with category filters and
+  sorting, product pages with gallery, video and variants, cart drawer, and a
+  one-page checkout that can also be completed inline from the product page.
+- **Bilingual, RTL-first** — full Arabic (right-to-left) and French interfaces,
+  switchable instantly, with direction and language set before first paint.
+- **Delivery for all 69 wilayas** — per-wilaya home and office (stop-desk) delivery prices,
+  managed from the dashboard.
+- **Promotions engine** — "buy X get Y free" and "X for a fixed price" bundle
+  offers, plus compare-at prices, all priced on the server.
+- **Admin dashboard** — sales overview, product and category management with
+  image/video uploads and variant photos, order pipeline with status tracking
+  and automatic restocking on cancellation, delivery-price editor, customer
+  reviews, and Excel export of orders.
 
-## Deploy (GitHub + Vercel)
+## Design
 
-1. Push this repo to GitHub (`.env` is git-ignored — only `.env.example` is
-   committed, so no credentials ship in the repo).
-2. In Vercel: **New Project → Import** the GitHub repo. Vercel auto-detects
-   Bun (from `bun.lock`) and Vite; `vercel.json` in this repo pins the build
-   command and adds the SPA rewrite React Router needs (without it, a
-   hard refresh on `/shop`, `/product/:slug`, `/admin`, etc. 404s).
-3. Add the env vars from `.env.example` in **Project Settings → Environment
-   Variables**: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`. Redeploy after
-   adding them if the first deploy ran before they were set.
-4. Do the Supabase setup steps above (migrations, admin user, disable public
-   sign-up) against the **same** Supabase project the deployed env vars point
-   to, before sharing the live URL.
-5. Everything in "Before running paid ads" below still applies — do it
-   before the domain goes out in any ad or DM.
+The visual concept is **"the open road"**: the site should feel like a
+performance car, not a catalogue.
 
-## Before running paid ads
+- **Interactive 3D hero** — a real-time three.js sports car drives down a
+  stylised road. Shoppers can repaint it with the colour chips, and it falls
+  back gracefully to a static image on devices without WebGL.
+- **Automotive motion language** — a road-lane scroll-progress rail, speed
+  streaks, animated lane dividers with parallax cars, and a tachometer loading
+  indicator. All motion respects `prefers-reduced-motion`.
+- **Blue / white / green identity** — deep brand blue for trust, green for the
+  cash-on-delivery promise, set in Sora, Inter and Cairo so Latin and Arabic
+  typography carry the same weight.
+- **Dark and light themes** — both are first-class, built on CSS-variable
+  design tokens, and remembered between visits.
 
-- Set your real Meta Pixel ID in `index.html` (replace `YOUR_PIXEL_ID` in
-  both the `<script>` init and the `<noscript>` fallback `<img>`).
-- Place at least one real order end-to-end as an anonymous (not logged in)
-  customer, through both the cart checkout and the product-page "buy now"
-  flow, and confirm the order confirmation page shows the order recap.
-- Production domain is `https://www.auto-market.shop` — set in `index.html`
-  (`canonical`, `og:url`, `og:image`, JSON-LD), `src/hooks/useSeo.ts`,
-  `middleware.ts`, `scripts/generate-sitemap.mjs`, `public/robots.txt`, and
-  `src/pages/Product.tsx`. Update all of them together if the domain changes.
-- Regenerate `public/og-image.png` (crop of `public/bgimage.png`) if the hero
-  photo changes: `powershell -File scripts/gen-og-image.ps1`.
+## Screenshots
+
+### Desktop
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/desktop-home-rtl-light.webp" alt="Home page in Arabic (RTL), light theme" /></td>
+    <td width="50%"><img src="docs/screenshots/desktop-shop.webp" alt="Shop page with category filters in Arabic, dark theme" /></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Home — Arabic (RTL), light theme</sub></td>
+    <td align="center"><sub>Shop — category filters and bundle offers</sub></td>
+  </tr>
+  <tr>
+    <td colspan="2"><img src="docs/screenshots/desktop-product.webp" alt="Product page with price, bundle offer and inline checkout, light theme" /></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><sub>Product page — bundle offer and inline cash-on-delivery checkout</sub></td>
+  </tr>
+</table>
+
+### Mobile
+
+<p align="center">
+  <img src="docs/screenshots/mobile-home.webp" alt="Mobile home page in French, dark theme" width="30%" />
+  &nbsp;
+  <img src="docs/screenshots/mobile-home-rtl.webp" alt="Mobile home page in Arabic (RTL), dark theme" width="30%" />
+  &nbsp;
+  <img src="docs/screenshots/mobile-product.webp" alt="Mobile product page, dark theme" width="30%" />
+</p>
+
+## Tech stack
+
+| Layer | Technology |
+| --- | --- |
+| Framework | React 19, TypeScript (strict), Vite |
+| Styling | Tailwind CSS with CSS-variable design tokens |
+| 3D & motion | three.js via React Three Fiber + drei, Framer Motion |
+| State & data | Zustand (persisted cart), TanStack Query |
+| Forms & validation | react-hook-form + zod |
+| Backend | Supabase — PostgreSQL, Row Level Security, Auth, Storage, RPC functions |
+| Hosting | Vercel (static SPA + Edge Middleware) |
+| Tooling | Bun, Biome (lint + format) |
+
+## Security
+
+- **Server-side pricing.** The browser never sends a trusted price. Orders go
+  through a single PostgreSQL function (`place_order`) that re-reads every
+  product, variant, offer and delivery fee, validates stock and recomputes the
+  total inside one transaction.
+- **Row Level Security on every table.** Anonymous visitors can only read
+  active products, categories, delivery prices and published reviews; orders are
+  written exclusively through the RPC and read back only by order number.
+- **Anti-abuse on checkout.** Per-phone-number rate limits enforced in the
+  database, input shape and length validation server-side, plus a honeypot and
+  minimum-fill-time check in the form.
+- **Hardened HTTP headers.** HSTS with preload, `X-Content-Type-Options`,
+  `X-Frame-Options`, a strict `Referrer-Policy`, a locked-down
+  `Permissions-Policy`, and a hash-based Content Security Policy.
+- **Safe exports.** Order exports to Excel neutralise formula injection from
+  customer-entered text.
+- **No secrets in the client.** Only the public anon key ships to the browser;
+  admin access is gated by Supabase Auth with public sign-up disabled.
+
+## Performance
+
+- **Route-level code splitting** — only the landing page loads eagerly; shop,
+  product, checkout and the entire admin dashboard are lazy-loaded chunks.
+- **Stable vendor chunks** — React, motion and data libraries are split so a
+  new deploy does not invalidate the framework cache.
+- **Lean 3D** — the hero car is a quantised glTF model (~27 KB over the wire),
+  loaded only on the page that renders it, without the weight of a Draco
+  decoder.
+- **Responsive images** — `srcset` sizing via Supabase image transforms,
+  client-side compression on upload, and a self-healing fallback.
+- **Caching** — immutable, year-long caching for hashed assets and
+  stale-while-revalidate for media; the Supabase origin is preconnected.
+- **No flash of wrong theme or direction** — theme and language are applied by
+  a tiny inline script before the first paint.
+
+## SEO
+
+- **Localised metadata** — per-page titles, descriptions, canonical URLs, Open
+  Graph and Twitter cards, with `fr_DZ` / `ar_DZ` locales.
+- **Structured data** — `Store` schema site-wide and `Product` + `Offer` schema
+  (price, currency, availability) on every product page.
+- **Rich link previews** — a Vercel Edge Middleware serves product-specific
+  titles, descriptions and images to social crawlers (Facebook, WhatsApp,
+  Instagram, X, Telegram…), so shared product links never fall back to a
+  generic card.
+- **Crawl control** — a sitemap regenerated from live products on every build,
+  and a `robots.txt` that keeps checkout and admin out of the index.
 
 ## Project structure
 
 ```
 src/
-  components/   layout (Header/Footer/CartDrawer), product, ui, effects
-  hooks/        data-fetching hooks (React Query) + auth + misc
-  i18n/         FR/AR translations + LanguageProvider (RTL)
-  lib/          supabase client, formatting, order placement, pixel
-  pages/        storefront pages + pages/admin (dashboard)
-  store/        cart (Zustand, persisted)
-  theme/        ThemeProvider (light/dark via data-theme)
-  types/        database types
+  components/   layout, product, UI kit, and motion/3D effects
+  hooks/        data fetching (TanStack Query), auth, SEO, media queries
+  i18n/         Arabic & French translations, RTL-aware language provider
+  lib/          Supabase client, order placement, offers, images, formatting
+  pages/        storefront pages and the admin dashboard
+  store/        persisted cart (Zustand)
+  theme/        light / dark theme provider
 supabase/
-  migrations/   sequential SQL migrations — never renumber a shipped one
-scripts/
-  generate-sitemap.mjs   run on prebuild, queries active products
-  gen-og-image.ps1       one-off OG share image generator
+  migrations/   sequential SQL: schema, RLS, RPC functions, storage
+middleware.ts   Edge Middleware for social link previews
+scripts/        sitemap and Open Graph image generators
 ```
+
+## Running locally
+
+Requires [Bun](https://bun.sh) and a Supabase project.
+
+```bash
+bun install
+cp .env.example .env    # add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
+bun run dev
+```
+
+Apply the SQL files in `supabase/migrations/` in numeric order, then create the
+admin user in Supabase Auth and **disable public sign-ups**.
+
+| Command | Purpose |
+| --- | --- |
+| `bun run dev` | Start the development server |
+| `bun run build` | Type-check, regenerate the sitemap and build for production |
+| `bun run typecheck` | Run the TypeScript compiler |
+| `bun run lint` | Lint and format-check with Biome |
+
+## Author
+
+Designed and built by **Alaa Younsi** — [@Alaa-Younsi](https://github.com/Alaa-Younsi).
+
+## License
+
+Copyright © 2026 Alaa Younsi. **All rights reserved.**
+
+This repository is published for viewing only. No part of it may be copied,
+modified, redistributed or reused without prior written permission. See
+[LICENSE](LICENSE) for the full terms.

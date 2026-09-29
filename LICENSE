@@ -1,0 +1,42 @@
+Copyright (c) 2026 Alaa Younsi. All rights reserved.
+
+PROPRIETARY AND CONFIDENTIAL
+
+This repository and everything in it — including, without limitation, the
+source code, database schema and migrations, configuration, visual design,
+user interface, graphics, logos, text, translations, screenshots and
+documentation (together, the "Software") — is the exclusive property of
+Alaa Younsi and is protected by copyright and other intellectual property laws.
+
+The Software is made publicly visible for viewing and portfolio purposes only.
+Viewing it does not grant you any licence or right to use it.
+
+Without the prior written permission of Alaa Younsi, you may NOT, in whole or
+in part:
+
+  1. copy, reproduce, download for reuse, or mirror the Software;
+  2. modify, adapt, translate, or create derivative works based on it;
+  3. use any part of it, including individual files, components, code
+     snippets, designs or assets, in any other project, whether personal,
+     commercial or non-commercial;
+  4. distribute, publish, sublicense, sell, rent, lease or otherwise make the
+     Software available to any third party;
+  5. deploy, host or operate the Software, or any copy or derivative of it;
+  6. use the Software, or any part of it, to train, fine-tune or evaluate
+     machine-learning or artificial-intelligence models.
+
+No licence or right is granted by implication, estoppel or otherwise. Any use
+not expressly authorised in writing is prohibited and may result in civil and
+criminal liability.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE.
+
+Third-party components: open-source dependencies installed through the package
+manager remain under their own licences, and the 3D car model in
+public/models/hero-car.glb is a CC0 public-domain work by Quaternius (see
+public/models/hero-car-LICENSE.txt). These notices do not grant any rights to
+the rest of the Software.
+
+For permission requests, contact Alaa Younsi via https://github.com/Alaa-Younsi.
