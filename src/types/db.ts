@@ -184,3 +184,30 @@ export interface PlaceOrderCustomer {
   delivery_type: DeliveryType;
   language: string;
 }
+
+export type TrackingProvider = "meta" | "tiktok";
+export type TrackingScope = "all" | "paths" | "products";
+export type TrackingEventKey =
+  | "page_view"
+  | "view_content"
+  | "add_to_cart"
+  | "initiate_checkout"
+  | "purchase";
+
+export interface TrackingPixel {
+  id: string;
+  provider: TrackingProvider;
+  label: string;
+  pixel_id: string;
+  active: boolean;
+  scope: TrackingScope;
+  match_values: string[];
+  events: Partial<Record<TrackingEventKey, boolean>>;
+  sort_order: number;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** The editable columns only — never a spread of a loaded row (PGRST204). */
+export type TrackingPixelInput = Omit<TrackingPixel, "id" | "created_at" | "updated_at">;

@@ -13,6 +13,7 @@ import { useCartStore } from "@/store/cart";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/checkoutSchema";
 import { placeOrder } from "@/lib/placeOrder";
 import { orderErrorKey } from "@/lib/orderErrors";
+import { readDbError } from "@/lib/dbError";
 import { Price } from "@/components/ui/Price";
 import { SmartImage } from "@/components/ui/SmartImage";
 import { trackInitiateCheckout, trackPurchase } from "@/lib/pixel";
@@ -56,6 +57,7 @@ export default function Checkout() {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
@@ -66,7 +68,10 @@ export default function Checkout() {
   useEffect(() => {
     if (hasTrackedInitiate.current || items.length === 0) return;
     hasTrackedInitiate.current = true;
-    trackInitiateCheckout("cart", subtotal);
+    trackInitiateCheckout(
+      items.map((i) => i.productId),
+      subtotal - discount
+    );
   }, []);
 
   const selectedWilaya = watch("wilaya");
@@ -108,13 +113,16 @@ export default function Checkout() {
           language: lang,
         }
       );
-      trackPurchase(orderNumber, subtotal - discount + shippingEstimate);
+      trackPurchase(
+        orderNumber,
+        subtotal - discount + shippingEstimate,
+        items.map((i) => i.productId)
+      );
       orderPlaced.current = true;
       navigate(`/order-confirmation/${orderNumber}`);
       clear();
     } catch (err) {
-      const message = err instanceof Error ? err.message : null;
-      setErrorMsg(t(orderErrorKey(message)));
+      setErrorMsg(t(orderErrorKey(readDbError(err).message)));
     } finally {
       setSubmitting(false);
     }
@@ -140,6 +148,8 @@ export default function Checkout() {
           <h2 className="font-heading text-lg font-bold text-ink">{t("checkout_customer_info")}</h2>
           <CheckoutFields
             register={register}
+            setValue={setValue}
+            wilaya={selectedWilaya}
             errors={errors}
             deliveryPrices={deliveryPrices}
             deliveryType={deliveryType}

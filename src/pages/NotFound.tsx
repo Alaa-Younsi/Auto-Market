@@ -1,7 +1,6 @@
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useSeo } from "@/hooks/useSeo";
 import { SpeedStreaks } from "@/components/effects/SpeedStreaks";
-import { MiniCar } from "@/components/effects/MiniCar";
 import { LinkButton } from "@/components/ui/LinkButton";
 
 export default function NotFound() {
@@ -21,18 +20,6 @@ export default function NotFound() {
         <LinkButton to="/" className="mt-6">
           {t("not_found_back")}
         </LinkButton>
-      </div>
-
-      <div aria-hidden="true" className="relative h-10 w-full overflow-hidden">
-        <div className="absolute top-1/2 h-px w-full -translate-y-1/2 bg-line" />
-        <div className="fx-road-dash absolute top-1/2 h-px w-full -translate-y-1/2" />
-        <div className="fx-mini-car top-1.5 text-muted" style={{ animationDelay: "-11s" }}>
-          <span className="fx-mini-bob block">
-            <span className="fx-mini-streak" />
-            <span className="fx-mini-glow" />
-            <MiniCar size={48} />
-          </span>
-        </div>
       </div>
     </div>
   );

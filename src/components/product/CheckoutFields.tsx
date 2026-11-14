@@ -1,5 +1,6 @@
-import type { FieldErrors, UseFormRegister } from "react-hook-form";
+import type { FieldErrors, UseFormRegister, UseFormSetValue } from "react-hook-form";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { useCommunes } from "@/hooks/useCommunes";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { cn } from "@/lib/utils";
@@ -9,6 +10,9 @@ import type { TranslationKey } from "@/i18n/translations";
 
 interface CheckoutFieldsProps {
   register: UseFormRegister<CheckoutFormValues>;
+  setValue: UseFormSetValue<CheckoutFormValues>;
+  /** The currently selected wilaya (watched by the parent form). */
+  wilaya: string | undefined;
   errors: FieldErrors<CheckoutFormValues>;
   deliveryPrices: DeliveryPrice[];
   deliveryType: "home" | "office";
@@ -17,12 +21,17 @@ interface CheckoutFieldsProps {
 
 export function CheckoutFields({
   register,
+  setValue,
+  wilaya,
   errors,
   deliveryPrices,
   deliveryType,
   onDeliveryTypeChange,
 }: CheckoutFieldsProps) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  // Communes are per wilaya and never change the price — delivery is priced
+  // per wilaya only. The list just gives the courier a real commune name.
+  const { communes, isLoading: communesLoading } = useCommunes(wilaya);
 
   function errText(key?: keyof CheckoutFormValues) {
     const err = key ? errors[key] : undefined;
@@ -54,7 +63,10 @@ export function CheckoutFields({
         <Select
           error={errText("wilaya")}
           aria-label={t("checkout_select_wilaya")}
-          {...register("wilaya")}
+          {...register("wilaya", {
+            // A commune from the previous wilaya must not survive the switch.
+            onChange: () => setValue("city", "", { shouldValidate: false }),
+          })}
         >
           <option value="">{t("checkout_select_wilaya")}</option>
           {deliveryPrices.map((dp) => (
@@ -63,7 +75,37 @@ export function CheckoutFields({
             </option>
           ))}
         </Select>
-        <Input placeholder={t("checkout_city")} error={errText("city")} {...register("city")} />
+        {communes ? (
+          // The stored value is always the French name (what couriers and the
+          // Excel export use); the label follows the shopper's language.
+          <Select
+            error={errText("city")}
+            aria-label={t("checkout_select_commune")}
+            {...register("city")}
+          >
+            <option value="">{t("checkout_select_commune")}</option>
+            {[...communes]
+              .sort((a, b) =>
+                lang === "ar" ? a.ar.localeCompare(b.ar, "ar") : a.fr.localeCompare(b.fr, "fr")
+              )
+              .map((c) => (
+                <option key={c.fr} value={c.fr}>
+                  {lang === "ar" ? `${c.ar} — ${c.fr}` : c.fr}
+                </option>
+              ))}
+          </Select>
+        ) : wilaya && communesLoading ? (
+          <Select disabled aria-label={t("checkout_select_commune")}>
+            <option>{t("loading")}</option>
+          </Select>
+        ) : !wilaya ? (
+          <Select disabled aria-label={t("checkout_select_commune")}>
+            <option>{t("checkout_commune_pick_wilaya")}</option>
+          </Select>
+        ) : (
+          // Wilaya missing from the dataset: never block the order, let them type it.
+          <Input placeholder={t("checkout_city")} error={errText("city")} {...register("city")} />
+        )}
       </div>
 
       <div>

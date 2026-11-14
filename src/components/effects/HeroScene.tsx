@@ -12,6 +12,12 @@ const HeroCar3D = lazy(() => import("./HeroCar3D").then((mod) => ({ default: mod
 interface HeroSceneProps {
   sideOffset: number;
   scrollProgress: MotionValue<number> | null;
+  /**
+   * Don't fetch or mount the 3D engine until the scene is about to scroll into
+   * view. Used on phones, where the car lives below the full-screen hero and
+   * ~400 KB of three.js + model would otherwise compete with the first paint.
+   */
+  mountWhenNear?: boolean;
 }
 
 /** HeroArt is drawn for a square frame; keep it one in the full-bleed hero. */
@@ -25,7 +31,7 @@ function HeroArtFallback() {
   );
 }
 
-export function HeroScene({ sideOffset, scrollProgress }: HeroSceneProps) {
+export function HeroScene({ sideOffset, scrollProgress, mountWhenNear = false }: HeroSceneProps) {
   const webglSupport = useWebglSupport();
   const { isCompact, saveData } = useMediaFlags();
   const [paintColor, setPaintColor] = useState<string>(PAINT_SWATCHES[0].hex);
@@ -41,13 +47,34 @@ export function HeroScene({ sideOffset, scrollProgress }: HeroSceneProps) {
   // bring the car in. The GLB is already downloading via the preload below, so
   // by the time we mount it's warm in cache and comes up fast.
   const [deferredReady, setDeferredReady] = useState(false);
+  // Gate for mountWhenNear: flips once, the first time the scene nears the screen.
+  const [hasBeenNear, setHasBeenNear] = useState(!mountWhenNear);
+
+  useEffect(() => {
+    if (hasBeenNear) return;
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setHasBeenNear(true);
+          observer.disconnect();
+        }
+      },
+      // 0px: the phone stage starts right at the bottom of the screen, so any
+      // positive margin would count it as "near" on load and defeat the deferral.
+      { rootMargin: "0px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasBeenNear]);
 
   // The 3D scene is ~270 KB of JS plus the model. On Data Saver or a 2G-class
   // connection that is the whole page budget, so those visitors get the 2D art.
   const webglSupported = webglSupport && !saveData;
 
   useEffect(() => {
-    if (!webglSupported) return;
+    if (!webglSupported || !hasBeenNear) return;
     const w = window as Window & {
       requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
       cancelIdleCallback?: (id: number) => void;
@@ -65,12 +92,12 @@ export function HeroScene({ sideOffset, scrollProgress }: HeroSceneProps) {
       if (idleId && w.cancelIdleCallback) w.cancelIdleCallback(idleId);
       if (timerId) window.clearTimeout(timerId);
     };
-  }, [webglSupported]);
+  }, [webglSupported, hasBeenNear]);
 
   // Start the GLB download in parallel with the 3D chunk, but only on the page
   // that actually renders it and only when WebGL is there to use it.
   useEffect(() => {
-    if (!webglSupported) return;
+    if (!webglSupported || !hasBeenNear) return;
     const link = document.createElement("link");
     link.rel = "preload";
     link.as = "fetch";
@@ -79,7 +106,7 @@ export function HeroScene({ sideOffset, scrollProgress }: HeroSceneProps) {
     link.href = "/models/hero-car.glb";
     document.head.appendChild(link);
     return () => link.remove();
-  }, [webglSupported]);
+  }, [webglSupported, hasBeenNear]);
 
   useEffect(() => {
     if (!webglSupported) return;

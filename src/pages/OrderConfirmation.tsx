@@ -68,10 +68,19 @@ export default function OrderConfirmation() {
       </h1>
       <p className="mt-2 text-sm text-muted">{t("confirmation_subtitle")}</p>
 
-      <div className="mt-6 flex items-center justify-center gap-2 rounded-xl border border-line bg-panel-2 px-4 py-3">
-        <span className="text-xs text-muted">{t("confirmation_number")}</span>
-        <span className="font-mono text-sm font-bold text-ink">{orderNumber}</span>
-        <button onClick={copyNumber} className="text-muted hover:text-brand" aria-label="Copy">
+      {/* Label above, number on one unbroken line: order numbers are 22
+          characters since migration 0011 and used to wrap mid-code on phones. */}
+      <div className="mt-6 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-xl border border-line bg-panel-2 px-4 py-3">
+        <span className="w-full text-xs text-muted">{t("confirmation_number")}</span>
+        <span dir="ltr" className="whitespace-nowrap font-mono text-sm font-bold text-ink">
+          {orderNumber}
+        </span>
+        <button
+          type="button"
+          onClick={copyNumber}
+          className="-m-1.5 p-1.5 text-muted hover:text-brand"
+          aria-label="Copy"
+        >
           <Copy size={14} />
         </button>
         {copied && <span className="text-xs text-accent">✓</span>}

@@ -1,4 +1,5 @@
 import { formatPrice } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 interface PriceProps {
   value: number;
@@ -19,7 +20,8 @@ interface PriceProps {
  */
 export function Price({ value, prefix, className }: PriceProps) {
   return (
-    <span dir="ltr" className={className}>
+    // nowrap: "3 200 DA" must never break into "3 200" / "DA".
+    <span dir="ltr" className={cn("whitespace-nowrap", className)}>
       {prefix}
       {formatPrice(value)}
     </span>

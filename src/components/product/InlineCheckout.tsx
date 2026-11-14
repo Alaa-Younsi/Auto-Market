@@ -10,6 +10,7 @@ import { resolveShipping, useStoreSettings } from "@/hooks/useStoreSettings";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/checkoutSchema";
 import { placeOrder } from "@/lib/placeOrder";
 import { orderErrorKey } from "@/lib/orderErrors";
+import { readDbError } from "@/lib/dbError";
 import { Price } from "@/components/ui/Price";
 import { lineDiscount } from "@/lib/offers";
 import { trackInitiateCheckout, trackPurchase } from "@/lib/pixel";
@@ -40,6 +41,7 @@ export function InlineCheckout({ product, quantity, color, size, variants }: Inl
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
@@ -98,11 +100,10 @@ export function InlineCheckout({ product, quantity, color, size, variants }: Inl
           language: lang,
         }
       );
-      trackPurchase(orderNumber, subtotal - discount + shippingEstimate);
+      trackPurchase(orderNumber, subtotal - discount + shippingEstimate, [product.id]);
       navigate(`/order-confirmation/${orderNumber}`);
     } catch (err) {
-      const message = err instanceof Error ? err.message : null;
-      setErrorMsg(t(orderErrorKey(message)));
+      setErrorMsg(t(orderErrorKey(readDbError(err).message)));
     } finally {
       setSubmitting(false);
     }
@@ -112,6 +113,8 @@ export function InlineCheckout({ product, quantity, color, size, variants }: Inl
     <form onSubmit={handleSubmit(onSubmit)} onFocus={handleFormFocus} className="space-y-4">
       <CheckoutFields
         register={register}
+        setValue={setValue}
+        wilaya={selectedWilaya}
         errors={errors}
         deliveryPrices={deliveryPrices}
         deliveryType={deliveryType}

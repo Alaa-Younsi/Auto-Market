@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { motion, useScroll } from "framer-motion";
-import { BadgeCheck, ChevronRight, Headset, Truck, Wallet } from "lucide-react";
+import { BadgeCheck, ChevronDown, ChevronRight, Headset, Truck, Wallet } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useCategories } from "@/hooks/useCategories";
 import { useMediaFlags } from "@/hooks/useMediaFlags";
@@ -8,11 +8,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { useReviews } from "@/hooks/useReviews";
 import { useSeo } from "@/hooks/useSeo";
 import { HeroScene } from "@/components/effects/HeroScene";
-import { OdometerStrip, type OdometerReading } from "@/components/effects/OdometerStrip";
-import { PlateBadge } from "@/components/effects/PlateBadge";
-import { RevDivider } from "@/components/effects/RevDivider";
 import { TelltaleStrip, type Telltale } from "@/components/effects/TelltaleStrip";
-import { ScrollRoad } from "@/components/effects/ScrollRoad";
 import { StaggerText } from "@/components/effects/StaggerText";
 import { ReviewsMarquee } from "@/components/effects/ReviewsMarquee";
 import { ProductCard } from "@/components/product/ProductCard";
@@ -26,7 +22,7 @@ export default function Landing() {
   const { data: categories = [] } = useCategories();
   const { data: featured = [] } = useProducts({ featuredOnly: true });
   const { data: reviews = [] } = useReviews();
-  const { enableHeavyEffects } = useMediaFlags();
+  const { enableHeavyEffects, isDesktop } = useMediaFlags();
 
   const heroRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
@@ -50,117 +46,122 @@ export default function Landing() {
     { icon: Headset, title: t("trust_support"), desc: t("trust_support_desc"), tone: "cyan" },
   ];
 
-  // Facts only. A brand-new shop has no customer count or rating to show yet,
-  // so neither is invented here.
-  const readings: OdometerReading[] = [
-    { tag: "ODO", value: "69", label: t("hero_stat_wilayas") },
-    { tag: "COD", value: "0 DA", label: t("hero_stat_online") },
-    { tag: "ETA", value: "24–72h", label: t("hero_stat_eta") },
-  ];
-
   return (
     <div>
-      <ScrollRoad />
-
-      {/* Hero — fills the viewport (minus the sticky header) on first load so
-          nothing below it peeks above the fold; the rest reveals on scroll.
-          svh keeps it honest under mobile browser chrome; the vh line is the
-          fallback for engines without svh. */}
+      {/* Hero.
+          Desktop: one full-height frame, copy on one side and the 3D car on the
+          other. Below lg: the hero is ONLY the copy, full screen over the photo,
+          and the car gets its own section right after it that drives in as you
+          scroll — a phone was too short for both, and the car was squeezed into
+          a strip under the buttons. Exactly one HeroScene is ever mounted. */}
       <section
         ref={heroRef}
         className="relative flex min-h-[calc(100vh-3.5rem)] min-h-[calc(100svh-3.5rem)] flex-col overflow-hidden"
       >
-        {/* Phone-only hero background image, behind the copy only. Stops exactly
-            at the 3D strip's own top edge (h-[300px] below) — the canvas clear
-            color matches --c-bg exactly in both themes, so its fade-to-bg scrim
-            still blends seamlessly into it without the image showing through
-            the strip's rounded corners. */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-0 bottom-[300px] sm:hidden"
-        >
-          {/* The phone hero's LCP image: 25–48 KB WebP (was a 2.2 MB PNG). */}
-          <img
-            src="/bg-hero-720.webp"
-            srcSet="/bg-hero-720.webp 720w, /bg-hero-1080.webp 1080w"
-            sizes="100vw"
-            alt=""
-            width={720}
-            height={1280}
-            fetchPriority="high"
-            decoding="async"
-            className="h-full w-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-bg via-bg/75 to-bg/30" />
-        </div>
+        {!isDesktop && (
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+            {/* The phone hero's LCP image: 25–48 KB WebP (was a 2.2 MB PNG). */}
+            <img
+              src="/bg-hero-720.webp"
+              srcSet="/bg-hero-720.webp 720w, /bg-hero-1080.webp 1080w"
+              sizes="100vw"
+              alt=""
+              width={720}
+              height={1280}
+              fetchPriority="high"
+              decoding="async"
+              className="h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-bg/55 via-bg/70 to-bg" />
+          </div>
+        )}
 
         <div className="pointer-events-none absolute -top-24 start-1/2 h-[520px] w-[720px] -translate-x-1/2 rounded-full bg-brand/10 blur-[100px]" />
 
-        {/* 3D scene. Below lg it's a strip under the copy and ignores pointer
-            events so a touch drag scrolls the page instead of orbiting the car;
-            from lg up it spans the hero and the copy sits over it. */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[300px] overflow-hidden rounded-3xl sm:h-[340px] lg:inset-0 lg:h-auto lg:rounded-none lg:pointer-events-auto xl:inset-x-[5%]">
-          <HeroScene sideOffset={heroSideOffset} scrollProgress={heroScrollProgress} />
-        </div>
-
-        {/* Scrims: keep the copy legible over the scene, and fade the scene out
-            where it meets the section edges. `from-bg` tracks the theme token. */}
-        <div className="pointer-events-none absolute inset-0 hidden bg-gradient-to-r from-bg from-15% via-bg/65 to-transparent lg:block rtl:bg-gradient-to-l" />
-        {/* Phones get their own fade from the bg-image block above; this one's
-            only for the flat tablet background between sm and lg. */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-[290px] h-24 bg-gradient-to-b from-bg to-transparent max-sm:hidden sm:bottom-[330px] lg:hidden" />
+        {isDesktop && (
+          <>
+            {/* Spans the hero; the copy sits over it, click-through so drags on
+                the empty half reach OrbitControls. */}
+            <div className="absolute inset-0 xl:inset-x-[5%]">
+              <HeroScene sideOffset={heroSideOffset} scrollProgress={heroScrollProgress} />
+            </div>
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-bg from-15% via-bg/65 to-transparent rtl:bg-gradient-to-l" />
+          </>
+        )}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-bg to-transparent" />
 
-        {/* Copy. The wrapper is click-through so drags over the empty half of
-            the hero reach OrbitControls; interactive children opt back in. */}
-        <div className="pointer-events-none relative z-10 mx-auto w-full max-w-7xl px-4 pb-[330px] pt-8 sm:px-6 sm:pb-[370px] lg:my-auto lg:px-8 lg:pb-24 lg:pt-10">
+        <div className="pointer-events-none relative z-10 mx-auto my-auto w-full max-w-7xl px-5 py-12 sm:px-6 lg:px-8 lg:pb-24 lg:pt-10">
           <motion.div
             className="max-w-xl lg:max-w-[46%]"
             initial={{ x: lang === "ar" ? 24 : -24 }}
             animate={{ x: 0 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           >
-            <PlateBadge className="mb-6">{t("hero_badge")}</PlateBadge>
-
-            <h1 className="font-heading text-3xl font-extrabold leading-[1.08] tracking-tight text-ink sm:text-4xl lg:text-5xl xl:text-[3.4rem]">
-              <StaggerText text={t("hero_title_line1")} />
-              <br />
+            {/* Two short lines: what you get, then the promise that removes the
+                risk. Arabic gets more line-height and no negative tracking —
+                Cairo's tall ascenders collide and tracking breaks letter joins. */}
+            <h1 className="font-heading text-[2.6rem] font-extrabold leading-[1.02] tracking-[-0.03em] text-ink sm:text-6xl lg:text-[3.5rem] xl:text-[4rem] [html[lang=ar]_&]:leading-[1.3] [html[lang=ar]_&]:tracking-normal">
+              <StaggerText text={t("hero_title_line1")} className="block" />
               <StaggerText
                 text={t("hero_title_line2")}
+                className="block"
                 wordClassName="fx-gradient-text"
-                baseDelay={0.25}
+                baseDelay={0.2}
               />
             </h1>
 
-            <p className="mt-5 max-w-lg text-base leading-relaxed text-muted sm:text-lg">
+            <p className="mt-6 max-w-md text-pretty text-base leading-relaxed text-ink/75 sm:text-lg">
               {t("hero_subtitle")}
             </p>
 
-            <div className="pointer-events-auto mt-8 flex flex-wrap gap-3">
-              <LinkButton to="/shop" size="lg">
+            <div className="pointer-events-auto mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <LinkButton to="/shop" size="lg" className="justify-center">
                 {t("hero_cta_shop")}
                 <ChevronRight size={18} className="rtl:rotate-180" />
               </LinkButton>
-              <LinkButton to="/shop" variant="secondary" size="lg">
+              <LinkButton to="/shop" variant="secondary" size="lg" className="justify-center">
                 {t("hero_cta_categories")}
               </LinkButton>
             </div>
-
-            <div className="mt-10 max-w-md">
-              <OdometerStrip readings={readings} />
-            </div>
           </motion.div>
         </div>
+
+        {/* Scroll cue (phones/tablets): there is a car waiting below. */}
+        {!isDesktop && (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 bottom-5 z-10 flex justify-center"
+          >
+            <span className="fx-scroll-cue flex h-10 w-10 items-center justify-center rounded-full border border-line/70 bg-panel/60 text-muted backdrop-blur">
+              <ChevronDown size={18} />
+            </span>
+          </div>
+        )}
       </section>
+
+      {/* Below lg: the car's own stage, revealed on scroll. The 3D engine is only
+          fetched when this section approaches the screen (mountWhenNear), so a
+          phone pays nothing for it on first load. Position-only motion. */}
+      {!isDesktop && (
+        <section aria-hidden="true" className="relative overflow-hidden">
+          <motion.div
+            initial={{ y: 60 }}
+            whileInView={{ y: 0 }}
+            viewport={{ once: true, amount: 0.25 }}
+            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            className="pointer-events-none relative h-[340px] sm:h-[440px]"
+          >
+            <HeroScene sideOffset={0} scrollProgress={null} mountWhenNear />
+            <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-bg to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-bg to-transparent" />
+          </motion.div>
+        </section>
+      )}
 
       {/* Trust promises, as the cluster's warning lights */}
       <section className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
         <TelltaleStrip items={trustItems} />
       </section>
-
-      <div className="pt-10">
-        <RevDivider />
-      </div>
 
       {/* Categories */}
       {categories.length > 0 && (
@@ -240,8 +241,6 @@ export default function Landing() {
           </div>
         </section>
       )}
-
-      <RevDivider />
 
       {/* How it works */}
       <section className="cv-auto mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">

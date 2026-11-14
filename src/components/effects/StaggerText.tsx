@@ -36,11 +36,14 @@ export function StaggerText({
         // the inline-block clip wrapper below, or the browser trims it as
         // end-of-box whitespace and every word runs into the next.
         <Fragment key={i}>
-          <span className="inline-block overflow-hidden align-bottom">
+          <span className="-mb-[0.12em] inline-block overflow-hidden pb-[0.12em] align-bottom">
             <motion.span
               className={cn("inline-block", wordClassName)}
-              initial={{ y: "0.7em", opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
+              // Position only: the clip wrapper already hides the word below its
+              // line. An opacity fade here could leave the headline invisible if a
+              // frame stalls, and it held back the hero's LCP paint.
+              initial={{ y: "105%" }}
+              animate={{ y: 0 }}
               transition={{
                 duration: 0.5,
                 ease: [0.16, 1, 0.3, 1],

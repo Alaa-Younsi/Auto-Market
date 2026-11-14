@@ -23,15 +23,12 @@ import { ErrorBoundary, reloadOnceForNewDeploy } from "@/components/ErrorBoundar
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/theme/ThemeProvider";
 import { LanguageProvider } from "@/i18n/LanguageProvider";
-import { initPixel } from "@/lib/pixel";
 
 // A redeploy while a tab is open deletes the lazy chunks that tab expects.
 // Vite reports it here; reload once onto the new build instead of failing.
 window.addEventListener("vite:preloadError", (event) => {
   if (reloadOnceForNewDeploy()) event.preventDefault();
 });
-
-initPixel();
 
 const queryClient = new QueryClient({
   defaultOptions: {

@@ -11,6 +11,7 @@ import {
   Menu,
   Moon,
   Package,
+  Radio,
   Star,
   Sun,
   Truck,
@@ -39,6 +40,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: "/admin/orders", labelKey: "admin_nav_orders", icon: Truck },
   { to: "/admin/delivery-prices", labelKey: "admin_nav_delivery", icon: MapPin },
   { to: "/admin/reviews", labelKey: "admin_nav_reviews", icon: Star },
+  { to: "/admin/pixels", labelKey: "admin_nav_pixels", icon: Radio },
   { to: "/admin/account", labelKey: "admin_nav_account", icon: UserRound },
 ];
 

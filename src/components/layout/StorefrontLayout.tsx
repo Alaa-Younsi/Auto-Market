@@ -1,6 +1,7 @@
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { CartDrawer } from "./CartDrawer";
+import { WhatsAppButton } from "./WhatsAppButton";
 import { PageTransition } from "@/components/effects/PageTransition";
 
 export function StorefrontLayout() {
@@ -11,6 +12,7 @@ export function StorefrontLayout() {
         <PageTransition />
       </main>
       <Footer />
+      <WhatsAppButton />
       <CartDrawer />
     </div>
   );

@@ -34,7 +34,7 @@ function detectSaveData(): boolean {
 export function useMediaFlags(): MediaFlags {
   // Read matchMedia synchronously on first render (not in an effect) so the
   // correct value is there for the very first paint — otherwise every
-  // consumer (ScrollRoad, TiltCard, StaggerText, ...) briefly renders its
+  // consumer (TiltCard, StaggerText, ...) briefly renders its
   // full-motion variant before the effect below corrects it, which is
   // exactly backwards for a reduced-motion user.
   const [isMobile, setIsMobile] = useState(() => matchesQuery("(max-width: 767px)"));

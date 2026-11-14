@@ -2,7 +2,7 @@ import { lazy, Suspense, type ReactNode } from "react";
 import { Route, Routes } from "react-router-dom";
 import { StorefrontLayout } from "@/components/layout/StorefrontLayout";
 import { ScrollToTop } from "@/components/effects/ScrollToTop";
-import { PixelPageView } from "@/components/effects/PixelPageView";
+import { TrackingSync } from "@/components/effects/TrackingSync";
 import { TachometerLoader } from "@/components/effects/TachometerLoader";
 import Landing from "@/pages/Landing";
 
@@ -25,6 +25,7 @@ const AdminOrderDetail = lazy(() => import("@/pages/admin/OrderDetail"));
 const AdminDeliveryPrices = lazy(() => import("@/pages/admin/DeliveryPrices"));
 const AdminReviews = lazy(() => import("@/pages/admin/Reviews"));
 const AdminAccount = lazy(() => import("@/pages/admin/Account"));
+const AdminPixels = lazy(() => import("@/pages/admin/Pixels"));
 
 function AdminFallback() {
   return (
@@ -53,7 +54,7 @@ export default function App() {
   return (
     <>
       <ScrollToTop />
-      <PixelPageView />
+      <TrackingSync />
       <Routes>
         <Route element={<StorefrontLayout />}>
           <Route index element={<Landing />} />
@@ -89,6 +90,7 @@ export default function App() {
           <Route path="orders/:id" element={<AdminOrderDetail />} />
           <Route path="delivery-prices" element={<AdminDeliveryPrices />} />
           <Route path="reviews" element={<AdminReviews />} />
+          <Route path="pixels" element={<AdminPixels />} />
           <Route path="account" element={<AdminAccount />} />
         </Route>
       </Routes>

@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { MapPin, MessageCircle, Phone } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { RevDivider } from "@/components/effects/RevDivider";
 import { CONTACT_PHONE, CONTACT_PHONE_HREF, CONTACT_WHATSAPP_HREF } from "@/lib/contact";
 import { InstagramIcon, TikTokIcon } from "@/components/ui/SocialIcons";
 import { BrandMark } from "@/components/ui/BrandMark";
@@ -11,10 +10,7 @@ export function Footer() {
 
   return (
     <footer className="border-t border-line bg-panel-2/60">
-      <div className="pt-6">
-        <RevDivider />
-      </div>
-      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 pt-14 pb-24 sm:px-6 sm:pb-14 lg:px-8">
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-3">
           <div>
             <Link to="/" className="mb-3 flex items-center gap-2">

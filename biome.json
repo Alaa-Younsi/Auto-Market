@@ -10,6 +10,7 @@
       "!index.html",
       "!public/sitemap.xml",
       "!public/models",
+      "!src/data/communes.json",
       "!**/*.md"
     ]
   },
