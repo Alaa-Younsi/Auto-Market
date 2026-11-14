@@ -57,7 +57,8 @@ export default async function middleware(request: Request) {
       `${supabaseUrl}/rest/v1/products` +
       `?slug=eq.${encodeURIComponent(slug)}` +
       `&status=eq.active` +
-      `&select=name_fr,name_ar,description_fr,price,stock,product_images(url)` +
+      `&select=name_fr,name_ar,description_fr,price,stock,product_images(url,sort_order)` +
+      `&product_images.order=sort_order` +
       `&limit=1`;
 
     const res = await fetch(endpoint, {

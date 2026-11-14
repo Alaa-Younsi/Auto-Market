@@ -51,7 +51,11 @@ export function CheckoutFields({
       />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Select error={errText("wilaya")} {...register("wilaya")}>
+        <Select
+          error={errText("wilaya")}
+          aria-label={t("checkout_select_wilaya")}
+          {...register("wilaya")}
+        >
           <option value="">{t("checkout_select_wilaya")}</option>
           {deliveryPrices.map((dp) => (
             <option key={dp.id} value={dp.wilaya}>

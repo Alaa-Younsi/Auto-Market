@@ -28,6 +28,14 @@ interface CartState {
   totalQuantity: () => number;
 }
 
+/** Per-line ceiling. Matches the product page stepper (and stays under the
+    RPC hard cap of 20), so the cart can never build a line the server refuses. */
+export const MAX_LINE_QTY = 10;
+
+function lineCap(stock: number) {
+  return Math.max(1, Math.min(stock, MAX_LINE_QTY));
+}
+
 /** Order-independent so two picks of the same values in a different order
     still merge into the same cart line. */
 function variantsKey(variants?: SelectedVariant[]) {
@@ -69,13 +77,19 @@ export const useCartStore = create<CartState>()(
             return {
               items: state.items.map((i) =>
                 sameLine(i, item.productId, item.color, item.size, item.variants)
-                  ? { ...i, quantity: Math.min(i.quantity + item.quantity, i.stock) }
+                  ? { ...i, quantity: Math.min(i.quantity + item.quantity, lineCap(i.stock)) }
                   : i
               ),
               isOpen: true,
             };
           }
-          return { items: [...state.items, item], isOpen: true };
+          return {
+            items: [
+              ...state.items,
+              { ...item, quantity: Math.min(item.quantity, lineCap(item.stock)) },
+            ],
+            isOpen: true,
+          };
         }),
       removeItem: (productId, color, size, variants) =>
         set((state) => ({
@@ -86,7 +100,7 @@ export const useCartStore = create<CartState>()(
           items: state.items
             .map((i) =>
               sameLine(i, productId, color, size, variants)
-                ? { ...i, quantity: Math.max(1, Math.min(quantity, i.stock)) }
+                ? { ...i, quantity: Math.max(1, Math.min(quantity, lineCap(i.stock))) }
                 : i
             )
             .filter((i) => i.quantity > 0),
@@ -97,6 +111,14 @@ export const useCartStore = create<CartState>()(
         get().items.reduce((sum, i) => sum + lineDiscount(i.price, i.quantity, i.offers), 0),
       totalQuantity: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
     }),
-    { name: "auto-market-cart" }
+    {
+      name: "auto-market-cart",
+      // Only the lines persist — persisting isOpen re-opened the drawer on every reload.
+      partialize: (state) => ({ items: state.items }),
+      // v2: the demo catalogue was retired at launch, so a cart saved before it
+      // holds products the server now rejects. Start returning visitors fresh.
+      version: 2,
+      migrate: () => ({ items: [] }),
+    }
   )
 );

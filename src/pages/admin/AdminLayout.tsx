@@ -7,12 +7,14 @@ import {
   Languages,
   ListTree,
   LogOut,
+  MapPin,
   Menu,
   Moon,
   Package,
   Star,
   Sun,
   Truck,
+  UserRound,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -35,8 +37,9 @@ const NAV_ITEMS: NavItem[] = [
   { to: "/admin/products", labelKey: "admin_nav_products", icon: Package },
   { to: "/admin/categories", labelKey: "admin_nav_categories", icon: ListTree },
   { to: "/admin/orders", labelKey: "admin_nav_orders", icon: Truck },
-  { to: "/admin/delivery-prices", labelKey: "admin_nav_delivery", icon: Truck },
+  { to: "/admin/delivery-prices", labelKey: "admin_nav_delivery", icon: MapPin },
   { to: "/admin/reviews", labelKey: "admin_nav_reviews", icon: Star },
+  { to: "/admin/account", labelKey: "admin_nav_account", icon: UserRound },
 ];
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
@@ -235,7 +238,7 @@ export default function AdminLayout() {
             </button>
           )}
         </div>
-        <main ref={mainRef} className="min-w-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <main ref={mainRef} className="relative min-w-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           {/* Own boundary so navigating between admin sub-pages only
               suspends the content area, not the sidebar shell above. */}
           <Suspense

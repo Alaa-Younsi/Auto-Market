@@ -30,15 +30,29 @@ export default function AdminOrders() {
   const [status, setStatus] = useState<OrderStatus | "all">("all");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { data: orders = [], isLoading } = useOrders({ status });
 
   async function handleDeleteAll() {
     setDeleting(true);
-    const { error } = await supabase.from("orders").delete().not("id", "is", null);
+    setError(null);
+    const { error: delError } = await supabase.from("orders").delete().not("id", "is", null);
     setDeleting(false);
-    if (error) throw error;
-    queryClient.invalidateQueries({ queryKey: ["orders"] });
     setConfirmOpen(false);
+    if (delError) {
+      setError(t("admin_delete_error"));
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: ["orders"] });
+  }
+
+  async function handleExport() {
+    setError(null);
+    try {
+      await exportOrdersToExcel(orders);
+    } catch {
+      setError(t("admin_export_error"));
+    }
   }
 
   return (
@@ -53,7 +67,7 @@ export default function AdminOrders() {
               variant="secondary"
               size="sm"
               disabled={orders.length === 0}
-              onClick={() => exportOrdersToExcel(orders)}
+              onClick={handleExport}
               className="flex-1 sm:flex-initial"
             >
               <Download size={16} />
@@ -92,9 +106,11 @@ export default function AdminOrders() {
         count={orders.length}
         deleting={deleting}
         onClose={() => setConfirmOpen(false)}
-        onDownload={() => exportOrdersToExcel(orders)}
+        onDownload={handleExport}
         onConfirm={handleDeleteAll}
       />
+
+      {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
 
       <BentoPanel className="overflow-x-auto">
         <table className="w-full text-sm">

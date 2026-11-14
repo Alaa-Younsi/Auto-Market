@@ -90,7 +90,8 @@ export function CartDrawer() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 rounded-lg border border-line">
                         <button
-                          className="p-1.5 text-muted hover:text-ink"
+                          className="p-2 text-muted hover:text-ink"
+                          aria-label={t("product_qty_decrease")}
                           onClick={() =>
                             updateQuantity(
                               item.productId,
@@ -117,7 +118,8 @@ export function CartDrawer() {
                           </AnimatePresence>
                         </span>
                         <button
-                          className="p-1.5 text-muted hover:text-ink"
+                          className="p-2 text-muted hover:text-ink"
+                          aria-label={t("product_qty_increase")}
                           onClick={() =>
                             updateQuantity(
                               item.productId,

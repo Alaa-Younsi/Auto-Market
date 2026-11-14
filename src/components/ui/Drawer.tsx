@@ -1,4 +1,5 @@
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
@@ -17,7 +18,18 @@ export function Drawer({ open, onClose, title, children, side = "end" }: DrawerP
     side === "end" ? (dir === "rtl" ? "left" : "right") : dir === "rtl" ? "right" : "left";
   const offscreenX = physicalSide === "left" ? "-100%" : "100%";
 
-  return (
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
+  // Portalled to <body>: a fixed overlay inside any ancestor with a transform,
+  // filter or backdrop-filter is sized to that ancestor, not to the viewport.
+  return createPortal(
     <AnimatePresence>
       {open && (
         <>
@@ -41,7 +53,7 @@ export function Drawer({ open, onClose, title, children, side = "end" }: DrawerP
               <button
                 onClick={onClose}
                 className="rounded-full p-2 text-muted transition-colors hover:bg-panel-2 hover:text-ink"
-                aria-label="Close"
+                aria-label={dir === "rtl" ? "إغلاق" : "Fermer"}
               >
                 <X size={20} />
               </button>
@@ -50,6 +62,7 @@ export function Drawer({ open, onClose, title, children, side = "end" }: DrawerP
           </motion.div>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

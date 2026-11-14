@@ -5,6 +5,7 @@ import { Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useProducts } from "@/hooks/useProducts";
 import { supabase } from "@/lib/supabase";
+import { invalidateProductCaches } from "@/lib/queryCache";
 import { Price } from "@/components/ui/Price";
 import { BentoPanel } from "@/components/ui/BentoPanel";
 import { Button } from "@/components/ui/Button";
@@ -15,12 +16,18 @@ export default function AdminProducts() {
   const { t, lang } = useLanguage();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const { data: products = [], isLoading } = useProducts({ includeAll: true, search });
 
   async function handleDelete(id: string) {
     if (!confirm(t("admin_confirm_delete"))) return;
-    await supabase.from("products").delete().eq("id", id);
-    queryClient.invalidateQueries({ queryKey: ["products"] });
+    setError(null);
+    const { error: delError } = await supabase.from("products").delete().eq("id", id);
+    if (delError) {
+      setError(t("admin_delete_error"));
+      return;
+    }
+    invalidateProductCaches(queryClient);
   }
 
   return (
@@ -36,6 +43,8 @@ export default function AdminProducts() {
           </Button>
         </Link>
       </div>
+
+      {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
 
       <div className="relative mb-4 max-w-xs">
         <Input
@@ -93,7 +102,19 @@ export default function AdminProducts() {
                 <td className="hidden px-4 py-2 sm:table-cell">
                   <Price value={product.price} />
                 </td>
-                <td className="hidden px-4 py-2 sm:table-cell">{product.stock}</td>
+                <td className="hidden px-4 py-2 sm:table-cell">
+                  <span
+                    className={
+                      product.stock === 0
+                        ? "font-bold text-red-500"
+                        : product.stock <= 3
+                          ? "font-bold text-amber-500"
+                          : undefined
+                    }
+                  >
+                    {product.stock}
+                  </span>
+                </td>
                 <td className="px-4 py-2">
                   <Badge tone={product.status === "active" ? "accent" : "muted"}>
                     {product.status === "active"

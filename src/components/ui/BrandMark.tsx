@@ -10,7 +10,14 @@ export function BrandMark({ className }: { className?: string }) {
         className
       )}
     >
-      <img src="/logo.png" alt="" className="h-[68%] w-[68%] object-contain" />
+      <img
+        src="/logo-96.webp"
+        alt=""
+        width={96}
+        height={80}
+        decoding="async"
+        className="h-[68%] w-[68%] object-contain"
+      />
     </span>
   );
 }

@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import type { Order, OrderItem, OrderStatus } from "@/types/db";
 
+export const ORDERS_LIMIT = 500;
+
 interface UseOrdersOptions {
   status?: OrderStatus | "all";
 }
@@ -11,7 +13,12 @@ export function useOrders(options: UseOrdersOptions = {}) {
   return useQuery({
     queryKey: ["orders", status],
     queryFn: async (): Promise<Order[]> => {
-      let query = supabase.from("orders").select("*").order("created_at", { ascending: false });
+      // Capped so the admin never pulls an unbounded table on every visit.
+      let query = supabase
+        .from("orders")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(ORDERS_LIMIT);
       if (status !== "all") {
         query = query.eq("status", status);
       }

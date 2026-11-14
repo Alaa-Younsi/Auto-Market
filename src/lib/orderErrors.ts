@@ -7,6 +7,7 @@ const ERROR_MAP: Record<string, TranslationKey> = {
   ERR_WILAYA_DISABLED: "error_wilaya_disabled",
   ERR_INVALID_INPUT: "error_invalid_input",
   ERR_RATE_LIMIT: "error_rate_limit",
+  ERR_MISSING_SELECTION: "error_missing_selection",
 };
 
 export function orderErrorKey(message: string | null | undefined): TranslationKey {

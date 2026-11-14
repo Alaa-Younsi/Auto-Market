@@ -20,7 +20,18 @@ import { Gallery, type GalleryImage } from "@/components/product/Gallery";
 import { InlineCheckout } from "@/components/product/InlineCheckout";
 import { ProductVideo } from "@/components/product/ProductVideo";
 
+/**
+ * Keyed on the slug: going from one product to another through "related
+ * products" reuses the route element, which carried the previous product's
+ * colour, size, quantity and gallery index (an index that may not even exist
+ * in the new gallery) into the next page.
+ */
 export default function Product() {
+  const { slug } = useParams<{ slug: string }>();
+  return <ProductPage key={slug} />;
+}
+
+function ProductPage() {
   const { slug } = useParams<{ slug: string }>();
   const { t, lang } = useLanguage();
   const { data: product, isLoading } = useProduct(slug);
@@ -105,7 +116,10 @@ export default function Product() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
+      // Same padding as the loaded page and at least a screen tall: a short
+      // skeleton put the footer mid-screen, then the product shoved it ~800px
+      // down (CLS 0.82 on phones).
+      <div className="mx-auto min-h-dvh max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
           <div className="fx-shimmer aspect-square rounded-2xl" />
           <div className="space-y-4">
@@ -398,15 +412,19 @@ export default function Product() {
             <p className="mb-2 text-sm font-semibold text-ink">{t("product_quantity")}</p>
             <div className="flex w-fit items-center gap-3 rounded-xl border border-line px-3 py-2">
               <button
+                type="button"
                 onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                className="text-muted hover:text-ink"
+                className="-m-1.5 p-1.5 text-muted hover:text-ink"
+                aria-label={t("product_qty_decrease")}
               >
                 <Minus size={16} />
               </button>
               <span className="w-6 text-center text-sm font-semibold">{quantity}</span>
               <button
+                type="button"
                 onClick={() => setQuantity((q) => Math.min(maxQuantity, q + 1))}
-                className="text-muted hover:text-ink"
+                className="-m-1.5 p-1.5 text-muted hover:text-ink"
+                aria-label={t("product_qty_increase")}
               >
                 <Plus size={16} />
               </button>
@@ -500,21 +518,23 @@ export default function Product() {
             </div>
           )}
 
-          <div
-            ref={checkoutRef}
-            className="mt-8 scroll-mt-20 rounded-2xl border border-line bg-panel p-5"
-          >
-            <h2 className="mb-4 font-heading text-base font-bold text-ink">
-              {t("checkout_title")}
-            </h2>
-            <InlineCheckout
-              product={product}
-              quantity={quantity}
-              color={color}
-              size={size}
-              variants={selectedVariants}
-            />
-          </div>
+          {product.stock > 0 && (
+            <div
+              ref={checkoutRef}
+              className="mt-8 scroll-mt-20 rounded-2xl border border-line bg-panel p-5"
+            >
+              <h2 className="mb-4 font-heading text-base font-bold text-ink">
+                {t("checkout_title")}
+              </h2>
+              <InlineCheckout
+                product={product}
+                quantity={quantity}
+                color={color}
+                size={size}
+                variants={selectedVariants}
+              />
+            </div>
+          )}
         </div>
       </div>
 

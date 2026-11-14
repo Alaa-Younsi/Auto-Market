@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import { MessageCircle, Phone } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useOrder } from "@/hooks/useOrders";
 import { supabase } from "@/lib/supabase";
-import { formatDate } from "@/lib/format";
+import { dzPhoneToIntl } from "@/lib/contact";
+import { formatDate, formatPrice } from "@/lib/format";
+import { invalidateProductCaches } from "@/lib/queryCache";
 import { Price } from "@/components/ui/Price";
 import { SmartImage } from "@/components/ui/SmartImage";
 import { BentoPanel } from "@/components/ui/BentoPanel";
@@ -26,11 +29,19 @@ export default function AdminOrderDetail() {
       .update({ status: newStatus })
       .eq("id", id);
     if (updError) {
-      setError(t("admin_save_error"));
+      // Re-opening a cancelled order re-reserves its stock; the trigger refuses
+      // when those units have been sold since.
+      setError(
+        updError.message.includes("ERR_STOCK")
+          ? t("admin_order_reopen_stock")
+          : t("admin_save_error")
+      );
       return;
     }
     queryClient.invalidateQueries({ queryKey: ["order", id] });
     queryClient.invalidateQueries({ queryKey: ["orders"] });
+    // Cancelling / re-opening moves stock.
+    invalidateProductCaches(queryClient);
   }
 
   if (isLoading || !data) {
@@ -38,6 +49,12 @@ export default function AdminOrderDetail() {
   }
 
   const { order, items } = data;
+  const intlPhone = dzPhoneToIntl(order.customer_phone);
+  // Pre-filled confirmation message, in the language the customer ordered in.
+  const waText =
+    order.language === "ar"
+      ? `السلام عليكم ${order.customer_name}، معكم Auto Market بخصوص طلبك رقم ${order.order_number} (المجموع ${formatPrice(order.total)}). هل تؤكد الطلب؟`
+      : `Bonjour ${order.customer_name}, ici Auto Market au sujet de votre commande ${order.order_number} (total ${formatPrice(order.total)}). Pouvez-vous confirmer la commande ?`;
 
   return (
     <div>
@@ -117,11 +134,29 @@ export default function AdminOrderDetail() {
 
         <div className="space-y-4">
           <BentoPanel className="space-y-3 p-5 text-sm">
-            <h2 className="font-heading text-sm font-bold text-ink">
-              {t("checkout_customer_info")}
-            </h2>
+            <h2 className="font-heading text-sm font-bold text-ink">{t("admin_order_customer")}</h2>
             <p className="text-ink">{order.customer_name}</p>
-            <p className="text-muted">{order.customer_phone}</p>
+            <p className="text-muted">
+              <bdi dir="ltr">{order.customer_phone}</bdi>
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <a
+                href={`tel:+${intlPhone}`}
+                className="flex items-center justify-center gap-2 rounded-xl border border-line px-3 py-2.5 text-sm font-semibold text-ink transition-colors hover:border-brand hover:text-brand"
+              >
+                <Phone size={15} />
+                {t("admin_call")}
+              </a>
+              <a
+                href={`https://wa.me/${intlPhone}?text=${encodeURIComponent(waText)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 rounded-xl bg-accent/15 px-3 py-2.5 text-sm font-semibold text-accent transition-colors hover:bg-accent/25"
+              >
+                <MessageCircle size={15} />
+                WhatsApp
+              </a>
+            </div>
             <p className="text-muted">
               {order.wilaya}, {order.city}
             </p>

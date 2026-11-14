@@ -33,7 +33,12 @@ export function useProducts(options: UseProductsOptions = {}) {
   return useQuery({
     queryKey: ["products", categoryId, search, sort, featuredOnly, includeAll],
     queryFn: async (): Promise<Product[]> => {
-      let query = supabase.from("products").select("*, product_images(*), category:categories(*)");
+      // product_images ordered by sort_order: images[0] is the card thumbnail
+      // and the photo snapshotted onto order lines.
+      let query = supabase
+        .from("products")
+        .select("*, product_images(*), category:categories(*)")
+        .order("sort_order", { referencedTable: "product_images" });
 
       if (!includeAll) {
         query = query.eq("status", "active");
@@ -89,6 +94,7 @@ export function useProduct(slug: string | undefined) {
       const { data, error } = await supabase
         .from("products")
         .select("*, product_images(*), category:categories(*)")
+        .order("sort_order", { referencedTable: "product_images" })
         .eq("slug", slug)
         .eq("status", "active")
         .maybeSingle();

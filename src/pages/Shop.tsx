@@ -62,10 +62,10 @@ export default function Shop() {
           </div>
 
           <div>
-            <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-ink">
+            <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-ink">
               <SlidersHorizontal size={15} />
               {t("shop_filter_category")}
-            </h3>
+            </h2>
             <div className="flex flex-col gap-1">
               <button
                 onClick={() => updateParam("category", "")}
@@ -103,6 +103,7 @@ export default function Shop() {
             <Select
               value={sort}
               onChange={(e) => updateParam("sort", e.target.value)}
+              aria-label={t("shop_sort")}
               className="w-auto"
             >
               <option value="newest">{t("shop_sort_newest")}</option>

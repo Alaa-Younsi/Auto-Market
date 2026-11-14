@@ -116,7 +116,10 @@ export function Gallery({ images, activeIndex, onActiveChange, name }: GalleryPr
           {images.map((img, i) => (
             <button
               key={img.key}
+              type="button"
               onClick={() => onActiveChange(i)}
+              aria-label={`${name} — ${i + 1}/${images.length}`}
+              aria-current={i === activeIndex}
               className={cn(
                 "h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-colors",
                 i === activeIndex ? "border-brand" : "border-line"

@@ -13,7 +13,12 @@ function ReviewCard({ review }: { review: ClientReview }) {
   return (
     <BentoPanel glow dir={dir} className="fx-lift h-full w-[300px] shrink-0 p-6 sm:w-[340px]">
       <StarRating value={review.stars} animated />
-      <p className="mt-3 text-sm leading-relaxed text-ink">"{review.review_text}"</p>
+      {/* dir="auto": a review is in whatever language the customer wrote it,
+          not the UI language — an Arabic review on the French page otherwise
+          puts its full stop and quotes at the wrong end. */}
+      <p dir="auto" className="mt-3 text-sm leading-relaxed text-ink">
+        "{review.review_text}"
+      </p>
       <div className="mt-4 flex items-center gap-2">
         {review.image_url ? (
           <img
@@ -28,7 +33,9 @@ function ReviewCard({ review }: { review: ClientReview }) {
             {review.client_name.charAt(0)}
           </div>
         )}
-        <p className="text-sm font-semibold text-ink">{review.client_name}</p>
+        <p dir="auto" className="text-sm font-semibold text-ink">
+          {review.client_name}
+        </p>
       </div>
     </BentoPanel>
   );

@@ -24,6 +24,7 @@ const AdminOrders = lazy(() => import("@/pages/admin/Orders"));
 const AdminOrderDetail = lazy(() => import("@/pages/admin/OrderDetail"));
 const AdminDeliveryPrices = lazy(() => import("@/pages/admin/DeliveryPrices"));
 const AdminReviews = lazy(() => import("@/pages/admin/Reviews"));
+const AdminAccount = lazy(() => import("@/pages/admin/Account"));
 
 function AdminFallback() {
   return (
@@ -38,7 +39,7 @@ function page(element: ReactNode) {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="flex min-h-dvh items-center justify-center">
           <TachometerLoader />
         </div>
       }
@@ -88,6 +89,7 @@ export default function App() {
           <Route path="orders/:id" element={<AdminOrderDetail />} />
           <Route path="delivery-prices" element={<AdminDeliveryPrices />} />
           <Route path="reviews" element={<AdminReviews />} />
+          <Route path="account" element={<AdminAccount />} />
         </Route>
       </Routes>
     </>

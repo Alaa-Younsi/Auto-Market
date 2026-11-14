@@ -30,7 +30,9 @@ export function ProductVideo({ src, poster, className }: ProductVideoProps) {
           observer.disconnect();
         }
       },
-      { rootMargin: "300px 0px" }
+      // Only once it is actually on screen: the clip is ~2 MB, and a shopper
+      // who never scrolls to it should not pay for it.
+      { rootMargin: "0px", threshold: 0.15 }
     );
     observer.observe(el);
     return () => observer.disconnect();

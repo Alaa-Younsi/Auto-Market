@@ -1,5 +1,38 @@
 export const translations = {
   fr: {
+    // Launch pass (2026-11-14)
+    hero_stat_online: "à payer en ligne",
+    hero_stat_eta: "délai de livraison",
+    spec_payment_tag: "Paiement",
+    spec_delivery_tag: "Couverture",
+    spec_delivery_text: "69 wilayas livrées",
+    footer_country: "Algérie",
+    error_missing_selection: "Choisissez toutes les options du produit (couleur, taille…).",
+    product_qty_decrease: "Diminuer la quantité",
+    product_qty_increase: "Augmenter la quantité",
+    admin_nav_account: "Mon compte",
+    account_title: "Mon compte",
+    account_email: "Adresse e-mail",
+    account_change_password: "Changer le mot de passe",
+    account_current_password: "Mot de passe actuel",
+    account_new_password: "Nouveau mot de passe (8 caractères min.)",
+    account_confirm_password: "Confirmer le nouveau mot de passe",
+    account_submit: "Mettre à jour",
+    account_saved: "Mot de passe mis à jour.",
+    account_wrong_password: "Mot de passe actuel incorrect.",
+    account_mismatch: "Les deux mots de passe ne correspondent pas.",
+    account_too_short: "8 caractères minimum.",
+    account_same_password: "Le nouveau mot de passe doit être différent de l'ancien.",
+    admin_image_main: "Principale",
+    admin_image_move_earlier: "Déplacer avant",
+    admin_image_move_later: "Déplacer après",
+    admin_save_needs_name_price: "Renseignez au moins le nom (FR) et un prix supérieur à 0.",
+    admin_video_too_large: "Vidéo trop lourde (15 Mo max). Hébergez-la ailleurs et collez le lien.",
+    admin_call: "Appeler",
+    admin_order_reopen_stock:
+      "Stock insuffisant pour rouvrir cette commande : les articles ont été vendus entre-temps.",
+    admin_delivery_invalid: "Prix invalide : entrez un nombre positif.",
+    admin_export_error: "Échec de l'export. Réessayez.",
     // Brand
     brand_name: "Auto Market",
     brand_tagline: "Pièces & accessoires auto, livrés chez vous",
@@ -12,11 +45,11 @@ export const translations = {
     nav_search_placeholder: "Rechercher une pièce, un accessoire...",
 
     // Hero
-    hero_badge: "Livraison COD dans les 69 wilayas",
+    hero_badge: "Paiement à la livraison · 69 wilayas",
     hero_title_line1: "Équipez votre voiture",
     hero_title_line2: "comme un pro",
     hero_subtitle:
-      "Des milliers de pièces et accessoires auto vérifiés, livrés en espèces à la livraison partout en Algérie.",
+      "Pièces et accessoires auto vérifiés, livrés partout en Algérie. Vous payez en espèces à la réception.",
     hero_cta_shop: "Découvrir la boutique",
     hero_cta_categories: "Voir les catégories",
     hero_stat_products: "Produits",
@@ -43,7 +76,7 @@ export const translations = {
     how_step1_title: "Choisissez vos produits",
     how_step1_desc: "Parcourez notre catalogue et ajoutez vos articles au panier",
     how_step2_title: "Confirmez la commande",
-    how_step2_desc: "Renseignez votre wilaya et votre adresse de livraison",
+    how_step2_desc: "Renseignez votre nom, votre téléphone, votre wilaya et votre commune",
     how_step3_title: "Payez à la livraison",
     how_step3_desc: "Réglez en espèces uniquement à la réception du colis",
 
@@ -53,12 +86,12 @@ export const translations = {
 
     // Featured products
     featured_title: "Produits populaires",
-    featured_subtitle: "Les articles les plus commandés cette semaine",
+    featured_subtitle: "Notre sélection du moment",
     view_all: "Voir tout",
 
     // Reviews
     reviews_title: "Ce que disent nos clients",
-    reviews_subtitle: "Des milliers de clients satisfaits à travers l'Algérie",
+    reviews_subtitle: "Ils ont commandé chez nous",
 
     // CTA banner
     cta_banner_title: "Prêt à équiper votre véhicule ?",
@@ -309,6 +342,39 @@ export const translations = {
     currency_da: "DA",
   },
   ar: {
+    // Launch pass (2026-11-14)
+    hero_stat_online: "تدفعه عبر الإنترنت",
+    hero_stat_eta: "مدة التوصيل",
+    spec_payment_tag: "الدفع",
+    spec_delivery_tag: "التغطية",
+    spec_delivery_text: "التوصيل إلى 69 ولاية",
+    footer_country: "الجزائر",
+    error_missing_selection: "اختر كل خيارات المنتج (اللون، المقاس…).",
+    product_qty_decrease: "إنقاص الكمية",
+    product_qty_increase: "زيادة الكمية",
+    admin_nav_account: "حسابي",
+    account_title: "حسابي",
+    account_email: "البريد الإلكتروني",
+    account_change_password: "تغيير كلمة المرور",
+    account_current_password: "كلمة المرور الحالية",
+    account_new_password: "كلمة المرور الجديدة (8 أحرف على الأقل)",
+    account_confirm_password: "تأكيد كلمة المرور الجديدة",
+    account_submit: "تحديث",
+    account_saved: "تم تحديث كلمة المرور.",
+    account_wrong_password: "كلمة المرور الحالية غير صحيحة.",
+    account_mismatch: "كلمتا المرور غير متطابقتين.",
+    account_too_short: "8 أحرف على الأقل.",
+    account_same_password: "يجب أن تختلف كلمة المرور الجديدة عن القديمة.",
+    admin_image_main: "الرئيسية",
+    admin_image_move_earlier: "نقل إلى الأمام",
+    admin_image_move_later: "نقل إلى الخلف",
+    admin_save_needs_name_price: "أدخل على الأقل الاسم بالفرنسية وسعراً أكبر من 0.",
+    admin_video_too_large:
+      "الفيديو كبير جداً (15 ميغابايت كحد أقصى). استضفه في مكان آخر والصق الرابط.",
+    admin_call: "اتصال",
+    admin_order_reopen_stock: "المخزون غير كافٍ لإعادة فتح هذا الطلب: بيعت المنتجات في الأثناء.",
+    admin_delivery_invalid: "سعر غير صالح: أدخل رقماً موجباً.",
+    admin_export_error: "فشل التصدير. حاول مرة أخرى.",
     // Brand
     brand_name: "أوتو ماركت",
     brand_tagline: "قطع غيار وإكسسوارات السيارات، توصيل لباب المنزل",
@@ -321,11 +387,11 @@ export const translations = {
     nav_search_placeholder: "ابحث عن قطعة أو إكسسوار...",
 
     // Hero
-    hero_badge: "توصيل الدفع عند الاستلام في 69 ولاية",
+    hero_badge: "الدفع عند الاستلام · 69 ولاية",
     hero_title_line1: "جهّز سيارتك",
     hero_title_line2: "بأناقة واحترافية",
     hero_subtitle:
-      "آلاف القطع والإكسسوارات المضمونة، مع الدفع نقداً عند الاستلام في جميع أنحاء الجزائر.",
+      "قطع وإكسسوارات سيارات مضمونة، نوصلها إلى كل أنحاء الجزائر. تدفع نقداً عند الاستلام.",
     hero_cta_shop: "تصفح المتجر",
     hero_cta_categories: "عرض الفئات",
     hero_stat_products: "منتج",
@@ -352,7 +418,7 @@ export const translations = {
     how_step1_title: "اختر منتجاتك",
     how_step1_desc: "تصفح الكتالوج وأضف المنتجات إلى السلة",
     how_step2_title: "أكّد طلبيتك",
-    how_step2_desc: "أدخل ولايتك وعنوان التوصيل",
+    how_step2_desc: "أدخل اسمك، رقم هاتفك، ولايتك وبلديتك",
     how_step3_title: "ادفع عند الاستلام",
     how_step3_desc: "ادفع نقداً فقط عند استلام الطرد",
 
@@ -362,12 +428,12 @@ export const translations = {
 
     // Featured products
     featured_title: "المنتجات الأكثر طلباً",
-    featured_subtitle: "أكثر المنتجات طلباً هذا الأسبوع",
+    featured_subtitle: "مختاراتنا لهذه الفترة",
     view_all: "عرض الكل",
 
     // Reviews
     reviews_title: "ماذا يقول عملاؤنا",
-    reviews_subtitle: "آلاف العملاء الراضين عبر الجزائر",
+    reviews_subtitle: "عملاء طلبوا منا",
 
     // CTA banner
     cta_banner_title: "مستعد لتجهيز سيارتك؟",

@@ -9,7 +9,11 @@
 
     <!-- Set theme + language on <html> BEFORE first paint so the page never
          flashes the wrong mode/direction while React boots. Defaults: dark
-         theme and Arabic (RTL); a prior explicit choice in localStorage wins. -->
+         theme and Arabic (RTL); a prior explicit choice in localStorage wins.
+         CSP: vercel.json allows this script by the sha256 of its exact text.
+         Editing it by ONE character means recomputing that hash, over the
+         LF-normalised text (browsers hash LF, even if the file has CRLF),
+         or it is silently blocked in production only. -->
     <script>
       (function () {
         try {
@@ -31,7 +35,7 @@
     <title>Pièces & Accessoires Auto, Paiement à la Livraison | Auto Market</title>
     <meta
       name="description"
-      content="Des milliers de pièces et accessoires auto vérifiés, livrés partout en Algérie. Paiement à la livraison, stock vérifié en temps réel, devis rapide."
+      content="Pièces et accessoires auto livrés dans les 69 wilayas d'Algérie. Vous payez en espèces à la réception, rien en ligne."
     />
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://www.auto-market.shop/" />
@@ -42,7 +46,7 @@
     <meta property="og:title" content="Pièces & Accessoires Auto, Paiement à la Livraison | Auto Market" />
     <meta
       property="og:description"
-      content="Des milliers de pièces et accessoires auto vérifiés, livrés partout en Algérie. Paiement à la livraison, stock vérifié en temps réel, devis rapide."
+      content="Pièces et accessoires auto livrés dans les 69 wilayas d'Algérie. Vous payez en espèces à la réception, rien en ligne."
     />
     <meta property="og:url" content="https://www.auto-market.shop/" />
     <meta property="og:image" content="https://www.auto-market.shop/og-image.png" />
@@ -59,7 +63,7 @@
     <meta name="twitter:title" content="Pièces & Accessoires Auto, Paiement à la Livraison | Auto Market" />
     <meta
       name="twitter:description"
-      content="Des milliers de pièces et accessoires auto vérifiés, livrés partout en Algérie. Paiement à la livraison, stock vérifié en temps réel, devis rapide."
+      content="Pièces et accessoires auto livrés dans les 69 wilayas d'Algérie. Vous payez en espèces à la réception, rien en ligne."
     />
     <meta name="twitter:image" content="https://www.auto-market.shop/og-image.png" />
     <meta name="twitter:image:alt" content="Auto Market — pièces et accessoires automobiles en Algérie" />
@@ -72,14 +76,6 @@
          for every route, so a blanket preload made /checkout and /admin download
          122 KB they never use. HeroScene warms it instead, on the one page that
          renders it. -->
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=Cairo:wght@400;600;700;800&display=swap"
-      rel="stylesheet"
-    />
 
     <script type="application/ld+json">
       {
@@ -98,38 +94,8 @@
         ]
       }
     </script>
-
-    <!-- Meta Pixel (replace YOUR_PIXEL_ID before going live) -->
-    <script>
-      !(function (f, b, e, v, n, t, s) {
-        if (f.fbq) return;
-        n = f.fbq = function () {
-          n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
-        };
-        if (!f._fbq) f._fbq = n;
-        n.push = n;
-        n.loaded = !0;
-        n.version = "2.0";
-        n.queue = [];
-        t = b.createElement(e);
-        t.async = !0;
-        t.src = v;
-        s = b.getElementsByTagName(e)[0];
-        s.parentNode.insertBefore(t, s);
-      })(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
-      fbq("init", "YOUR_PIXEL_ID");
-      fbq("track", "PageView");
-    </script>
   </head>
   <body>
-    <noscript>
-      <img
-        height="1"
-        width="1"
-        style="display: none"
-        src="https://www.facebook.com/tr?id=YOUR_PIXEL_ID&ev=PageView&noscript=1"
-      />
-    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

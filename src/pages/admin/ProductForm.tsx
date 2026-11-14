@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { Film, Plus, Trash2, Upload, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Film, Plus, Trash2, Upload, X } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useCategories } from "@/hooks/useCategories";
 import { supabase } from "@/lib/supabase";
@@ -9,7 +9,7 @@ import { compressImage } from "@/lib/image";
 import { sanitizeOffers } from "@/lib/offers";
 import { normalizeColors } from "@/lib/colors";
 import { normalizeVariantGroups } from "@/lib/variants";
-import { slugify } from "@/lib/utils";
+import { cn, slugify } from "@/lib/utils";
 import { BentoPanel } from "@/components/ui/BentoPanel";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
@@ -77,6 +77,8 @@ function SectionTitle({ children }: { children: ReactNode }) {
  * to nothing, like an Arabic-only title — collided on insert and surfaced as a
  * generic "save failed". Suffix until it's free.
  */
+const MAX_VIDEO_BYTES = 15 * 1024 * 1024;
+
 async function uniqueSlug(nameFr: string): Promise<string> {
   const base = slugify(nameFr) || "produit";
   let candidate = base;
@@ -618,6 +620,9 @@ export default function AdminProductForm() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
+  // The edit form stays hidden until the product has loaded: a Save pressed
+  // on the blank defaults would overwrite the real product with them.
+  const [loaded, setLoaded] = useState(isNew);
 
   useEffect(() => {
     if (isNew) return;
@@ -625,6 +630,7 @@ export default function AdminProductForm() {
       .from("products")
       .select("*, product_images(*)")
       .eq("id", id)
+      .order("sort_order", { referencedTable: "product_images" })
       .single()
       .then(({ data, error: loadError }) => {
         // A failed load must BLOCK the form — falling through to blank defaults
@@ -652,7 +658,12 @@ export default function AdminProductForm() {
         setVariantGroups(normalizeVariantGroups(data.variants));
         setOffers(sanitizeOffers(data.quantity_offers));
         setVideoUrl(data.video_url ?? null);
-        setImages(data.product_images ?? []);
+        setImages(
+          [...(data.product_images ?? [])].sort(
+            (a: ProductImage, b: ProductImage) => a.sort_order - b.sort_order
+          )
+        );
+        setLoaded(true);
       });
   }, [id, isNew]);
 
@@ -692,10 +703,19 @@ export default function AdminProductForm() {
   async function handleVideoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    // An autoplaying clip is streamed in full on every product view and bills
+    // against Supabase's shared egress. Past 15 MB, host it elsewhere and
+    // paste the link instead.
+    if (file.size > MAX_VIDEO_BYTES) {
+      setError(t("admin_video_too_large"));
+      e.target.value = "";
+      return;
+    }
     setUploadingVideo(true);
     setError(null);
     try {
-      const path = `products/${crypto.randomUUID()}-${file.name}`;
+      const safeName = file.name.replace(/[^\w.-]+/g, "-");
+      const path = `products/${crypto.randomUUID()}-${safeName}`;
       const { error: uploadError } = await supabase.storage
         .from("product-videos")
         .upload(path, file, { cacheControl: "31536000", contentType: file.type });
@@ -714,13 +734,36 @@ export default function AdminProductForm() {
     setImages((prev) => prev.filter((img) => img.id !== imageId));
   }
 
+  /** Swap with the neighbour; saved as sort_order on the next Save. */
+  function moveImage(index: number, delta: -1 | 1) {
+    setImages((prev) => {
+      const target = index + delta;
+      if (target < 0 || target >= prev.length) return prev;
+      const next = [...prev];
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+  }
+
+  // Number("") is 0: without this gate a blank price field saved a FREE product.
+  const priceValue = Number(form.price);
+  const canSave =
+    form.name_fr.trim().length > 0 &&
+    form.price.trim() !== "" &&
+    Number.isFinite(priceValue) &&
+    priceValue > 0;
+
   async function handleSave() {
+    if (!canSave) return;
     setSaving(true);
     setError(null);
+    let createdId: string | null = null;
     try {
       const payload = {
-        name_fr: form.name_fr,
-        name_ar: form.name_ar,
+        name_fr: form.name_fr.trim(),
+        // Arabic left blank falls back to the French name instead of an empty
+        // title on the Arabic storefront.
+        name_ar: form.name_ar.trim() || form.name_fr.trim(),
         description_fr: form.description_fr || null,
         description_ar: form.description_ar || null,
         details_fr: form.details_fr
@@ -734,7 +777,7 @@ export default function AdminProductForm() {
         price: Number(form.price),
         compare_at_price: form.compare_at_price ? Number(form.compare_at_price) : null,
         category_id: form.category_id || null,
-        stock: Number(form.stock),
+        stock: Math.max(0, Math.floor(Number(form.stock) || 0)),
         colors,
         sizes,
         variants: variantGroups
@@ -755,6 +798,10 @@ export default function AdminProductForm() {
           .single();
         if (error) throw error;
         productId = data.id;
+        // From here on the product exists. If the image step below fails, the
+        // form must become an EDIT form — a second Save on /new would create a
+        // duplicate product.
+        createdId = data.id;
       } else {
         const { error } = await supabase.from("products").update(payload).eq("id", id);
         if (error) throw error;
@@ -787,9 +834,17 @@ export default function AdminProductForm() {
       navigate("/admin/products");
     } catch {
       setError(t("admin_save_error"));
+      if (createdId) {
+        invalidateProductCaches(queryClient);
+        navigate(`/admin/products/${createdId}`, { replace: true });
+      }
     } finally {
       setSaving(false);
     }
+  }
+
+  if (!loaded) {
+    return <p className="py-16 text-center text-sm text-muted">{t("loading")}</p>;
   }
 
   if (loadFailed) {
@@ -929,23 +984,57 @@ export default function AdminProductForm() {
 
             <Field label={t("admin_product_images")}>
               <div className="flex flex-wrap gap-3">
-                {images.map((img) => (
+                {/* Order is load-bearing: the first photo is the shop-card
+                    thumbnail AND the image saved on every order line. */}
+                {images.map((img, i) => (
                   <div
                     key={img.id}
-                    className="relative h-20 w-20 overflow-hidden rounded-lg border border-line"
+                    className={cn(
+                      "relative h-24 w-24 overflow-hidden rounded-lg border",
+                      i === 0 ? "border-brand ring-2 ring-brand/30" : "border-line"
+                    )}
                   >
                     <SmartImage
                       src={img.url}
                       alt=""
-                      sizes="80px"
+                      sizes="96px"
                       className="h-full w-full object-cover"
                     />
+                    {i === 0 && (
+                      <span className="absolute start-1 top-1 rounded bg-brand px-1.5 py-0.5 text-[9px] font-bold text-white">
+                        {t("admin_image_main")}
+                      </span>
+                    )}
                     <button
+                      type="button"
                       onClick={() => removeImage(img.id)}
-                      className="absolute end-1 top-1 rounded-full bg-black/60 p-1 text-white"
+                      className="absolute end-1 top-1 rounded-full bg-black/60 p-1.5 text-white"
+                      aria-label={t("admin_remove")}
                     >
                       <Trash2 size={11} />
                     </button>
+                    {images.length > 1 && (
+                      <div className="absolute inset-x-1 bottom-1 flex justify-between">
+                        <button
+                          type="button"
+                          disabled={i === 0}
+                          onClick={() => moveImage(i, -1)}
+                          className="rounded-full bg-black/60 p-1 text-white disabled:opacity-0"
+                          aria-label={t("admin_image_move_earlier")}
+                        >
+                          <ChevronLeft size={13} className="rtl:rotate-180" />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={i === images.length - 1}
+                          onClick={() => moveImage(i, 1)}
+                          className="rounded-full bg-black/60 p-1 text-white disabled:opacity-0"
+                          aria-label={t("admin_image_move_later")}
+                        >
+                          <ChevronRight size={13} className="rtl:rotate-180" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
                 <label className="flex h-20 w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-line text-muted hover:border-brand hover:text-brand">
@@ -1046,8 +1135,9 @@ export default function AdminProductForm() {
             </label>
 
             {error && <p className="text-sm text-red-500">{error}</p>}
-            <Button onClick={handleSave} disabled={saving} className="w-full">
-              {t("admin_save")}
+            {!canSave && <p className="text-xs text-muted">{t("admin_save_needs_name_price")}</p>}
+            <Button onClick={handleSave} disabled={saving || !canSave} className="w-full">
+              {saving ? "..." : t("admin_save")}
             </Button>
           </BentoPanel>
         </div>

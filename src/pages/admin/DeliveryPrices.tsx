@@ -33,6 +33,30 @@ export default function AdminDeliveryPrices() {
     await queryClient.invalidateQueries({ queryKey: ["delivery-prices"] });
   }
 
+  /**
+   * Price cell blur: skip when unchanged (no write on every tab-through), and
+   * refuse a blank or negative value — Number("") is 0, which used to save
+   * free delivery for the wilaya.
+   */
+  function commitPrice(
+    el: HTMLInputElement,
+    id: string,
+    field: "home_price" | "office_price",
+    current: number
+  ) {
+    const raw = el.value.trim();
+    const value = Number(raw);
+    if (raw === "" || !Number.isFinite(value) || value < 0) {
+      el.value = String(current);
+      setError(t("admin_delivery_invalid"));
+      return;
+    }
+    if (value === Number(current)) return;
+    updateRow(id, { [field]: value }, () => {
+      el.value = String(current);
+    });
+  }
+
   return (
     <div>
       <h1 className="mb-6 font-heading text-2xl font-extrabold text-ink">
@@ -73,12 +97,9 @@ export default function AdminDeliveryPrices() {
                     defaultValue={row.home_price}
                     className="fx-no-spin"
                     disabled={savingId === row.id}
-                    onBlur={(e) => {
-                      const el = e.currentTarget;
-                      updateRow(row.id, { home_price: Number(el.value) }, () => {
-                        el.value = String(row.home_price);
-                      });
-                    }}
+                    onBlur={(e) =>
+                      commitPrice(e.currentTarget, row.id, "home_price", row.home_price)
+                    }
                   />
                 </td>
                 <td className="px-4 py-2">
@@ -87,12 +108,9 @@ export default function AdminDeliveryPrices() {
                     defaultValue={row.office_price}
                     className="fx-no-spin"
                     disabled={savingId === row.id}
-                    onBlur={(e) => {
-                      const el = e.currentTarget;
-                      updateRow(row.id, { office_price: Number(el.value) }, () => {
-                        el.value = String(row.office_price);
-                      });
-                    }}
+                    onBlur={(e) =>
+                      commitPrice(e.currentTarget, row.id, "office_price", row.office_price)
+                    }
                   />
                 </td>
                 <td className="px-4 py-2">

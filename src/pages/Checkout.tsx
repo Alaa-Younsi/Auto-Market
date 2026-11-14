@@ -48,6 +48,7 @@ export default function Checkout() {
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const hasTrackedInitiate = useRef(false);
+  const orderPlaced = useRef(false);
 
   useSeo({ title: `${t("checkout_title")} — ${t("brand_name")}` });
 
@@ -77,7 +78,11 @@ export default function Checkout() {
     : undefined;
   const shippingEstimate = resolveShipping(wilayaFee, subtotal - discount, storeSettings);
 
-  if (items.length === 0) {
+  // `orderPlaced` matters: clearing the cart after a successful order re-renders
+  // this page synchronously (zustand) with an empty cart, and this redirect used
+  // to win the race against the navigation to the confirmation page — the order
+  // went through, but the customer landed on /shop thinking it had failed.
+  if (items.length === 0 && !orderPlaced.current) {
     return <Navigate to="/shop" replace />;
   }
 
@@ -104,8 +109,9 @@ export default function Checkout() {
         }
       );
       trackPurchase(orderNumber, subtotal - discount + shippingEstimate);
-      clear();
+      orderPlaced.current = true;
       navigate(`/order-confirmation/${orderNumber}`);
+      clear();
     } catch (err) {
       const message = err instanceof Error ? err.message : null;
       setErrorMsg(t(orderErrorKey(message)));

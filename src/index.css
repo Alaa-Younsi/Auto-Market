@@ -77,19 +77,24 @@ option {
   margin: 0;
 }
 
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-::-webkit-scrollbar-track {
-  background: rgb(var(--c-panel-2));
-}
-::-webkit-scrollbar-thumb {
-  background: rgb(var(--c-brand) / 0.4);
-  border-radius: 999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgb(var(--c-brand) / 0.65);
+/* Styled scrollbars only where there is a mouse: on Android, styling
+   ::-webkit-scrollbar swaps the overlay bar for a classic one that takes
+   ~10px of layout width down the right edge of every page. */
+@media (hover: hover) and (pointer: fine) {
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: rgb(var(--c-panel-2));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgb(var(--c-brand) / 0.4);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgb(var(--c-brand) / 0.65);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -261,51 +266,6 @@ html[dir="rtl"] .fx-road-runner {
     transform: translateX(calc(-1 * (min(100vw, 80rem) + 4rem)));
     opacity: 0;
   }
-}
-
-/* The road itself for a RoadDivider: a thin rail with moving centre markings,
-   a soft brand glow beneath, and both ends faded into the page. */
-.fx-road-strip {
-  position: absolute;
-  inset-inline: 1rem;
-  top: 50%;
-  height: 2px;
-  transform: translateY(-50%);
-  background: rgb(var(--c-line));
-  border-radius: 2px;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
-}
-@media (min-width: 640px) {
-  .fx-road-strip {
-    inset-inline: 1.5rem;
-  }
-}
-@media (min-width: 1024px) {
-  .fx-road-strip {
-    inset-inline: 2rem;
-  }
-}
-.fx-road-strip::before {
-  content: "";
-  position: absolute;
-  inset: -4px 0;
-  background: rgb(var(--c-brand) / 0.14);
-  filter: blur(4px);
-}
-.fx-road-strip::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    90deg,
-    rgb(var(--c-brand) / 0.55) 0 14px,
-    transparent 14px 46px
-  );
-  animation: road-dash 1.5s linear infinite;
-}
-html[dir="rtl"] .fx-road-strip::after {
-  animation-name: road-dash-rtl;
 }
 
 /* A small car silhouette driving the length of a divider. `.fx-mini-car` is the
@@ -573,4 +533,126 @@ html[dir="rtl"] .fx-streak {
 }
 .fx-pop {
   animation: fx-pop 0.25s ease-out both;
+}
+
+/* ---- Instrument-cluster motif (hero plate, odometer, HUD callouts,
+   telltale strip). Every animation here only has a `from` state or ends on
+   the element's own resting style, so "animation never ran" == "final look". */
+
+/* Number-plate glint: one pass across the plate on load. */
+.fx-plate::after {
+  content: "";
+  position: absolute;
+  inset: -50% auto -50% 0;
+  width: 40%;
+  background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.75), transparent);
+  transform: translateX(-160%) skewX(-18deg);
+  animation: fx-plate-glint 1.4s cubic-bezier(0.4, 0, 0.2, 1) 0.6s both;
+  pointer-events: none;
+}
+@keyframes fx-plate-glint {
+  to {
+    transform: translateX(380%) skewX(-18deg);
+  }
+}
+
+/* Odometer drums roll in from one turn earlier and park on the value. */
+.fx-odo-drum {
+  animation: fx-odo-roll 1.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes fx-odo-roll {
+  from {
+    transform: translateY(var(--odo-from));
+  }
+}
+/* Faint LCD scanlines over the readout bar. */
+.fx-lcd::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgb(255 255 255 / 0.025) 0 1px,
+    transparent 1px 3px
+  );
+  pointer-events: none;
+}
+.fx-lamp {
+  box-shadow: 0 0 8px rgb(var(--c-green) / 0.9);
+}
+
+/* HUD callout: the leader line draws itself, then the label slides in. */
+.fx-leader {
+  stroke-dasharray: 170;
+  animation: fx-leader-draw 0.9s cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+@keyframes fx-leader-draw {
+  from {
+    stroke-dashoffset: 170;
+  }
+}
+.fx-hud-label {
+  padding: 0.35rem 0.6rem;
+  background:
+    linear-gradient(rgb(var(--c-green)), rgb(var(--c-green))) top left / 8px 1.5px,
+    linear-gradient(rgb(var(--c-green)), rgb(var(--c-green))) top left / 1.5px 8px,
+    linear-gradient(rgb(var(--c-green)), rgb(var(--c-green))) bottom right / 8px 1.5px,
+    linear-gradient(rgb(var(--c-green)), rgb(var(--c-green))) bottom right / 1.5px 8px,
+    rgb(var(--c-panel) / 0.78);
+  background-repeat: no-repeat;
+  backdrop-filter: blur(6px);
+  animation: fx-hud-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes fx-hud-in {
+  from {
+    transform: translateX(-10px);
+    clip-path: inset(0 100% 0 0);
+  }
+}
+html[dir="rtl"] .fx-hud-label {
+  animation-name: fx-hud-in-rtl;
+}
+@keyframes fx-hud-in-rtl {
+  from {
+    transform: translateX(10px);
+    clip-path: inset(0 0 0 100%);
+  }
+}
+.fx-ping-ring {
+  animation: fx-ping 2.2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+@keyframes fx-ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  80%,
+  100% {
+    transform: scale(3.2);
+    opacity: 0;
+  }
+}
+
+/* Telltale lamps: always lit; the ignition self-test is a one-off flash. */
+.fx-telltale {
+  box-shadow: 0 0 18px -4px rgb(var(--lamp) / 0.55);
+}
+.fx-telltale svg {
+  filter: drop-shadow(0 0 5px rgb(var(--lamp) / 0.7));
+}
+.fx-telltale.is-testing {
+  animation: fx-ignition 1.1s ease-out both;
+}
+@keyframes fx-ignition {
+  0% {
+    transform: scale(1);
+  }
+  18% {
+    transform: scale(1.12);
+    box-shadow: 0 0 34px 2px rgb(var(--lamp) / 0.85);
+    background-color: rgb(var(--lamp) / 0.32);
+  }
+  100% {
+    transform: scale(1);
+  }
 }

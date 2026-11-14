@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
-import { MapPin, Phone } from "lucide-react";
+import { MapPin, MessageCircle, Phone } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { RoadDivider } from "@/components/effects/RoadDivider";
+import { RevDivider } from "@/components/effects/RevDivider";
+import { CONTACT_PHONE, CONTACT_PHONE_HREF, CONTACT_WHATSAPP_HREF } from "@/lib/contact";
 import { InstagramIcon, TikTokIcon } from "@/components/ui/SocialIcons";
 import { BrandMark } from "@/components/ui/BrandMark";
 
@@ -11,7 +12,7 @@ export function Footer() {
   return (
     <footer className="border-t border-line bg-panel-2/60">
       <div className="pt-6">
-        <RoadDivider />
+        <RevDivider />
       </div>
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-3">
@@ -64,11 +65,28 @@ export function Footer() {
           <div>
             <h3 className="mb-3 font-heading text-sm font-bold text-ink">{t("footer_contact")}</h3>
             <ul className="space-y-2.5 text-sm text-muted">
-              <li className="flex items-center gap-2">
-                <Phone size={14} className="text-brand" /> +213 555 00 00 00
+              <li>
+                <a
+                  href={CONTACT_PHONE_HREF}
+                  className="flex items-center gap-2 transition-colors hover:text-brand"
+                >
+                  <Phone size={14} className="text-brand" />
+                  <bdi dir="ltr">{CONTACT_PHONE}</bdi>
+                </a>
+              </li>
+              <li>
+                <a
+                  href={CONTACT_WHATSAPP_HREF}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 transition-colors hover:text-brand"
+                >
+                  <MessageCircle size={14} className="text-accent" />
+                  WhatsApp
+                </a>
               </li>
               <li className="flex items-center gap-2">
-                <MapPin size={14} className="text-brand" /> Algérie
+                <MapPin size={14} className="text-brand" /> {t("footer_country")}
               </li>
             </ul>
           </div>

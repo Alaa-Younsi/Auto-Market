@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import type { MotionValue } from "framer-motion";
 import { HeroArt } from "./HeroArt";
-import { HeroBadges } from "./HeroBadges";
+import { SpecCallouts } from "./SpecCallouts";
 import { PaintChips, PAINT_SWATCHES } from "./PaintChips";
 import { SceneErrorBoundary } from "./SceneErrorBoundary";
 import { useWebglSupport } from "@/hooks/useWebglSupport";
@@ -115,7 +115,7 @@ export function HeroScene({ sideOffset, scrollProgress }: HeroSceneProps) {
       ) : (
         <HeroArtFallback />
       )}
-      <HeroBadges />
+      <SpecCallouts />
       {webglSupported && !isCompact && (
         <PaintChips
           value={paintColor}

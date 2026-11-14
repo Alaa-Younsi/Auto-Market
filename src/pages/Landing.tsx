@@ -1,28 +1,30 @@
 import { useRef } from "react";
 import { motion, useScroll } from "framer-motion";
-import { BadgeCheck, ChevronRight, Headset, Sparkles, Truck, Wallet } from "lucide-react";
+import { BadgeCheck, ChevronRight, Headset, Truck, Wallet } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useCategories } from "@/hooks/useCategories";
 import { useMediaFlags } from "@/hooks/useMediaFlags";
-import { useProducts, useProductsCount } from "@/hooks/useProducts";
+import { useProducts } from "@/hooks/useProducts";
 import { useReviews } from "@/hooks/useReviews";
 import { useSeo } from "@/hooks/useSeo";
 import { HeroScene } from "@/components/effects/HeroScene";
-import { RoadDivider } from "@/components/effects/RoadDivider";
+import { OdometerStrip, type OdometerReading } from "@/components/effects/OdometerStrip";
+import { PlateBadge } from "@/components/effects/PlateBadge";
+import { RevDivider } from "@/components/effects/RevDivider";
+import { TelltaleStrip, type Telltale } from "@/components/effects/TelltaleStrip";
 import { ScrollRoad } from "@/components/effects/ScrollRoad";
-import { StatCounter } from "@/components/effects/StatCounter";
 import { StaggerText } from "@/components/effects/StaggerText";
 import { ReviewsMarquee } from "@/components/effects/ReviewsMarquee";
 import { ProductCard } from "@/components/product/ProductCard";
 import { LinkButton } from "@/components/ui/LinkButton";
 import { BentoPanel } from "@/components/ui/BentoPanel";
+import { SmartImage } from "@/components/ui/SmartImage";
 import { cn } from "@/lib/utils";
 
 export default function Landing() {
   const { t, lang } = useLanguage();
   const { data: categories = [] } = useCategories();
   const { data: featured = [] } = useProducts({ featuredOnly: true });
-  const { data: productsCount = 0 } = useProductsCount();
   const { data: reviews = [] } = useReviews();
   const { enableHeavyEffects } = useMediaFlags();
 
@@ -41,23 +43,19 @@ export default function Landing() {
     description: t("hero_subtitle"),
   });
 
-  const trustItems = [
-    { icon: Wallet, title: t("trust_cod"), desc: t("trust_cod_desc") },
-    { icon: Truck, title: t("trust_delivery"), desc: t("trust_delivery_desc") },
-    { icon: BadgeCheck, title: t("trust_quality"), desc: t("trust_quality_desc") },
-    { icon: Headset, title: t("trust_support"), desc: t("trust_support_desc") },
+  const trustItems: Telltale[] = [
+    { icon: Wallet, title: t("trust_cod"), desc: t("trust_cod_desc"), tone: "green" },
+    { icon: Truck, title: t("trust_delivery"), desc: t("trust_delivery_desc"), tone: "blue" },
+    { icon: BadgeCheck, title: t("trust_quality"), desc: t("trust_quality_desc"), tone: "amber" },
+    { icon: Headset, title: t("trust_support"), desc: t("trust_support_desc"), tone: "cyan" },
   ];
 
-  const stats: {
-    value: number;
-    label: string;
-    suffix?: string;
-    decimals?: number;
-  }[] = [
-    { value: productsCount, label: t("hero_stat_products") },
-    { value: 69, label: t("hero_stat_wilayas") },
-    { value: 1000, suffix: "+", label: t("hero_stat_clients") },
-    { value: 4.9, decimals: 1, suffix: "/5", label: t("hero_stat_rating") },
+  // Facts only. A brand-new shop has no customer count or rating to show yet,
+  // so neither is invented here.
+  const readings: OdometerReading[] = [
+    { tag: "ODO", value: "69", label: t("hero_stat_wilayas") },
+    { tag: "COD", value: "0 DA", label: t("hero_stat_online") },
+    { tag: "ETA", value: "24–72h", label: t("hero_stat_eta") },
   ];
 
   return (
@@ -81,7 +79,18 @@ export default function Landing() {
           aria-hidden="true"
           className="pointer-events-none absolute inset-x-0 top-0 bottom-[300px] sm:hidden"
         >
-          <img src="/bgimage.png" alt="" className="h-full w-full object-cover" />
+          {/* The phone hero's LCP image: 25–48 KB WebP (was a 2.2 MB PNG). */}
+          <img
+            src="/bg-hero-720.webp"
+            srcSet="/bg-hero-720.webp 720w, /bg-hero-1080.webp 1080w"
+            sizes="100vw"
+            alt=""
+            width={720}
+            height={1280}
+            fetchPriority="high"
+            decoding="async"
+            className="h-full w-full object-cover"
+          />
           <div className="absolute inset-0 bg-gradient-to-b from-bg via-bg/75 to-bg/30" />
         </div>
 
@@ -111,13 +120,7 @@ export default function Landing() {
             animate={{ x: 0 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           >
-            {/* The pulse ring belongs on the dot: on the pill its ::after
-                covers the label every cycle. */}
-            <span className="relative mb-5 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-4 py-1.5 text-xs font-bold text-accent">
-              <span className="fx-pulse-dot relative inline-block h-1.5 w-1.5 rounded-full bg-accent" />
-              <Sparkles size={13} />
-              {t("hero_badge")}
-            </span>
+            <PlateBadge className="mb-6">{t("hero_badge")}</PlateBadge>
 
             <h1 className="font-heading text-3xl font-extrabold leading-[1.08] tracking-tight text-ink sm:text-4xl lg:text-5xl xl:text-[3.4rem]">
               <StaggerText text={t("hero_title_line1")} />
@@ -143,42 +146,20 @@ export default function Landing() {
               </LinkButton>
             </div>
 
-            <div className="mt-12 grid grid-cols-2 gap-x-4 gap-y-6 border-t border-line pt-8 sm:grid-cols-4">
-              {stats.map((s) => (
-                <StatCounter
-                  key={s.label}
-                  value={s.value}
-                  suffix={s.suffix}
-                  decimals={s.decimals}
-                  label={s.label}
-                />
-              ))}
+            <div className="mt-10 max-w-md">
+              <OdometerStrip readings={readings} />
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Trust badges */}
-      <section className="border-y border-line bg-panel-2/50">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
-            {trustItems.map((item) => (
-              <div key={item.title} className="flex items-center gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand">
-                  <item.icon size={20} />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-ink">{item.title}</p>
-                  <p className="text-xs text-muted">{item.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* Trust promises, as the cluster's warning lights */}
+      <section className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
+        <TelltaleStrip items={trustItems} />
       </section>
 
       <div className="pt-10">
-        <RoadDivider />
+        <RevDivider />
       </div>
 
       {/* Categories */}
@@ -209,12 +190,13 @@ export default function Landing() {
                 className="fx-lift group relative flex aspect-[4/3] flex-col justify-end overflow-hidden rounded-2xl border border-line bg-panel-2 p-4"
               >
                 {cat.image_url ? (
-                  <img
+                  // Resized per tile through the storage render endpoint: the raw
+                  // uploads are up to 2 MB JPEGs for a ~300px tile.
+                  <SmartImage
                     src={cat.image_url}
                     alt=""
-                    loading="lazy"
-                    decoding="async"
-                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 300px"
+                    className="absolute inset-0 h-full w-full object-cover transition-[transform,opacity] duration-500 group-hover:scale-110"
                   />
                 ) : (
                   <div
@@ -259,7 +241,7 @@ export default function Landing() {
         </section>
       )}
 
-      <RoadDivider />
+      <RevDivider />
 
       {/* How it works */}
       <section className="cv-auto mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
