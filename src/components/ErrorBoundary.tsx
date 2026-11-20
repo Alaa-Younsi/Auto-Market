@@ -37,19 +37,19 @@ interface State {
  * directly and prints both languages.
  */
 export class ErrorBoundary extends Component<Props, State> {
-  state: State = { failed: false };
+  override state: State = { failed: false };
 
   static getDerivedStateFromError(): State {
     return { failed: true };
   }
 
-  componentDidCatch(error: Error, info: ErrorInfo) {
+  override componentDidCatch(error: Error, info: ErrorInfo) {
     if (isStaleChunkError(error) && reloadOnceForNewDeploy()) return;
     // The only crash signal the operator gets from a static SPA.
     console.error("[ErrorBoundary]", error, info.componentStack);
   }
 
-  render() {
+  override render() {
     if (!this.state.failed) return this.props.children;
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-bg px-6 text-center text-ink">

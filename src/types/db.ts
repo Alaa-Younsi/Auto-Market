@@ -130,7 +130,49 @@ export interface StoreSettings {
   shipping_fee: number;
   /** null = no free-shipping offer; place_order and resolveShipping both treat it as "off". */
   free_ship_threshold: number | null;
+  /* Migration 0013 — edited in Admin → Réglages. Optional: absent before it runs. */
+  contact_phone?: string | null;
+  contact_whatsapp?: string | null;
+  contact_email?: string | null;
+  address_fr?: string | null;
+  address_ar?: string | null;
+  hours_fr?: string | null;
+  hours_ar?: string | null;
+  social_instagram?: string | null;
+  social_facebook?: string | null;
+  social_tiktok?: string | null;
+  social_youtube?: string | null;
+  social_snapchat?: string | null;
+  legal_name?: string | null;
+  legal_owner?: string | null;
+  legal_rc?: string | null;
+  legal_nif?: string | null;
+  legal_nis?: string | null;
+  legal_ai?: string | null;
 }
+
+/** The Réglages columns — the only keys the settings form ever writes. */
+export const SETTINGS_TEXT_KEYS = [
+  "contact_phone",
+  "contact_whatsapp",
+  "contact_email",
+  "address_fr",
+  "address_ar",
+  "hours_fr",
+  "hours_ar",
+  "social_instagram",
+  "social_facebook",
+  "social_tiktok",
+  "social_youtube",
+  "social_snapchat",
+  "legal_name",
+  "legal_owner",
+  "legal_rc",
+  "legal_nif",
+  "legal_nis",
+  "legal_ai",
+] as const;
+export type SettingsTextKey = (typeof SETTINGS_TEXT_KEYS)[number];
 
 export interface DeliveryPrice {
   id: string;
@@ -163,6 +205,8 @@ export interface CartItem {
   variants?: SelectedVariant[];
   imageUrl: string | null;
   stock: number;
+  /** For category promotions in the instant mirror; price_cart re-reads it server-side. */
+  categoryId?: string | null;
   /* Snapshot for the client-side estimate only — place_order re-reads
      the live offers server-side. */
   offers?: QuantityOffer[];

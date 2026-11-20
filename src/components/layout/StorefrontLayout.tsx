@@ -2,6 +2,7 @@ import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { CartDrawer } from "./CartDrawer";
 import { WhatsAppButton } from "./WhatsAppButton";
+import { CookieBanner } from "./CookieBanner";
 import { PageTransition } from "@/components/effects/PageTransition";
 
 export function StorefrontLayout() {
@@ -13,6 +14,7 @@ export function StorefrontLayout() {
       </main>
       <Footer />
       <WhatsAppButton />
+      <CookieBanner />
       <CartDrawer />
     </div>
   );

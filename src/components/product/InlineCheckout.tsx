@@ -12,7 +12,8 @@ import { placeOrder } from "@/lib/placeOrder";
 import { orderErrorKey } from "@/lib/orderErrors";
 import { readDbError } from "@/lib/dbError";
 import { Price } from "@/components/ui/Price";
-import { lineDiscount } from "@/lib/offers";
+import { useCartQuote } from "@/hooks/useCartQuote";
+import { LegalAcceptance } from "./LegalAcceptance";
 import { trackInitiateCheckout, trackPurchase } from "@/lib/pixel";
 import { CheckoutFields } from "./CheckoutFields";
 import { Button } from "@/components/ui/Button";
@@ -24,9 +25,18 @@ interface InlineCheckoutProps {
   color?: string;
   size?: string;
   variants?: SelectedVariant[];
+  /** Landing pages use their own call to action. */
+  submitLabel?: string;
 }
 
-export function InlineCheckout({ product, quantity, color, size, variants }: InlineCheckoutProps) {
+export function InlineCheckout({
+  product,
+  quantity,
+  color,
+  size,
+  variants,
+  submitLabel,
+}: InlineCheckoutProps) {
   const { t, lang } = useLanguage();
   const navigate = useNavigate();
   const { data: deliveryPrices = [] } = useDeliveryPrices();
@@ -64,8 +74,16 @@ export function InlineCheckout({ product, quantity, color, size, variants }: Inl
       ? selectedWilayaPrice.office_price
       : selectedWilayaPrice.home_price
     : undefined;
-  const subtotal = Number(product.price) * quantity;
-  const discount = lineDiscount(product.price, quantity, product.quantity_offers);
+  // Same engine as the cart and as place_order: offers + store promotions.
+  const { subtotal, discount } = useCartQuote([
+    {
+      productId: product.id,
+      categoryId: product.category_id,
+      price: product.price,
+      quantity,
+      offers: product.quantity_offers,
+    },
+  ]);
   const shippingEstimate = resolveShipping(wilayaFee, subtotal - discount, storeSettings);
 
   // Same required-selection rule as the main product actions — the "Buy now"
@@ -186,8 +204,9 @@ export function InlineCheckout({ product, quantity, color, size, variants }: Inl
         className="w-full"
         disabled={submitting || !selectionComplete}
       >
-        {submitting ? t("checkout_submitting") : t("product_buy_now")}
+        {submitting ? t("checkout_submitting") : (submitLabel ?? t("product_buy_now"))}
       </Button>
+      <LegalAcceptance />
     </form>
   );
 }

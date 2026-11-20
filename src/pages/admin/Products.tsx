@@ -8,9 +8,10 @@ import { supabase } from "@/lib/supabase";
 import { invalidateProductCaches } from "@/lib/queryCache";
 import { Price } from "@/components/ui/Price";
 import { BentoPanel } from "@/components/ui/BentoPanel";
-import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Input } from "@/components/ui/Input";
+import { LinkButton } from "@/components/ui/LinkButton";
+import { useConfirm } from "@/components/admin/ConfirmDialog";
 
 export default function AdminProducts() {
   const { t, lang } = useLanguage();
@@ -19,11 +20,22 @@ export default function AdminProducts() {
   const [error, setError] = useState<string | null>(null);
   const { data: products = [], isLoading } = useProducts({ includeAll: true, search });
 
-  async function handleDelete(id: string) {
-    if (!confirm(t("admin_confirm_delete"))) return;
+  const [confirmDialog, ask] = useConfirm();
+
+  async function handleDelete(id: string, name: string) {
+    const ok = await ask({
+      title: `${t("admin_delete")} « ${name} »`,
+      body: <p>{t("product_delete_body")}</p>,
+      confirmLabel: t("admin_delete"),
+    });
+    if (!ok) return;
     setError(null);
-    const { error: delError } = await supabase.from("products").delete().eq("id", id);
-    if (delError) {
+    const { data, error: delError } = await supabase
+      .from("products")
+      .delete()
+      .eq("id", id)
+      .select("id");
+    if (delError || !data?.length) {
       setError(t("admin_delete_error"));
       return;
     }
@@ -32,16 +44,16 @@ export default function AdminProducts() {
 
   return (
     <div>
+      {confirmDialog}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-heading text-2xl font-extrabold text-ink">
           {t("admin_products_title")}
         </h1>
-        <Link to="/admin/products/new">
-          <Button size="sm">
-            <Plus size={16} />
-            {t("admin_add")}
-          </Button>
-        </Link>
+        {/* A link styled as a button — never a <button> inside an <a>. */}
+        <LinkButton to="/admin/products/new" size="sm">
+          <Plus size={16} />
+          {t("admin_add")}
+        </LinkButton>
       </div>
 
       {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
@@ -131,7 +143,9 @@ export default function AdminProducts() {
                       <Pencil size={15} />
                     </Link>
                     <button
-                      onClick={() => handleDelete(product.id)}
+                      onClick={() =>
+                        handleDelete(product.id, lang === "ar" ? product.name_ar : product.name_fr)
+                      }
                       className="rounded-lg p-1.5 text-muted hover:bg-panel-2 hover:text-red-500"
                     >
                       <Trash2 size={15} />

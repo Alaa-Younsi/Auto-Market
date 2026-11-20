@@ -10,6 +10,7 @@ import { resolveShipping, useStoreSettings } from "@/hooks/useStoreSettings";
 import { useMediaFlags } from "@/hooks/useMediaFlags";
 import { useSeo } from "@/hooks/useSeo";
 import { useCartStore } from "@/store/cart";
+import { useCartQuote } from "@/hooks/useCartQuote";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/checkoutSchema";
 import { placeOrder } from "@/lib/placeOrder";
 import { orderErrorKey } from "@/lib/orderErrors";
@@ -18,6 +19,7 @@ import { Price } from "@/components/ui/Price";
 import { SmartImage } from "@/components/ui/SmartImage";
 import { trackInitiateCheckout, trackPurchase } from "@/lib/pixel";
 import { CheckoutFields } from "@/components/product/CheckoutFields";
+import { LegalAcceptance } from "@/components/product/LegalAcceptance";
 import { Button } from "@/components/ui/Button";
 import { TachometerLoader } from "@/components/effects/TachometerLoader";
 
@@ -37,9 +39,8 @@ export default function Checkout() {
   const { t, lang } = useLanguage();
   const navigate = useNavigate();
   const items = useCartStore((s) => s.items);
-  const subtotal = useCartStore((s) => s.subtotal());
-  const discount = useCartStore((s) => s.discount());
   const clear = useCartStore((s) => s.clear);
+  const { subtotal, discount } = useCartQuote(items);
   const { data: deliveryPrices = [] } = useDeliveryPrices();
   const { data: storeSettings } = useStoreSettings();
   const { isSpam } = useHoneypot();
@@ -184,6 +185,7 @@ export default function Checkout() {
               t("checkout_submit")
             )}
           </Button>
+          <LegalAcceptance />
         </motion.form>
 
         <motion.aside

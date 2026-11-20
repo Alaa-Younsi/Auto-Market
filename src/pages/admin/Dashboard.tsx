@@ -1,18 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { DollarSign, Package, ShoppingCart, Timer } from "lucide-react";
+import { DollarSign, Package, ShoppingCart, Timer, TriangleAlert } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useOrders } from "@/hooks/useOrders";
 import { supabase } from "@/lib/supabase";
 import { Price } from "@/components/ui/Price";
-import { ORDER_STATUS_LABEL_KEY } from "@/lib/orderStatus";
+import { ORDER_STATUS_LABEL_KEY, ORDER_STATUS_TONE } from "@/lib/orderStatus";
 import { BentoPanel } from "@/components/ui/BentoPanel";
 import { Badge } from "@/components/ui/Badge";
 
 export default function AdminDashboard() {
   const { t } = useLanguage();
-  const { data: orders = [] } = useOrders();
-  const { data: pendingOrders = [] } = useOrders({ status: "pending" });
+  const { data } = useOrders();
+  const orders = data?.rows ?? [];
+  const pendingCount = orders.filter((o) => o.status === "pending").length;
 
   const { data: productsCount = 0 } = useQuery({
     queryKey: ["admin-products-count"],
@@ -31,7 +32,7 @@ export default function AdminDashboard() {
 
   const stats = [
     { label: t("admin_dashboard_total_orders"), value: orders.length, icon: ShoppingCart },
-    { label: t("admin_dashboard_pending_orders"), value: pendingOrders.length, icon: Timer },
+    { label: t("admin_dashboard_pending_orders"), value: pendingCount, icon: Timer },
     { label: t("admin_dashboard_revenue"), value: <Price value={revenue} />, icon: DollarSign },
     { label: t("admin_dashboard_products"), value: productsCount, icon: Package },
   ];
@@ -42,6 +43,12 @@ export default function AdminDashboard() {
         {t("admin_dashboard_title")}
       </h1>
 
+      {data?.capped && (
+        <p className="mb-4 flex items-start gap-2 rounded-xl border border-amber-400/40 bg-amber-400/10 px-3 py-2 text-sm text-amber-500">
+          <TriangleAlert size={16} className="mt-0.5 shrink-0" />
+          {t("admin_orders_capped")}
+        </p>
+      )}
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {stats.map((stat) => (
           <BentoPanel key={stat.label} className="p-4 sm:p-5">
@@ -82,6 +89,7 @@ export default function AdminDashboard() {
                   <td className="whitespace-nowrap px-4 py-3">
                     <Link
                       to={`/admin/orders/${order.id}`}
+                      dir="ltr"
                       className="font-mono text-brand hover:underline"
                     >
                       {order.order_number}
@@ -92,7 +100,9 @@ export default function AdminDashboard() {
                     <Price value={order.total} />
                   </td>
                   <td className="whitespace-nowrap px-4 py-3">
-                    <Badge tone="brand">{t(ORDER_STATUS_LABEL_KEY[order.status])}</Badge>
+                    <Badge tone={ORDER_STATUS_TONE[order.status]}>
+                      {t(ORDER_STATUS_LABEL_KEY[order.status])}
+                    </Badge>
                   </td>
                 </tr>
               ))}

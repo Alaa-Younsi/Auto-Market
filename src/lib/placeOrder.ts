@@ -10,7 +10,22 @@ export async function placeOrder(
     customer,
   });
   if (error) throw error;
-  return data as string;
+  const orderNumber = data as string;
+  notifyNewOrder(orderNumber);
+  return orderNumber;
+}
+
+/**
+ * Fire-and-forget: e-mails the team (edge function `notify`). Never awaited,
+ * never surfaced — a mail problem must not touch the customer's order, which
+ * is already saved at this point.
+ */
+function notifyNewOrder(orderNumber: string): void {
+  supabase.functions
+    .invoke("notify", { body: { kind: "order", order_number: orderNumber } })
+    .catch(() => {
+      /* logged by the function itself */
+    });
 }
 
 export async function getOrderByNumber(orderNumber: string) {

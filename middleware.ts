@@ -13,7 +13,7 @@ import { next } from "@vercel/edge";
  * Real shoppers fall straight through to the SPA.
  */
 export const config = {
-  matcher: "/product/:slug*",
+  matcher: ["/product/:slug*", "/lp/:slug*"],
 };
 
 const CRAWLER =
@@ -40,20 +40,37 @@ interface ProductRow {
   product_images: { url: string }[];
 }
 
+/** A published ad landing page (/lp/:slug) and the active product behind it. */
+interface LandingRow {
+  headline_fr: string | null;
+  sub_fr: string | null;
+  hero_image_url: string | null;
+  product: ProductRow | null;
+}
+
 export default async function middleware(request: Request) {
   const userAgent = request.headers.get("user-agent") ?? "";
   if (!CRAWLER.test(userAgent)) return next();
 
   const url = new URL(request.url);
-  const slug = url.pathname.split("/").filter(Boolean)[1];
+  const [kind, slug] = url.pathname.split("/").filter(Boolean);
+  const isLanding = kind === "lp";
 
   const supabaseUrl = process.env.VITE_SUPABASE_URL;
   const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
   if (!slug || !supabaseUrl || !supabaseKey) return next();
 
   let product: ProductRow | undefined;
+  let landing: LandingRow | undefined;
   try {
-    const endpoint =
+    const endpoint = isLanding
+      ? `${supabaseUrl}/rest/v1/product_landings` +
+        `?slug=eq.${encodeURIComponent(slug)}` +
+        `&status=eq.published` +
+        `&select=headline_fr,sub_fr,hero_image_url,product:products(name_fr,name_ar,description_fr,price,stock,product_images(url,sort_order))` +
+        `&product.product_images.order=sort_order` +
+        `&limit=1`
+      :
       `${supabaseUrl}/rest/v1/products` +
       `?slug=eq.${encodeURIComponent(slug)}` +
       `&status=eq.active` +
@@ -65,8 +82,12 @@ export default async function middleware(request: Request) {
       headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` },
     });
     if (!res.ok) return next();
-    const rows = (await res.json()) as ProductRow[];
-    product = rows[0];
+    if (isLanding) {
+      landing = ((await res.json()) as LandingRow[])[0];
+      product = landing?.product ?? undefined;
+    } else {
+      product = ((await res.json()) as ProductRow[])[0];
+    }
   } catch {
     // A crawler is never worth a 500: fall back to the static tags.
     return next();
@@ -74,12 +95,13 @@ export default async function middleware(request: Request) {
 
   if (!product) return next();
 
-  const title = `${product.name_fr} — Auto Market`;
+  const title = `${landing?.headline_fr?.trim() || product.name_fr} — Auto Market`;
   const description =
-    product.description_fr?.slice(0, 200) ??
+    landing?.sub_fr?.trim().slice(0, 200) ||
+    product.description_fr?.slice(0, 200) ||
     `${product.name_fr} — livraison partout en Algérie, paiement à la livraison.`;
-  const image = product.product_images?.[0]?.url ?? FALLBACK_IMAGE;
-  const canonical = `${SITE_URL}/product/${slug}`;
+  const image = landing?.hero_image_url || product.product_images?.[0]?.url || FALLBACK_IMAGE;
+  const canonical = `${SITE_URL}/${isLanding ? "lp" : "product"}/${slug}`;
 
   const html = `<!doctype html>
 <html lang="fr">

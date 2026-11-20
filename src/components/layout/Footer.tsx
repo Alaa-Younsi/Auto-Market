@@ -1,17 +1,35 @@
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { MapPin, MessageCircle, Phone } from "lucide-react";
+import { Clock, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { CONTACT_PHONE, CONTACT_PHONE_HREF, CONTACT_WHATSAPP_HREF } from "@/lib/contact";
-import { InstagramIcon, TikTokIcon } from "@/components/ui/SocialIcons";
+import { type SocialLink, useContact } from "@/hooks/useContact";
+import { useConsentStore } from "@/store/consent";
+import {
+  FacebookIcon,
+  InstagramIcon,
+  SnapchatIcon,
+  TikTokIcon,
+  YouTubeIcon,
+} from "@/components/ui/SocialIcons";
 import { BrandMark } from "@/components/ui/BrandMark";
+
+const SOCIAL_ICON: Record<SocialLink["key"], (p: { size?: number }) => ReactNode> = {
+  instagram: InstagramIcon,
+  facebook: FacebookIcon,
+  tiktok: TikTokIcon,
+  youtube: YouTubeIcon,
+  snapchat: SnapchatIcon,
+};
 
 export function Footer() {
   const { t } = useLanguage();
+  const contact = useContact();
+  const openCookies = useConsentStore((s) => s.openPanel);
 
   return (
     <footer className="border-t border-line bg-panel-2/60">
       <div className="mx-auto max-w-7xl px-4 pt-14 pb-24 sm:px-6 sm:pb-14 lg:px-8">
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <Link to="/" className="mb-3 flex items-center gap-2">
               <BrandMark className="shadow-none" />
@@ -20,26 +38,25 @@ export function Footer() {
               </span>
             </Link>
             <p className="max-w-xs text-sm leading-relaxed text-muted">{t("footer_about")}</p>
-            <div className="mt-4 flex gap-2">
-              <a
-                href="https://www.instagram.com/automarket.shop_/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-full border border-line p-2 text-muted transition-colors hover:border-brand hover:text-brand"
-                aria-label="Instagram"
-              >
-                <InstagramIcon size={16} />
-              </a>
-              <a
-                href="https://www.tiktok.com/@automarket.shop_"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-full border border-line p-2 text-muted transition-colors hover:border-brand hover:text-brand"
-                aria-label="TikTok"
-              >
-                <TikTokIcon size={16} />
-              </a>
-            </div>
+            {contact.socials.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {contact.socials.map((s) => {
+                  const Icon = SOCIAL_ICON[s.key];
+                  return (
+                    <a
+                      key={s.key}
+                      href={s.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-full border border-line p-2 text-muted transition-colors hover:border-brand hover:text-brand"
+                      aria-label={s.label}
+                    >
+                      <Icon size={16} />
+                    </a>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div>
@@ -55,6 +72,46 @@ export function Footer() {
                   {t("nav_shop")}
                 </Link>
               </li>
+              <li>
+                <Link to="/politique" className="transition-colors hover:text-brand">
+                  {t("legal_nav_policy")}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="mb-3 font-heading text-sm font-bold text-ink">{t("footer_legal")}</h3>
+            <ul className="space-y-2 text-sm text-muted">
+              <li>
+                <Link to="/mentions-legales" className="transition-colors hover:text-brand">
+                  {t("legal_nav_mentions")}
+                </Link>
+              </li>
+              <li>
+                <Link to="/cgv" className="transition-colors hover:text-brand">
+                  {t("legal_nav_cgv")}
+                </Link>
+              </li>
+              <li>
+                <Link to="/confidentialite" className="transition-colors hover:text-brand">
+                  {t("legal_nav_privacy")}
+                </Link>
+              </li>
+              <li>
+                <Link to="/cookies" className="transition-colors hover:text-brand">
+                  {t("legal_nav_cookies")}
+                </Link>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={openCookies}
+                  className="text-start transition-colors hover:text-brand"
+                >
+                  {t("cookie_manage")}
+                </button>
+              </li>
             </ul>
           </div>
 
@@ -63,27 +120,47 @@ export function Footer() {
             <ul className="space-y-2.5 text-sm text-muted">
               <li>
                 <a
-                  href={CONTACT_PHONE_HREF}
+                  href={contact.phoneHref}
                   className="flex items-center gap-2 transition-colors hover:text-brand"
                 >
-                  <Phone size={14} className="text-brand" />
-                  <bdi dir="ltr">{CONTACT_PHONE}</bdi>
+                  <Phone size={14} className="shrink-0 text-brand" />
+                  <bdi dir="ltr">{contact.phone}</bdi>
                 </a>
               </li>
               <li>
                 <a
-                  href={CONTACT_WHATSAPP_HREF}
+                  href={contact.whatsappHref}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 transition-colors hover:text-brand"
                 >
-                  <MessageCircle size={14} className="text-accent" />
+                  <MessageCircle size={14} className="shrink-0 text-accent" />
                   WhatsApp
                 </a>
               </li>
-              <li className="flex items-center gap-2">
-                <MapPin size={14} className="text-brand" /> {t("footer_country")}
+              {contact.email && (
+                <li>
+                  <a
+                    href={`mailto:${contact.email}`}
+                    className="flex items-center gap-2 transition-colors hover:text-brand"
+                  >
+                    <Mail size={14} className="shrink-0 text-brand" />
+                    <bdi dir="ltr" className="[overflow-wrap:anywhere]">
+                      {contact.email}
+                    </bdi>
+                  </a>
+                </li>
+              )}
+              <li className="flex items-start gap-2">
+                <MapPin size={14} className="mt-0.5 shrink-0 text-brand" />
+                <span>{contact.address ?? t("footer_country")}</span>
               </li>
+              {contact.hours && (
+                <li className="flex items-start gap-2">
+                  <Clock size={14} className="mt-0.5 shrink-0 text-brand" />
+                  <span>{contact.hours}</span>
+                </li>
+              )}
             </ul>
           </div>
         </div>

@@ -1,3 +1,5 @@
+import { supabase } from "@/lib/supabase";
+
 const MAX_EDGE = 1400;
 const QUALITY = 0.82;
 
@@ -84,4 +86,42 @@ export function supabaseSrcSet(src: string): string | undefined {
 export function responsiveSrcSet(src: string | null | undefined): string | undefined {
   if (!src) return undefined;
   return supabaseSrcSet(src);
+}
+
+/* ------------------------------------------------------------------ *
+ * Upload + cleanup for admin pages (categories, landing pages).
+ * ------------------------------------------------------------------ */
+const IMAGE_BUCKET = "product-images";
+
+/** Compress, upload under `folder/`, return the public URL. Throws on failure. */
+export async function uploadAdminImage(file: File, folder: string): Promise<string> {
+  const optimized = await compressImage(file);
+  const safeName = optimized.name
+    .toLowerCase()
+    .replace(/[^a-z0-9.]+/g, "-")
+    .slice(-60);
+  const path = `${folder}/${crypto.randomUUID()}-${safeName}`;
+  const { error } = await supabase.storage
+    .from(IMAGE_BUCKET)
+    .upload(path, optimized, { cacheControl: "31536000", contentType: optimized.type });
+  if (error) throw error;
+  return supabase.storage.from(IMAGE_BUCKET).getPublicUrl(path).data.publicUrl;
+}
+
+/**
+ * Best-effort removal of a file this project uploaded (replaced or deleted
+ * image). Only touches our own bucket; a bundled /demo/ path or a foreign URL
+ * is ignored. Never throws — an orphan file is cheaper than a failed save.
+ */
+export async function deleteAdminImage(url: string | null | undefined): Promise<void> {
+  if (!url) return;
+  const marker = `${SUPABASE_PUBLIC_MARKER}${IMAGE_BUCKET}/`;
+  const i = url.indexOf(marker);
+  if (i === -1) return;
+  const path = decodeURIComponent(url.slice(i + marker.length).split("?")[0]);
+  try {
+    await supabase.storage.from(IMAGE_BUCKET).remove([path]);
+  } catch {
+    /* orphan file — harmless */
+  }
 }

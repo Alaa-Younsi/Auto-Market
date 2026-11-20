@@ -9,7 +9,7 @@ import type { Product } from "@/types/db";
 /* Normalizes rows from PostgREST: offers jsonb parsed defensively, colors
    may still be legacy plain strings, and some columns may not exist yet on
    a DB that hasn't run the corresponding migration. */
-function normalizeProduct(row: Product): Product {
+export function normalizeProduct(row: Product): Product {
   return {
     ...row,
     video_url: row.video_url ?? null,

@@ -5,7 +5,15 @@ const DOMAIN = "https://www.auto-market.shop";
 
 // Only routes the router actually serves — /track-order was listed here but no
 // such route exists, so the sitemap was advertising a 404 to Google.
-const STATIC_ROUTES = ["/", "/shop"];
+const STATIC_ROUTES = [
+  "/",
+  "/shop",
+  "/politique",
+  "/mentions-legales",
+  "/cgv",
+  "/confidentialite",
+  "/cookies",
+];
 
 function buildXml(urls) {
   const entries = urls.map((url) => `  <url><loc>${DOMAIN}${url}</loc></url>`).join("\n");
@@ -25,6 +33,14 @@ async function main() {
       if (error) throw error;
       for (const product of data ?? []) {
         urls.push(`/product/${product.slug}`);
+      }
+      // Published ad landing pages (migration 0013; a missing table just adds none).
+      const { data: landings } = await supabase
+        .from("product_landings")
+        .select("slug")
+        .eq("status", "published");
+      for (const landing of landings ?? []) {
+        urls.push(`/lp/${landing.slug}`);
       }
     } catch (err) {
       console.warn(

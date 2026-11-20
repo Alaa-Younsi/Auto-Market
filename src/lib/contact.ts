@@ -1,14 +1,12 @@
 /**
- * The store's contact details — the ONLY place they are written. Footer,
- * admin WhatsApp links and anything else import from here, so changing the
- * number is a one-line edit that cannot leave a stale copy behind.
+ * FALLBACK contact details. The live values are edited by the client in
+ * Admin → Réglages (store_settings) and read through `useContact()`; these are
+ * only shown before the settings load, or if that row is ever unreadable.
  * Not translated on purpose: a phone number is the same in every language.
  */
 export const CONTACT_PHONE = "+213 555 91 73 33";
 /** E.164 — a local-format tel: link silently does nothing on many phones. */
 export const CONTACT_PHONE_E164 = "+213555917333";
-export const CONTACT_PHONE_HREF = `tel:${CONTACT_PHONE_E164}`;
-export const CONTACT_WHATSAPP_HREF = `https://wa.me/${CONTACT_PHONE_E164.slice(1)}`;
 
 /**
  * Algerian mobile in local form (0XXXXXXXXX, what checkout stores) →

@@ -18,18 +18,18 @@ export class SceneErrorBoundary extends Component<
   SceneErrorBoundaryProps,
   SceneErrorBoundaryState
 > {
-  state: SceneErrorBoundaryState = { failed: false };
+  override state: SceneErrorBoundaryState = { failed: false };
 
   static getDerivedStateFromError(): SceneErrorBoundaryState {
     return { failed: true };
   }
 
-  componentDidCatch(_error: Error, _info: ErrorInfo): void {
+  override componentDidCatch(_error: Error, _info: ErrorInfo): void {
     // Swallowed on purpose: a missing decorative model is not worth a console
     // error in production, and the fallback already communicates the outcome.
   }
 
-  render(): ReactNode {
+  override render(): ReactNode {
     return this.state.failed ? this.props.fallback : this.props.children;
   }
 }

@@ -13,6 +13,7 @@ import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { SmartImage } from "@/components/ui/SmartImage";
 import { StarRating } from "@/components/ui/StarRating";
+import { useConfirm } from "@/components/admin/ConfirmDialog";
 
 const EMPTY_FORM = {
   client_name: "",
@@ -81,10 +82,21 @@ export default function AdminReviews() {
     queryClient.invalidateQueries({ queryKey: ["reviews"] });
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm(t("admin_confirm_delete"))) return;
-    const { error: delError } = await supabase.from("client_reviews").delete().eq("id", id);
-    if (delError) {
+  const [confirmDialog, ask] = useConfirm();
+
+  async function handleDelete(id: string, name: string) {
+    const ok = await ask({
+      title: `${t("admin_delete")} — ${name}`,
+      body: <p>{t("review_delete_body")}</p>,
+      confirmLabel: t("admin_delete"),
+    });
+    if (!ok) return;
+    const { data, error: delError } = await supabase
+      .from("client_reviews")
+      .delete()
+      .eq("id", id)
+      .select("id");
+    if (delError || !data?.length) {
       setError(t("admin_delete_error"));
       return;
     }
@@ -93,6 +105,7 @@ export default function AdminReviews() {
 
   return (
     <div>
+      {confirmDialog}
       <div className="mb-6 flex items-center justify-between">
         <h1 className="font-heading text-2xl font-extrabold text-ink">
           {t("admin_reviews_title")}
@@ -184,7 +197,7 @@ export default function AdminReviews() {
                 {review.active ? t("admin_review_active") : "—"}
               </button>
               <button
-                onClick={() => handleDelete(review.id)}
+                onClick={() => handleDelete(review.id, review.client_name)}
                 className="rounded-lg p-1.5 text-muted hover:bg-panel-2 hover:text-red-500"
               >
                 <Trash2 size={15} />

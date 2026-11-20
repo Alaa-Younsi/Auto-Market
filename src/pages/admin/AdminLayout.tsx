@@ -3,15 +3,19 @@ import { Link, Navigate, NavLink, Outlet, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
+  BadgePercent,
   LayoutDashboard,
   Languages,
   ListTree,
   LogOut,
   MapPin,
+  Megaphone,
   Menu,
   Moon,
   Package,
   Radio,
+  ScrollText,
+  Settings,
   Star,
   Sun,
   Truck,
@@ -35,12 +39,16 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { to: "/admin", labelKey: "admin_nav_dashboard", icon: LayoutDashboard },
+  { to: "/admin/orders", labelKey: "admin_nav_orders", icon: Truck },
   { to: "/admin/products", labelKey: "admin_nav_products", icon: Package },
   { to: "/admin/categories", labelKey: "admin_nav_categories", icon: ListTree },
-  { to: "/admin/orders", labelKey: "admin_nav_orders", icon: Truck },
+  { to: "/admin/promotions", labelKey: "admin_nav_promotions", icon: BadgePercent },
+  { to: "/admin/landings", labelKey: "admin_nav_landings", icon: Megaphone },
   { to: "/admin/delivery-prices", labelKey: "admin_nav_delivery", icon: MapPin },
   { to: "/admin/reviews", labelKey: "admin_nav_reviews", icon: Star },
   { to: "/admin/pixels", labelKey: "admin_nav_pixels", icon: Radio },
+  { to: "/admin/legal", labelKey: "admin_nav_legal", icon: ScrollText },
+  { to: "/admin/settings", labelKey: "admin_nav_settings", icon: Settings },
   { to: "/admin/account", labelKey: "admin_nav_account", icon: UserRound },
 ];
 

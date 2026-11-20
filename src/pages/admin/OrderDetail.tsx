@@ -1,51 +1,73 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { MessageCircle, Phone } from "lucide-react";
+import { ArrowLeft, MessageCircle, Phone, Trash2 } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useOrder } from "@/hooks/useOrders";
-import { supabase } from "@/lib/supabase";
 import { dzPhoneToIntl } from "@/lib/contact";
 import { formatDate, formatPrice } from "@/lib/format";
-import { invalidateProductCaches } from "@/lib/queryCache";
+import {
+  ORDER_STATUSES,
+  ORDER_STATUS_LABEL_KEY,
+  deleteOrder,
+  updateOrderStatus,
+} from "@/lib/orderStatus";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
+import { Button } from "@/components/ui/Button";
 import { Price } from "@/components/ui/Price";
 import { SmartImage } from "@/components/ui/SmartImage";
 import { BentoPanel } from "@/components/ui/BentoPanel";
 import { Select } from "@/components/ui/Select";
 import type { OrderStatus } from "@/types/db";
+import type { TranslationKey } from "@/i18n/translations";
 
 export default function AdminOrderDetail() {
   const { id } = useParams<{ id: string }>();
   const { t, lang } = useLanguage();
   const queryClient = useQueryClient();
-  const { data, isLoading } = useOrder(id);
-  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const { data, isLoading, isError } = useOrder(id);
+  const [error, setError] = useState<TranslationKey | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   async function updateStatus(newStatus: OrderStatus) {
     if (!id) return;
     setError(null);
-    const { error: updError } = await supabase
-      .from("orders")
-      .update({ status: newStatus })
-      .eq("id", id);
-    if (updError) {
-      // Re-opening a cancelled order re-reserves its stock; the trigger refuses
-      // when those units have been sold since.
-      setError(
-        updError.message.includes("ERR_STOCK")
-          ? t("admin_order_reopen_stock")
-          : t("admin_save_error")
-      );
-      return;
-    }
-    queryClient.invalidateQueries({ queryKey: ["order", id] });
-    queryClient.invalidateQueries({ queryKey: ["orders"] });
-    // Cancelling / re-opening moves stock.
-    invalidateProductCaches(queryClient);
+    setSaving(true);
+    // Re-opening a cancelled order re-reserves its stock; the trigger refuses
+    // when those units have been sold since (admin_order_reopen_stock).
+    setError(await updateOrderStatus(queryClient, id, newStatus));
+    setSaving(false);
   }
 
-  if (isLoading || !data) {
+  async function handleDelete() {
+    if (!id) return;
+    setDeleting(true);
+    setDeleteError(null);
+    const err = await deleteOrder(queryClient, id);
+    setDeleting(false);
+    if (err) {
+      setDeleteError(t(err));
+      return;
+    }
+    navigate("/admin/orders", { replace: true });
+  }
+
+  if (isLoading) {
     return <p className="text-muted">{t("loading")}</p>;
+  }
+  if (isError || !data) {
+    return (
+      <div className="space-y-4">
+        <p className="text-muted">{t(isError ? "admin_load_error" : "admin_order_not_found")}</p>
+        <Link to="/admin/orders" className="text-sm font-semibold text-brand hover:underline">
+          {t("admin_back_to_orders")}
+        </Link>
+      </div>
+    );
   }
 
   const { order, items } = data;
@@ -58,14 +80,23 @@ export default function AdminOrderDetail() {
 
   return (
     <div>
+      <Link
+        to="/admin/orders"
+        className="mb-3 inline-flex items-center gap-1.5 text-sm font-semibold text-muted hover:text-brand"
+      >
+        <ArrowLeft size={15} className="rtl:rotate-180" />
+        {t("admin_back_to_orders")}
+      </Link>
       <h1 className="mb-6 font-heading text-2xl font-extrabold text-ink">
         {t("admin_order_detail_title")}
       </h1>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
         <BentoPanel className="p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <span className="font-mono text-sm font-bold text-ink">{order.order_number}</span>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <span dir="ltr" className="font-mono text-sm font-bold text-ink">
+              {order.order_number}
+            </span>
             <span className="text-xs text-muted">{formatDate(order.created_at, lang)}</span>
           </div>
 
@@ -83,7 +114,7 @@ export default function AdminOrderDetail() {
                     />
                   )}
                 </div>
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-ink">
                     {lang === "ar" ? item.name_ar : item.name_fr}
                   </p>
@@ -135,7 +166,9 @@ export default function AdminOrderDetail() {
         <div className="space-y-4">
           <BentoPanel className="space-y-3 p-5 text-sm">
             <h2 className="font-heading text-sm font-bold text-ink">{t("admin_order_customer")}</h2>
-            <p className="text-ink">{order.customer_name}</p>
+            <p className="text-ink" dir="auto">
+              {order.customer_name}
+            </p>
             <p className="text-muted">
               <bdi dir="ltr">{order.customer_phone}</bdi>
             </p>
@@ -171,18 +204,55 @@ export default function AdminOrderDetail() {
             </h2>
             <Select
               value={order.status}
+              disabled={saving}
+              aria-label={t("admin_order_update_status")}
               onChange={(e) => updateStatus(e.target.value as OrderStatus)}
             >
-              <option value="pending">{t("track_status_pending")}</option>
-              <option value="confirmed">{t("track_status_confirmed")}</option>
-              <option value="shipped">{t("track_status_shipped")}</option>
-              <option value="delivered">{t("track_status_delivered")}</option>
-              <option value="cancelled">{t("track_status_cancelled")}</option>
+              {ORDER_STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {t(ORDER_STATUS_LABEL_KEY[s])}
+                </option>
+              ))}
             </Select>
-            {error && <p className="text-sm text-red-500">{error}</p>}
+            {error && <p className="text-sm text-red-500">{t(error)}</p>}
+          </BentoPanel>
+
+          <BentoPanel className="p-5">
+            <Button
+              type="button"
+              variant="danger"
+              className="w-full"
+              onClick={() => {
+                setDeleteError(null);
+                setConfirmOpen(true);
+              }}
+            >
+              <Trash2 size={16} />
+              {t("admin_order_delete")}
+            </Button>
           </BentoPanel>
         </div>
       </div>
+      <ConfirmDialog
+        open={confirmOpen}
+        title={`${t("admin_order_delete_title")} ${order.order_number}`}
+        confirmLabel={t("admin_order_delete")}
+        busy={deleting}
+        error={deleteError}
+        onConfirm={handleDelete}
+        onClose={() => setConfirmOpen(false)}
+      >
+        <p>
+          <span className="font-semibold text-ink" dir="auto">
+            {order.customer_name}
+          </span>{" "}
+          · <Price value={order.total} />
+        </p>
+        <p>{t("admin_order_delete_body")}</p>
+        {order.status !== "cancelled" && (
+          <p className="text-amber-500">{t("admin_order_delete_stock_note")}</p>
+        )}
+      </ConfirmDialog>
     </div>
   );
 }

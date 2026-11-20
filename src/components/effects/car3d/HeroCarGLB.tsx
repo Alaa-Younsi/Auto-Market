@@ -123,7 +123,8 @@ export function HeroCarGLB({
       object.receiveShadow = true;
 
       const current = object.material;
-      const swap = (material: THREE.Material): THREE.Material => mats[material.name] ?? material;
+      const swap = (material: THREE.Material): THREE.Material =>
+        (mats as Record<string, THREE.Material>)[material.name] ?? material;
 
       object.material = Array.isArray(current) ? current.map(swap) : swap(current);
     });

@@ -1,6 +1,6 @@
 import { useLocation } from "react-router-dom";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { CONTACT_WHATSAPP_HREF } from "@/lib/contact";
+import { useContact } from "@/hooks/useContact";
 import { WhatsAppIcon } from "@/components/ui/SocialIcons";
 
 /**
@@ -13,9 +13,13 @@ import { WhatsAppIcon } from "@/components/ui/SocialIcons";
 export function WhatsAppButton() {
   const { t } = useLanguage();
   const { pathname } = useLocation();
+  const { whatsappHref } = useContact();
 
-  const page = pathname.startsWith("/product/") ? ` ${window.location.origin}${pathname}` : "";
-  const href = `${CONTACT_WHATSAPP_HREF}?text=${encodeURIComponent(t("whatsapp_prefill") + page)}`;
+  const page =
+    pathname.startsWith("/product/") || pathname.startsWith("/lp/")
+      ? ` ${window.location.origin}${pathname}`
+      : "";
+  const href = `${whatsappHref}?text=${encodeURIComponent(t("whatsapp_prefill") + page)}`;
 
   return (
     <a

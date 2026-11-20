@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { Toggle } from "@/components/ui/Toggle";
+import { useConfirm } from "@/components/admin/ConfirmDialog";
 import type {
   TrackingEventKey,
   TrackingPixel,
@@ -165,8 +166,15 @@ export default function AdminPixels() {
     }
   }
 
+  const [confirmDialog, ask] = useConfirm();
+
   async function remove(p: TrackingPixel) {
-    if (!confirm(t("pixels_confirm_delete"))) return;
+    const ok = await ask({
+      title: `${t("admin_delete")} « ${p.label} »`,
+      body: <p>{t("pixels_confirm_delete")}</p>,
+      confirmLabel: t("admin_delete"),
+    });
+    if (!ok) return;
     setError(null);
     try {
       await del.mutateAsync(p.id);
@@ -177,6 +185,7 @@ export default function AdminPixels() {
 
   return (
     <div className="max-w-4xl">
+      {confirmDialog}
       <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-heading text-2xl font-extrabold text-ink">{t("pixels_title")}</h1>
         {!formOpen && !isError && (

@@ -1,30 +1,35 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import type { Order, OrderItem, OrderStatus } from "@/types/db";
+import type { Order, OrderItem } from "@/types/db";
 
+/** One query feeds the whole orders desk and the dashboard. */
 export const ORDERS_LIMIT = 500;
 
-interface UseOrdersOptions {
-  status?: OrderStatus | "all";
+export interface OrdersResult {
+  rows: Order[];
+  /** True when the table holds more than ORDERS_LIMIT rows — every total on
+      screen is then computed from a partial list and must say so. */
+  capped: boolean;
 }
 
-export function useOrders(options: UseOrdersOptions = {}) {
-  const { status = "all" } = options;
+export function useOrders() {
   return useQuery({
-    queryKey: ["orders", status],
-    queryFn: async (): Promise<Order[]> => {
-      // Capped so the admin never pulls an unbounded table on every visit.
-      let query = supabase
+    queryKey: ["orders"],
+    queryFn: async (): Promise<OrdersResult> => {
+      const { data, error } = await supabase
         .from("orders")
         .select("*")
         .order("created_at", { ascending: false })
-        .limit(ORDERS_LIMIT);
-      if (status !== "all") {
-        query = query.eq("status", status);
-      }
-      const { data, error } = await query;
+        .limit(ORDERS_LIMIT + 1);
       if (error) throw error;
-      return data ?? [];
+      const rows = (data ?? []).map((o: Order) => ({
+        ...o,
+        subtotal: Number(o.subtotal),
+        shipping: Number(o.shipping),
+        discount: Number(o.discount),
+        total: Number(o.total),
+      }));
+      return { rows: rows.slice(0, ORDERS_LIMIT), capped: rows.length > ORDERS_LIMIT };
     },
   });
 }
@@ -38,8 +43,9 @@ export function useOrder(id: string | undefined) {
         .from("orders")
         .select("*")
         .eq("id", id)
-        .single();
+        .maybeSingle();
       if (error) throw error;
+      if (!order) return null;
 
       const { data: items, error: itemsError } = await supabase
         .from("order_items")
@@ -53,7 +59,7 @@ export function useOrder(id: string | undefined) {
         variants: item.variants ?? [],
       }));
 
-      return { order, items: normalizedItems };
+      return { order: order as Order, items: normalizedItems };
     },
     enabled: !!id,
   });

@@ -25,7 +25,7 @@ const ALIASES: Record<string, string> = {
 
 async function loadIndex(): Promise<Map<string, Commune[]>> {
   // Code-split: ~19 KB gzipped, fetched only once a checkout form is on screen.
-  const data = ((await import("@/data/communes.json")) as { default: CommunesFile }).default;
+  const data = (await import("@/data/communes.json")).default as unknown as CommunesFile;
   const index = new Map<string, Commune[]>();
   for (const w of Object.values(data.wilayas)) {
     index.set(

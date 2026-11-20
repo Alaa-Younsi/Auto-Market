@@ -6,6 +6,7 @@ import { useCartStore } from "@/store/cart";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useMediaFlags } from "@/hooks/useMediaFlags";
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
+import { useCartQuote } from "@/hooks/useCartQuote";
 import { Price } from "@/components/ui/Price";
 import { SmartImage } from "@/components/ui/SmartImage";
 
@@ -19,8 +20,8 @@ export function CartDrawer() {
   const items = useCartStore((s) => s.items);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
-  const subtotal = useCartStore((s) => s.subtotal());
-  const discount = useCartStore((s) => s.discount());
+  // Totals come from the promotions engine (mirror now, server figure next).
+  const { subtotal, discount } = useCartQuote(items);
   const animatedTotal = useAnimatedNumber(subtotal - discount, {
     duration: 0.5,
     enabled: !prefersReducedMotion,

@@ -7,6 +7,7 @@ import type { TranslationKey } from "@/i18n/translations";
 import { BentoPanel } from "@/components/ui/BentoPanel";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { NotificationSettings } from "@/components/admin/NotificationSettings";
 
 const MIN_LENGTH = 8;
 
@@ -121,6 +122,10 @@ export default function AdminAccount() {
           </Button>
         </form>
       </BentoPanel>
+
+      <div className="mt-4">
+        <NotificationSettings />
+      </div>
     </div>
   );
 }

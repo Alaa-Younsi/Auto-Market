@@ -7,6 +7,8 @@ import { useCartStore } from "@/store/cart";
 import { formatPrice } from "@/lib/format";
 import { Price } from "@/components/ui/Price";
 import { offerLabel } from "@/lib/offers";
+import { promotionLabel, promotionsForProduct } from "@/lib/promotions";
+import { useLivePromotions } from "@/hooks/usePromotions";
 import { trackAddToCart } from "@/lib/pixel";
 import { Badge } from "@/components/ui/Badge";
 import { SmartImage } from "@/components/ui/SmartImage";
@@ -17,6 +19,8 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
   const { t, lang, dir } = useLanguage();
   const { prefersReducedMotion } = useMediaFlags();
   const addItem = useCartStore((s) => s.addItem);
+  const { data: livePromotions = [] } = useLivePromotions();
+  const storePromotion = promotionsForProduct(product, livePromotions)[0];
 
   const image = product.product_images?.[0]?.url ?? null;
   const name = lang === "ar" ? product.name_ar : product.name_fr;
@@ -37,6 +41,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
       imageUrl: image,
       stock: product.stock,
       offers: product.quantity_offers,
+      categoryId: product.category_id,
     });
     trackAddToCart(product.id, Number(product.price));
   }
@@ -92,7 +97,18 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
                   -{discountPct}%
                 </Badge>
               )}
-              {product.quantity_offers.length > 0 && (
+              {storePromotion && (
+                <Badge
+                  tone="brand"
+                  className="flex max-w-[11rem] items-center gap-1 border-transparent bg-brand text-white"
+                >
+                  <Gift size={11} className="shrink-0" />
+                  <span className="truncate">
+                    {promotionLabel(storePromotion, lang, formatPrice)}
+                  </span>
+                </Badge>
+              )}
+              {!storePromotion && product.quantity_offers.length > 0 && (
                 <Badge
                   tone="accent"
                   className="flex items-center gap-1 bg-accent text-white border-transparent"

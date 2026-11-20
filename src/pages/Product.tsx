@@ -9,7 +9,10 @@ import { useMediaFlags } from "@/hooks/useMediaFlags";
 import { useSeo } from "@/hooks/useSeo";
 import { formatPrice } from "@/lib/format";
 import { Price } from "@/components/ui/Price";
-import { lineDiscount, offerLabel } from "@/lib/offers";
+import { offerLabel } from "@/lib/offers";
+import { promotionLabel, promotionsForProduct } from "@/lib/promotions";
+import { useCartQuote } from "@/hooks/useCartQuote";
+import { useLivePromotions } from "@/hooks/usePromotions";
 import { trackAddToCart, trackViewContent } from "@/lib/pixel";
 import { cn } from "@/lib/utils";
 import { selectedVariantsFromChoices } from "@/lib/variants";
@@ -113,6 +116,23 @@ function ProductPage() {
     trackedId.current = product.id;
     trackViewContent(product.id, Number(product.price));
   }, [product]);
+
+  // Savings for the chosen quantity: product offers + store promotions, from
+  // the same engine place_order charges with.
+  const quote = useCartQuote(
+    product
+      ? [
+          {
+            productId: product.id,
+            categoryId: product.category_id,
+            price: product.price,
+            quantity,
+            offers: product.quantity_offers,
+          },
+        ]
+      : []
+  );
+  const { data: livePromotions = [] } = useLivePromotions();
 
   if (isLoading) {
     return (
@@ -223,6 +243,7 @@ function ProductPage() {
       imageUrl: images[0]?.url ?? null,
       stock: product!.stock,
       offers: product!.quantity_offers,
+      categoryId: product!.category_id,
     });
     trackAddToCart(product!.id, Number(product!.price) * quantity);
     setAdded(true);
@@ -245,7 +266,8 @@ function ProductPage() {
   // Never reveal the real stock count to customers: the stepper stops at 10
   // (the RPC still rejects anything the stock can't cover).
   const maxQuantity = Math.min(product.stock, 10);
-  const savings = lineDiscount(product.price, quantity, product.quantity_offers);
+  const savings = quote.discount;
+  const storePromotions = promotionsForProduct(product, livePromotions);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
@@ -294,8 +316,17 @@ function ProductPage() {
             <Badge tone={product.stock === 0 ? "danger" : "accent"}>{stockLabel}</Badge>
           </div>
 
-          {product.quantity_offers.length > 0 && (
+          {(product.quantity_offers.length > 0 || storePromotions.length > 0) && (
             <div className="mt-4 flex flex-wrap gap-2">
+              {storePromotions.map((promo) => (
+                <span
+                  key={promo.id}
+                  className="fx-pop inline-flex items-center gap-1.5 rounded-full border border-brand/30 bg-brand/10 px-3.5 py-1.5 text-xs font-bold text-brand"
+                >
+                  <Gift size={13} />
+                  {promotionLabel(promo, lang, formatPrice)}
+                </span>
+              ))}
               {product.quantity_offers.map((offer, i) => (
                 <span
                   key={i}
